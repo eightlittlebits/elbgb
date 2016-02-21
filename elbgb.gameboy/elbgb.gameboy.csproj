@@ -45,7 +45,9 @@
     <Compile Include="CPU\PairedRegister.cs" />
     <Compile Include="CPU\Registers.cs" />
     <Compile Include="GameBoy.cs" />
+    <Compile Include="IMemoryMappedComponent.cs" />
     <Compile Include="Memory\MMU.cs" />
+    <Compile Include="Display\PPU.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

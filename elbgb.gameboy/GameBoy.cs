@@ -5,20 +5,30 @@ using System.Text;
 using System.Threading.Tasks;
 using elbgb.gameboy.CPU;
 using elbgb.gameboy.Memory;
+using elbgb.gameboy.Display;
 
 namespace elbgb.gameboy
 {
     public class GameBoy
     {
-		private LR35902 _cpu;
+		private PPU _ppu;
+
 		private MMU _mmu;
+		private LR35902 _cpu;
 
-		internal MMU MMU { get { return _mmu; } }
-
+		internal PPU PPU { get { return _ppu; } }
+		
 		public GameBoy(byte[] bootRom)
 		{
-			_mmu = new MMU(bootRom);
+			_ppu = new PPU(this);
+
+			_mmu = new MMU(this, bootRom);
 			_cpu = new LR35902(_mmu);
 		}
-    }
+
+		public void RunInstruction()
+		{
+			_cpu.ExecuteSingleInstruction();
+		}
+	}
 }
