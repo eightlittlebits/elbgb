@@ -25,7 +25,7 @@ namespace elbgb.gameboy.CPU
 		{
 			_timestamp += (ulong)(4 * cycleCount);
 		}
-		
+
 		// Wrap the MMU ReadByte to handle the timing updates
 		private byte ReadByte(ushort address)
 		{
@@ -228,6 +228,28 @@ namespace elbgb.gameboy.CPU
 				case 0xE1: _r.HL = PopWord(); break; // POP HL
 				case 0xF1: _r.AF = PopWord(); break; // POP AF
 
+				// the 8-bit operand e is added to SP and the result stored in HL
+				case 0xF8: // LDHL SP,e
+					{
+						_r.HL = (ushort)(_r.SP + (sbyte)(ReadByte(_r.PC++)));
+
+						// TODO(david): calculate flags correctly
+						_r.F = 0;
+
+						AddMachineCycles(1);						
+					} break;
+
+				// store the lower byte of SP at address nn specified by the 16-bit immediate operand nn
+				// and the upper byte of SP and address nn + 1
+				case 0x08: // LD (nn), SP
+					{
+						ushort address = ReadWord(_r.PC);
+						_r.PC += 2;
+
+						WriteByte(address, (byte)(_r.SP));
+						WriteByte((ushort)(address+1), (byte)(_r.SP >> 8));
+					} break;
+
 				#endregion
 
 				#region 8-bit arithmetic and logical operation instructions
@@ -258,7 +280,7 @@ namespace elbgb.gameboy.CPU
 				#endregion
 
 				default:
-					throw new NotImplementedException(string.Format("Invalid opcode 0x{0:X2} at {1:X4}", opcode, _r.PC-1));
+					throw new NotImplementedException(string.Format("Invalid opcode 0x{0:X2} at {1:X4}", opcode, _r.PC - 1));
 			}
 		}
 
