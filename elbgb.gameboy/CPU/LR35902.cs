@@ -57,8 +57,13 @@ namespace elbgb.gameboy.CPU
 		// Push a byte on to the stack, decrement SP then write to memory
 		private void PushByte(byte value)
 		{
-			_r.SP--;
-			WriteByte(_r.SP, value);
+			WriteByte(--_r.SP, value);
+		}
+
+		// Pop a byte from the stack, read from memory then increment SP
+		private byte PopByte()
+		{
+			return ReadByte(_r.SP++);
 		}
 
 		// Push a word onto the stack, high byte pushed first
@@ -66,6 +71,15 @@ namespace elbgb.gameboy.CPU
 		{
 			PushByte((byte)(value >> 8));
 			PushByte((byte)value);
+		}
+
+		// Pop a word from the stack, low byte popped first
+		private ushort PopWord()
+		{
+			byte lo = PopByte();
+			byte hi = PopByte();
+
+			return (ushort)(hi << 8 | lo);
 		}
 
 		public void ExecuteSingleInstruction()
@@ -208,9 +222,16 @@ namespace elbgb.gameboy.CPU
 				case 0xE5: AddMachineCycles(1); PushWord(_r.HL); break; // PUSH HL
 				case 0xF5: AddMachineCycles(1); PushWord(_r.AF); break; // PUSH AF
 
+				// pop contents of stack into register pair
+				case 0xC1: _r.BC = PopWord(); break; // POP BC
+				case 0xD1: _r.DE = PopWord(); break; // POP DE
+				case 0xE1: _r.HL = PopWord(); break; // POP HL
+				case 0xF1: _r.AF = PopWord(); break; // POP AF
+
 				#endregion
 
-				// 8 bit ALU
+				#region 8-bit arithmetic and logical operation instructions
+
 				case 0xAF: _r.A = Xor8Bit(_r.A, _r.A); break;				// XOR A
 				case 0xA8: _r.A = Xor8Bit(_r.A, _r.B); break;				// XOR B
 				case 0xA9: _r.A = Xor8Bit(_r.A, _r.C); break;				// XOR C
@@ -221,11 +242,20 @@ namespace elbgb.gameboy.CPU
 				case 0xAE: _r.A = Xor8Bit(_r.A, ReadByte(_r.HL)); break;	// XOR (HL)
 				case 0xEE: _r.A = Xor8Bit(_r.A, ReadByte(_r.PC++)); break;	// XOR n
 
-				// extended opcodes are prefixed with OxCB, read next byte and run opcode 
-				case 0xCB: ExecuteExtendedOpcode(ReadByte(_r.PC++)); break; 
+				#endregion
 
-				// jump instructions
+				#region 16-bit arithmetic operation instructions
+
+				#endregion
+
+				// extended opcodes are prefixed with OxCB, read next byte and run opcode 
+				case 0xCB: ExecuteExtendedOpcode(ReadByte(_r.PC++)); break;
+
+				#region jump instructions
+
 				case 0x20: if (!_r.F.HasFlag(Registers.Flags.Z)) { _r.PC = (ushort)(_r.PC + (sbyte)ReadByte(_r.PC++)); _r.PC++; } else { _r.PC++; } break; // JR NZ,n
+
+				#endregion
 
 				default:
 					throw new NotImplementedException(string.Format("Invalid opcode 0x{0:X2} at {1:X4}", opcode, _r.PC-1));
