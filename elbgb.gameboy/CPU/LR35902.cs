@@ -82,6 +82,30 @@ namespace elbgb.gameboy.CPU
 			return (ushort)(hi << 8 | lo);
 		}
 
+		// calculate the carry flags based on the two addends and the result
+		// based on http://stackoverflow.com/a/8037485 by Alexey Frunze
+		private static Registers.Flags CalculateCarryFlags(byte a, byte b, int result)
+		{
+			// given bit n of the binary sum is calculated as a(n) XOR b(n) XOR carry-in we
+			// can retrieve the values of the carry-in for each bit with a XOR b XOR result
+			// with the carry-in values the carry in to bit 4 is the carry out from bit 3 
+			// which is our half carry and the carry in to bit 8 is the carry out from bit
+			// 7 which is our carry flag
+			var carryIn = a ^ b ^ result;
+
+			// now that we have our relevant flags we can shift them into the correct bit 
+			// locations for the flags register, the carry flag right 4 from bit 8 into bit
+			// 4 and the half carry left 1 from but 4 into bit 5
+			return (Registers.Flags)(((carryIn & 0x100) >> 4) | (carryIn & 0x10) << 1);
+		}
+
+		private static Registers.Flags CalculateCarryFlags(ushort a, ushort b, int result)
+		{
+			var carryIn = (a ^ b ^ result) >> 8;
+
+			return (Registers.Flags)(((carryIn & 0x100) >> 4) | (carryIn & 0x10) << 1);
+		}
+
 		public void ExecuteSingleInstruction()
 		{
 			byte opcode = ReadByte(_r.PC++);
@@ -231,12 +255,13 @@ namespace elbgb.gameboy.CPU
 				// the 8-bit operand e is added to SP and the result stored in HL
 				case 0xF8: // LDHL SP,e
 					{
-						_r.HL = (ushort)(_r.SP + (sbyte)(ReadByte(_r.PC++)));
+						byte e = ReadByte(_r.PC++);
+						var result = _r.SP + e;
 
-						// TODO(david): calculate flags correctly
-						_r.F = 0;
+						_r.HL = (ushort)result;
+						_r.F = CalculateCarryFlags(_r.SP, e, result);
 
-						AddMachineCycles(1);						
+						AddMachineCycles(1);
 					} break;
 
 				// store the lower byte of SP at address nn specified by the 16-bit immediate operand nn
@@ -247,7 +272,7 @@ namespace elbgb.gameboy.CPU
 						_r.PC += 2;
 
 						WriteByte(address, (byte)(_r.SP));
-						WriteByte((ushort)(address+1), (byte)(_r.SP >> 8));
+						WriteByte((ushort)(address + 1), (byte)(_r.SP >> 8));
 					} break;
 
 				#endregion
@@ -297,24 +322,22 @@ namespace elbgb.gameboy.CPU
 
 		private byte Xor8Bit(byte b1, byte b2)
 		{
-			byte value = (byte)(b1 ^ b2);
+			byte result = (byte)(b1 ^ b2);
 
 			// clear flags
 			_r.F = 0;
 
 			// set zero flag if required
-			if (value == 0)
+			if (result == 0)
 				_r.F |= Registers.Flags.Z;
 
-			return value;
+			return result;
 		}
 
+		// test if bit bit is set in byte reg, preserve carry flag, set half carry, set zero if bit not set
 		private void Bit(byte reg, int bit)
 		{
-			// carry flag unaffected, preserve state and reset others
 			_r.F &= Registers.Flags.C;
-
-			// half carry flag set
 			_r.F |= Registers.Flags.H;
 
 			// set zero flag if bit N of reg is not set
