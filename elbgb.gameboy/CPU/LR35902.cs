@@ -54,6 +54,8 @@ namespace elbgb.gameboy.CPU
 			_timestamp += 4;
 		}
 
+		#region stack handling
+
 		// Push a byte on to the stack, decrement SP then write to memory
 		private void PushByte(byte value)
 		{
@@ -81,6 +83,8 @@ namespace elbgb.gameboy.CPU
 
 			return (ushort)(hi << 8 | lo);
 		}
+
+		#endregion
 
 		public void ExecuteSingleInstruction()
 		{
@@ -248,9 +252,9 @@ namespace elbgb.gameboy.CPU
 
 						if (((_r.SP & 0x0F) + (e & 0x0F)) > 0x0F)
 							_r.F = StatusFlags.H;
-						
+
 						_r.HL = (ushort)(_r.SP + e);
-						
+
 						AddAdditionalMachineCycles(1);
 					} break;
 
@@ -313,6 +317,22 @@ namespace elbgb.gameboy.CPU
 
 				#endregion
 
+				#region call and return instructions
+
+				// push PC onto stack and replace PC with immmediate value nn
+				case 0xCD: CallImmediate(); break; // CALL nn
+
+				// if condition and status flag match, push PC onto stack and replace PC with immmediate value nn
+				case 0xC4: CallImmediate(!_r.F.FlagSet(StatusFlags.Z)); break; // CALL NZ,n
+				case 0xCC: CallImmediate(_r.F.FlagSet(StatusFlags.Z)); break;  // CALL Z,n
+				case 0xD4: CallImmediate(!_r.F.FlagSet(StatusFlags.C)); break; // CALL NC,n
+				case 0xDC: CallImmediate(_r.F.FlagSet(StatusFlags.C)); break;  // CALL C,n
+
+				// pops from the stack the PC value pushed when the subroutine was called
+				case 0xC9: Return(); break; // RET
+
+				#endregion
+
 				default:
 					throw new NotImplementedException(string.Format("Invalid opcode 0x{0:X2} at {1:X4}", opcode, _r.PC - 1));
 			}
@@ -328,6 +348,8 @@ namespace elbgb.gameboy.CPU
 					throw new NotImplementedException(string.Format("Invalid opcode 0x{0:X4} at {1:X4}", 0xCB00 | opcode, _r.PC - 2));
 			}
 		}
+
+		#region jump instruction handlers
 
 		private void JumpImmediate(bool condition = true)
 		{
@@ -350,6 +372,32 @@ namespace elbgb.gameboy.CPU
 				AddAdditionalMachineCycles(1);
 			}
 		}
+
+		#endregion
+
+		#region call instruction handlers
+
+		private void CallImmediate(bool condition = true)
+		{
+			ushort address = ReadWord(_r.PC);
+			_r.PC += 2;
+
+			if (condition)
+			{
+				PushWord(_r.PC);
+				_r.PC = address;
+
+				AddAdditionalMachineCycles(1);
+			}
+		}
+
+		private void Return(bool condition = true)
+		{
+			_r.PC = PopWord();
+			AddAdditionalMachineCycles(1);
+		}
+
+		#endregion
 
 		private byte Xor8Bit(byte b1, byte b2)
 		{
