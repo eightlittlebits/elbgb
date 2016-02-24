@@ -100,6 +100,7 @@ namespace elbgb.gameboy.CPU
 				case 0x7B: _r.A = _r.E; break; // LD A,E
 				case 0x7C: _r.A = _r.H; break; // LD A,H
 				case 0x7D: _r.A = _r.L; break; // LD A,L
+
 				case 0x47: _r.B = _r.A; break; // LD B,A
 				case 0x40: _r.B = _r.B; break; // LD B,B
 				case 0x41: _r.B = _r.C; break; // LD B,C
@@ -107,6 +108,7 @@ namespace elbgb.gameboy.CPU
 				case 0x43: _r.B = _r.E; break; // LD B,E
 				case 0x44: _r.B = _r.H; break; // LD B,H
 				case 0x45: _r.B = _r.L; break; // LD B,L
+
 				case 0x4F: _r.C = _r.A; break; // LD C,A
 				case 0x48: _r.C = _r.B; break; // LD C,B
 				case 0x49: _r.C = _r.C; break; // LD C,C
@@ -114,6 +116,7 @@ namespace elbgb.gameboy.CPU
 				case 0x4B: _r.C = _r.E; break; // LD C,E
 				case 0x4C: _r.C = _r.H; break; // LD C,H
 				case 0x4D: _r.C = _r.L; break; // LD C,L
+
 				case 0x57: _r.D = _r.A; break; // LD D,A
 				case 0x50: _r.D = _r.B; break; // LD D,B
 				case 0x51: _r.D = _r.C; break; // LD D,C
@@ -121,6 +124,7 @@ namespace elbgb.gameboy.CPU
 				case 0x53: _r.D = _r.E; break; // LD D,E
 				case 0x54: _r.D = _r.H; break; // LD D,H
 				case 0x55: _r.D = _r.L; break; // LD D,L
+
 				case 0x5F: _r.E = _r.A; break; // LD E,A
 				case 0x58: _r.E = _r.B; break; // LD E,B
 				case 0x59: _r.E = _r.C; break; // LD E,C
@@ -128,6 +132,7 @@ namespace elbgb.gameboy.CPU
 				case 0x5B: _r.E = _r.E; break; // LD E,E
 				case 0x5C: _r.E = _r.H; break; // LD E,H
 				case 0x5D: _r.E = _r.L; break; // LD E,L
+
 				case 0x67: _r.H = _r.A; break; // LD H,A
 				case 0x60: _r.H = _r.B; break; // LD H,B
 				case 0x61: _r.H = _r.C; break; // LD H,C
@@ -135,6 +140,7 @@ namespace elbgb.gameboy.CPU
 				case 0x63: _r.H = _r.E; break; // LD H,E
 				case 0x64: _r.H = _r.H; break; // LD H,H
 				case 0x65: _r.H = _r.L; break; // LD H,L
+
 				case 0x6F: _r.L = _r.A; break; // LD L,A
 				case 0x68: _r.L = _r.B; break; // LD L,B
 				case 0x69: _r.L = _r.C; break; // LD L,C
