@@ -284,7 +284,26 @@ namespace elbgb.gameboy.CPU
 
 				#region jump instructions
 
-				case 0x20: if (!_r.F.HasFlag(Registers.Flags.Z)) { _r.PC = (ushort)(_r.PC + (sbyte)ReadByte(_r.PC++)); _r.PC++; } else { _r.PC++; } break; // JR NZ,n
+				// loads the operand nn into the program counter (PC)
+				case 0xC3: Jump(() => true); break; // JP nn
+
+				// loads the operand nn into the PC if condition cc and the status flag match
+				case 0xC2: Jump(() => !_r.F.HasFlag(Registers.Flags.Z)); break; // JP NZ,nn
+				case 0xCA: Jump(() => _r.F.HasFlag(Registers.Flags.Z)); break;  // JP Z,nn
+				case 0xD2: Jump(() => !_r.F.HasFlag(Registers.Flags.C)); break; // JP NC,nn
+				case 0xDA: Jump(() => _r.F.HasFlag(Registers.Flags.C)); break;  // JP C,nn
+
+				// jumps -127 to +129 steps from current address
+				case 0x18: JumpRelative(() => true); break; // JR e
+
+				// if condition and status flag match, jumps -127 to +129 steps from current address
+				case 0x20: JumpRelative(() => !_r.F.HasFlag(Registers.Flags.Z)); break; // JR NZ,n
+				case 0x28: JumpRelative(() => _r.F.HasFlag(Registers.Flags.Z)); break;  // JR Z,n
+				case 0x30: JumpRelative(() => !_r.F.HasFlag(Registers.Flags.C)); break; // JR NC,n
+				case 0x38: JumpRelative(() => _r.F.HasFlag(Registers.Flags.C)); break;  // JR C,n
+
+				// loads the contents of register pair HL in program counter PC
+				case 0xE9: _r.PC = _r.HL; break; // JP (HL)
 
 				#endregion
 
@@ -301,6 +320,28 @@ namespace elbgb.gameboy.CPU
 
 				default:
 					throw new NotImplementedException(string.Format("Invalid opcode 0x{0:X4} at {1:X4}", 0xCB00 | opcode, _r.PC - 2));
+			}
+		}
+
+		private void Jump(Func<bool> condition)
+		{
+			ushort address = ReadWord(_r.PC);
+
+			if (condition())
+			{
+				_r.PC = address;
+				AddAdditionalMachineCycles(1);
+			}
+		}
+
+		private void JumpRelative(Func<bool> condition)
+		{
+			sbyte offset = (sbyte)ReadByte(_r.PC++);
+
+			if (condition())
+			{
+				_r.PC += (ushort)offset;
+				AddAdditionalMachineCycles(1);
 			}
 		}
 
