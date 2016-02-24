@@ -241,13 +241,13 @@ namespace elbgb.gameboy.CPU
 					{
 						sbyte e = (sbyte)ReadByte(_r.PC++);
 
-						_r.F = 0;
+						_r.F = StatusFlags.Clear;
 
 						if (((_r.SP & 0xFF) + (e & 0xFF)) > 0xFF)
-							_r.F = Registers.Flags.C;
+							_r.F = StatusFlags.C;
 
 						if (((_r.SP & 0x0F) + (e & 0x0F)) > 0x0F)
-							_r.F = Registers.Flags.H;
+							_r.F = StatusFlags.H;
 						
 						_r.HL = (ushort)(_r.SP + e);
 						
@@ -294,19 +294,19 @@ namespace elbgb.gameboy.CPU
 				case 0xC3: Jump(() => true); break; // JP nn
 
 				// loads the operand nn into the PC if condition cc and the status flag match
-				case 0xC2: Jump(() => !_r.F.HasFlag(Registers.Flags.Z)); break; // JP NZ,nn
-				case 0xCA: Jump(() => _r.F.HasFlag(Registers.Flags.Z)); break;  // JP Z,nn
-				case 0xD2: Jump(() => !_r.F.HasFlag(Registers.Flags.C)); break; // JP NC,nn
-				case 0xDA: Jump(() => _r.F.HasFlag(Registers.Flags.C)); break;  // JP C,nn
+				case 0xC2: Jump(() => !_r.F.FlagSet(StatusFlags.Z)); break; // JP NZ,nn
+				case 0xCA: Jump(() => _r.F.FlagSet(StatusFlags.Z)); break;  // JP Z,nn
+				case 0xD2: Jump(() => !_r.F.FlagSet(StatusFlags.C)); break; // JP NC,nn
+				case 0xDA: Jump(() => _r.F.FlagSet(StatusFlags.C)); break;  // JP C,nn
 
 				// jumps -127 to +129 steps from current address
 				case 0x18: JumpRelative(() => true); break; // JR e
 
 				// if condition and status flag match, jumps -127 to +129 steps from current address
-				case 0x20: JumpRelative(() => !_r.F.HasFlag(Registers.Flags.Z)); break; // JR NZ,n
-				case 0x28: JumpRelative(() => _r.F.HasFlag(Registers.Flags.Z)); break;  // JR Z,n
-				case 0x30: JumpRelative(() => !_r.F.HasFlag(Registers.Flags.C)); break; // JR NC,n
-				case 0x38: JumpRelative(() => _r.F.HasFlag(Registers.Flags.C)); break;  // JR C,n
+				case 0x20: JumpRelative(() => !_r.F.FlagSet(StatusFlags.Z)); break; // JR NZ,n
+				case 0x28: JumpRelative(() => _r.F.FlagSet(StatusFlags.Z)); break;  // JR Z,n
+				case 0x30: JumpRelative(() => !_r.F.FlagSet(StatusFlags.C)); break; // JR NC,n
+				case 0x38: JumpRelative(() => _r.F.FlagSet(StatusFlags.C)); break;  // JR C,n
 
 				// loads the contents of register pair HL in program counter PC
 				case 0xE9: _r.PC = _r.HL; break; // JP (HL)
@@ -356,11 +356,11 @@ namespace elbgb.gameboy.CPU
 			byte result = (byte)(b1 ^ b2);
 
 			// clear flags
-			_r.F = 0;
+			_r.F = StatusFlags.Clear;
 
 			// set zero flag if required
 			if (result == 0)
-				_r.F |= Registers.Flags.Z;
+				_r.F |= StatusFlags.Z;
 
 			return result;
 		}
@@ -368,13 +368,13 @@ namespace elbgb.gameboy.CPU
 		// test if bit bit is set in byte reg, preserve carry flag, set half carry, set zero if bit not set
 		private void Bit(byte reg, int bit)
 		{
-			_r.F &= Registers.Flags.C;
-			_r.F |= Registers.Flags.H;
+			_r.F &= StatusFlags.C;
+			_r.F |= StatusFlags.H;
 
 			// set zero flag if bit N of reg is not set
 			if ((reg & (1 << bit)) == 0)
 			{
-				_r.F |= Registers.Flags.Z;
+				_r.F |= StatusFlags.Z;
 			}
 		}
 	}

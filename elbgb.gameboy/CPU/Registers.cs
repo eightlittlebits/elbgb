@@ -8,21 +8,7 @@ namespace elbgb.gameboy.CPU
 {
 	struct Registers
 	{
-		[Flags]
-		public enum Flags : byte
-		{
-			Z = 1 << 7,
-			N = 1 << 6,
-			H = 1 << 5,
-			C = 1 << 4,
-		}
-
-		public bool FlagSet(Flags flag)
-		{
-			return (F & flag) == flag;
-		}
-
-		private const Flags FLAG_MASK_BYTE = (Flags)0xF0;
+		private const StatusFlags FLAG_MASK_BYTE = (StatusFlags)0xF0;
 		private const ushort FLAG_MASK_WORD = 0xFFF0;
 
 		private PairedRegister _af;
@@ -34,7 +20,7 @@ namespace elbgb.gameboy.CPU
 		private ushort _sp;
 
 		public byte A { get { return _af.hi; } set { _af.hi = value; } }
-		public Flags F { get { return (Flags)_af.lo; } set { _af.lo = (byte)(value & FLAG_MASK_BYTE); } }
+		public StatusFlags F { get { return (StatusFlags)_af.lo; } set { _af.lo = (byte)(value & FLAG_MASK_BYTE); } }
 		public ushort AF { get { return _af.word; } set { _af.word = (ushort)(value & FLAG_MASK_WORD); } }
 
 		public byte B { get { return _bc.hi; } set { _bc.hi = value; } }

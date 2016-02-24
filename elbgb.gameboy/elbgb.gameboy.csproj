@@ -44,6 +44,7 @@
     <Compile Include="CPU\LR35902.cs" />
     <Compile Include="CPU\PairedRegister.cs" />
     <Compile Include="CPU\Registers.cs" />
+    <Compile Include="CPU\StatusFlags.cs" />
     <Compile Include="GameBoy.cs" />
     <Compile Include="IMemoryMappedComponent.cs" />
     <Compile Include="Memory\MMU.cs" />
