@@ -291,22 +291,22 @@ namespace elbgb.gameboy.CPU
 				#region jump instructions
 
 				// loads the operand nn into the program counter (PC)
-				case 0xC3: Jump(() => true); break; // JP nn
+				case 0xC3: JumpImmediate(); break; // JP nn
 
 				// loads the operand nn into the PC if condition cc and the status flag match
-				case 0xC2: Jump(() => !_r.F.FlagSet(StatusFlags.Z)); break; // JP NZ,nn
-				case 0xCA: Jump(() => _r.F.FlagSet(StatusFlags.Z)); break;  // JP Z,nn
-				case 0xD2: Jump(() => !_r.F.FlagSet(StatusFlags.C)); break; // JP NC,nn
-				case 0xDA: Jump(() => _r.F.FlagSet(StatusFlags.C)); break;  // JP C,nn
+				case 0xC2: JumpImmediate(!_r.F.FlagSet(StatusFlags.Z)); break; // JP NZ,nn
+				case 0xCA: JumpImmediate(_r.F.FlagSet(StatusFlags.Z)); break;  // JP Z,nn
+				case 0xD2: JumpImmediate(!_r.F.FlagSet(StatusFlags.C)); break; // JP NC,nn
+				case 0xDA: JumpImmediate(_r.F.FlagSet(StatusFlags.C)); break;  // JP C,nn
 
 				// jumps -127 to +129 steps from current address
-				case 0x18: JumpRelative(() => true); break; // JR e
+				case 0x18: JumpRelative(); break; // JR e
 
 				// if condition and status flag match, jumps -127 to +129 steps from current address
-				case 0x20: JumpRelative(() => !_r.F.FlagSet(StatusFlags.Z)); break; // JR NZ,n
-				case 0x28: JumpRelative(() => _r.F.FlagSet(StatusFlags.Z)); break;  // JR Z,n
-				case 0x30: JumpRelative(() => !_r.F.FlagSet(StatusFlags.C)); break; // JR NC,n
-				case 0x38: JumpRelative(() => _r.F.FlagSet(StatusFlags.C)); break;  // JR C,n
+				case 0x20: JumpRelative(!_r.F.FlagSet(StatusFlags.Z)); break; // JR NZ,n
+				case 0x28: JumpRelative(_r.F.FlagSet(StatusFlags.Z)); break;  // JR Z,n
+				case 0x30: JumpRelative(!_r.F.FlagSet(StatusFlags.C)); break; // JR NC,n
+				case 0x38: JumpRelative(_r.F.FlagSet(StatusFlags.C)); break;  // JR C,n
 
 				// loads the contents of register pair HL in program counter PC
 				case 0xE9: _r.PC = _r.HL; break; // JP (HL)
@@ -329,22 +329,22 @@ namespace elbgb.gameboy.CPU
 			}
 		}
 
-		private void Jump(Func<bool> condition)
+		private void JumpImmediate(bool condition = true)
 		{
 			ushort address = ReadWord(_r.PC);
 
-			if (condition())
+			if (condition)
 			{
 				_r.PC = address;
 				AddAdditionalMachineCycles(1);
 			}
 		}
 
-		private void JumpRelative(Func<bool> condition)
+		private void JumpRelative(bool condition = true)
 		{
 			sbyte offset = (sbyte)ReadByte(_r.PC++);
 
-			if (condition())
+			if (condition)
 			{
 				_r.PC += (ushort)offset;
 				AddAdditionalMachineCycles(1);
