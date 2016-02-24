@@ -21,7 +21,7 @@ namespace elbgb.gameboy.CPU
 			_mmu = mmu;
 		}
 
-		private void AddMachineCycles(int cycleCount)
+		private void AddAdditionalMachineCycles(int cycleCount)
 		{
 			_timestamp += (ulong)(4 * cycleCount);
 		}
@@ -238,13 +238,13 @@ namespace elbgb.gameboy.CPU
 				case 0x31: _r.SP = ReadWord(_r.PC); _r.PC += 2; break; // LD SP,nn
 
 				// load the contents of register pair HL in stack pointer SP
-				case 0xF9: _r.SP = _r.HL; AddMachineCycles(1); break; // LD SP,HL
+				case 0xF9: _r.SP = _r.HL; AddAdditionalMachineCycles(1); break; // LD SP,HL
 
 				// push contents of register pair onto the stack
-				case 0xC5: AddMachineCycles(1); PushWord(_r.BC); break; // PUSH BC
-				case 0xD5: AddMachineCycles(1); PushWord(_r.DE); break; // PUSH DE
-				case 0xE5: AddMachineCycles(1); PushWord(_r.HL); break; // PUSH HL
-				case 0xF5: AddMachineCycles(1); PushWord(_r.AF); break; // PUSH AF
+				case 0xC5: AddAdditionalMachineCycles(1); PushWord(_r.BC); break; // PUSH BC
+				case 0xD5: AddAdditionalMachineCycles(1); PushWord(_r.DE); break; // PUSH DE
+				case 0xE5: AddAdditionalMachineCycles(1); PushWord(_r.HL); break; // PUSH HL
+				case 0xF5: AddAdditionalMachineCycles(1); PushWord(_r.AF); break; // PUSH AF
 
 				// pop contents of stack into register pair
 				case 0xC1: _r.BC = PopWord(); break; // POP BC
@@ -261,7 +261,7 @@ namespace elbgb.gameboy.CPU
 						_r.HL = (ushort)result;
 						_r.F = CalculateCarryFlags(_r.SP, e, result);
 
-						AddMachineCycles(1);
+						AddAdditionalMachineCycles(1);
 					} break;
 
 				// store the lower byte of SP at address nn specified by the 16-bit immediate operand nn
