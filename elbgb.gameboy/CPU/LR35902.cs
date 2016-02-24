@@ -82,30 +82,6 @@ namespace elbgb.gameboy.CPU
 			return (ushort)(hi << 8 | lo);
 		}
 
-		// calculate the carry flags based on the two addends and the result
-		// based on http://stackoverflow.com/a/8037485 by Alexey Frunze
-		private static Registers.Flags CalculateCarryFlags(byte a, byte b, int result)
-		{
-			// given bit n of the binary sum is calculated as a(n) XOR b(n) XOR carry-in we
-			// can retrieve the values of the carry-in for each bit with a XOR b XOR result
-			// with the carry-in values the carry in to bit 4 is the carry out from bit 3 
-			// which is our half carry and the carry in to bit 8 is the carry out from bit
-			// 7 which is our carry flag
-			var carryIn = a ^ b ^ result;
-
-			// now that we have our relevant flags we can shift them into the correct bit 
-			// locations for the flags register, the carry flag right 4 from bit 8 into bit
-			// 4 and the half carry left 1 from but 4 into bit 5
-			return (Registers.Flags)(((carryIn & 0x100) >> 4) | (carryIn & 0x10) << 1);
-		}
-
-		private static Registers.Flags CalculateCarryFlags(ushort a, ushort b, int result)
-		{
-			var carryIn = (a ^ b ^ result) >> 8;
-
-			return (Registers.Flags)(((carryIn & 0x100) >> 4) | (carryIn & 0x10) << 1);
-		}
-
 		public void ExecuteSingleInstruction()
 		{
 			byte opcode = ReadByte(_r.PC++);
@@ -253,14 +229,22 @@ namespace elbgb.gameboy.CPU
 				case 0xF1: _r.AF = PopWord(); break; // POP AF
 
 				// the 8-bit operand e is added to SP and the result stored in HL
+				// the documentation appears to be incorrect with respect to the flags
+				// the flag results are based on the lower byte and not the upper byte
 				case 0xF8: // LDHL SP,e
 					{
-						byte e = ReadByte(_r.PC++);
-						var result = _r.SP + e;
+						sbyte e = (sbyte)ReadByte(_r.PC++);
 
-						_r.HL = (ushort)result;
-						_r.F = CalculateCarryFlags(_r.SP, e, result);
+						_r.F = 0;
 
+						if (((_r.SP & 0xFF) + (e & 0xFF)) > 0xFF)
+							_r.F = Registers.Flags.C;
+
+						if (((_r.SP & 0x0F) + (e & 0x0F)) > 0x0F)
+							_r.F = Registers.Flags.H;
+						
+						_r.HL = (ushort)(_r.SP + e);
+						
 						AddAdditionalMachineCycles(1);
 					} break;
 
