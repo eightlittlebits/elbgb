@@ -19,6 +19,8 @@ namespace elbgb.gameboy.CPU
 		private ushort _pc;
 		private ushort _sp;
 
+		private bool _ime;
+
 		public byte A { get { return _af.hi; } set { _af.hi = value; } }
 		public StatusFlags F { get { return (StatusFlags)_af.lo; } set { _af.lo = (byte)(value & FLAG_MASK_BYTE); } }
 		public ushort AF { get { return _af.word; } set { _af.word = (ushort)(value & FLAG_MASK_WORD); } }
@@ -37,5 +39,8 @@ namespace elbgb.gameboy.CPU
 
 		public ushort PC { get { return _pc; } set { _pc = value; } }
 		public ushort SP { get { return _sp; } set { _sp = value; } }
+
+		public bool IME { get { return _ime; } set { _ime = value; } }
+
 	}
 }

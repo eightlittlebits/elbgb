@@ -331,6 +331,27 @@ namespace elbgb.gameboy.CPU
 				// pops from the stack the PC value pushed when the subroutine was called
 				case 0xC9: Return(); break; // RET
 
+				// pops from the stack the PC value pushed when the subroutine was called, renables interrupts
+				case 0xD9: Return(); _r.IME = true; break; // RETI
+
+				// if condition and status flag match, pops from the stack the PC value pushed when the subroutine was called
+				case 0xC0: Return(!_r.F.FlagSet(StatusFlags.Z)); break; // RET NZ
+				case 0xC8: Return(_r.F.FlagSet(StatusFlags.Z)); break;  // RET Z
+				case 0xD0: Return(!_r.F.FlagSet(StatusFlags.C)); break; // RET NC
+				case 0xD8: Return(_r.F.FlagSet(StatusFlags.C)); break;  // RET C
+
+				// push PC onto stack and load the PC with the page 0 address provided by operand t
+				// operand t is provided in bits 3,4 and 5 of the operand (11tt t111) so masking opcode 
+				// with 0x38 (0011 1000) retrieves the zero page address
+				case 0xC7: Reset(0x00); break; // RST 1
+				case 0xCF: Reset(0x08); break; // RST 2
+				case 0xD7: Reset(0x10); break; // RST 3
+				case 0xDF: Reset(0x18); break; // RST 4
+				case 0xE7: Reset(0x20); break; // RST 5
+				case 0xEF: Reset(0x28); break; // RST 6
+				case 0xF7: Reset(0x30); break; // RST 7
+				case 0xFF: Reset(0x38); break; // RST 8
+
 				#endregion
 
 				default:
@@ -391,9 +412,29 @@ namespace elbgb.gameboy.CPU
 			}
 		}
 
-		private void Return(bool condition = true)
+		private void Return()
 		{
 			_r.PC = PopWord();
+			AddAdditionalMachineCycles(1);
+		}
+
+		private void Return(bool condition)
+		{
+			if (condition)
+			{
+				_r.PC = PopWord();
+				AddAdditionalMachineCycles(1);
+			}
+
+			AddAdditionalMachineCycles(1);
+		}
+
+		private void Reset(byte resetAddress)
+		{
+			PushWord(_r.PC);
+
+			_r.PC = resetAddress;
+
 			AddAdditionalMachineCycles(1);
 		}
 
