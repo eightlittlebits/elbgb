@@ -354,6 +354,12 @@ namespace elbgb.gameboy.CPU
 
 				#endregion
 
+				#region general purpose arithmetic operations and CPU control instructions
+
+				case 0x23: DecimalAdjustAccumulator(); break; // DAA
+
+				#endregion
+
 				default:
 					throw new NotImplementedException(string.Format("Invalid opcode 0x{0:X2} at {1:X4}", opcode, _r.PC - 1));
 			}
@@ -439,6 +445,32 @@ namespace elbgb.gameboy.CPU
 		}
 
 		#endregion
+
+		private void DecimalAdjustAccumulator()
+		{
+			byte correctionFactor = 0;
+
+			if (_r.A > 0x99 || _r.F.FlagSet(StatusFlags.C))
+			{
+				correctionFactor |= 0x60;
+				_r.F |= StatusFlags.C;
+			}
+			else
+				_r.F &= ~StatusFlags.C;
+
+			if ((_r.A & 0x0F) > 0x09 || _r.F.FlagSet(StatusFlags.H))
+				correctionFactor |= 0x06;
+
+			if (!_r.F.FlagSet(StatusFlags.N))
+				_r.A += correctionFactor;
+			else
+				_r.A -= correctionFactor;
+
+			_r.F &= ~(StatusFlags.Z | StatusFlags.H);
+
+			if (_r.A == 0)
+				_r.F |= StatusFlags.Z;
+		}
 
 		private byte Xor8Bit(byte b1, byte b2)
 		{
