@@ -92,8 +92,6 @@ namespace elbgb.gameboy.CPU
 
 			switch (opcode)
 			{
-				case 0x00: return; // NOP
-
 				#region 8-bit transfer and input/output instructions
 
 				// load contents of register r' into register r
@@ -356,7 +354,30 @@ namespace elbgb.gameboy.CPU
 
 				#region general purpose arithmetic operations and CPU control instructions
 
+				// adjust the result in the accumulator after a BCD addition or subtraction
 				case 0x23: DecimalAdjustAccumulator(); break; // DAA
+
+				// takes the ones complement of register a
+				case 0x2F: _r.A = (byte)~_r.A; _r.F |= (StatusFlags.N | StatusFlags.H); break; // CPL
+
+				// PC advances, no other effects
+				case 0x00: break; // NOP
+
+				// complement carry flag, resets HN and preserves Z
+				case 0x3F: _r.F = (_r.F &= (StatusFlags.Z | StatusFlags.C)) ^ StatusFlags.C; break; // CCF
+
+				// set carry flag, resets HN and preserves Z
+				case 0x37: _r.F = (_r.F &= StatusFlags.Z) | StatusFlags.C; break; //SCF
+
+				// disable/enable interrupts
+				case 0xF3: _r.IME = false; break; // DI
+				case 0xFB: _r.IME = true; break; // EI
+
+				// TODO(david): Implement HALT
+				case 0x76: break; // HALT
+
+				// TODO(david): Implement STOP
+				case 0x10: _r.PC++; break; // STOP
 
 				#endregion
 
@@ -446,32 +467,6 @@ namespace elbgb.gameboy.CPU
 
 		#endregion
 
-		private void DecimalAdjustAccumulator()
-		{
-			byte correctionFactor = 0;
-
-			if (_r.A > 0x99 || _r.F.FlagSet(StatusFlags.C))
-			{
-				correctionFactor |= 0x60;
-				_r.F |= StatusFlags.C;
-			}
-			else
-				_r.F &= ~StatusFlags.C;
-
-			if ((_r.A & 0x0F) > 0x09 || _r.F.FlagSet(StatusFlags.H))
-				correctionFactor |= 0x06;
-
-			if (!_r.F.FlagSet(StatusFlags.N))
-				_r.A += correctionFactor;
-			else
-				_r.A -= correctionFactor;
-
-			_r.F &= ~(StatusFlags.Z | StatusFlags.H);
-
-			if (_r.A == 0)
-				_r.F |= StatusFlags.Z;
-		}
-
 		private byte Xor8Bit(byte b1, byte b2)
 		{
 			byte result = (byte)(b1 ^ b2);
@@ -498,5 +493,35 @@ namespace elbgb.gameboy.CPU
 				_r.F |= StatusFlags.Z;
 			}
 		}
+
+		#region arithmetic and cpu control instruction handlers
+
+		private void DecimalAdjustAccumulator()
+		{
+			byte correctionFactor = 0;
+
+			if (_r.A > 0x99 || _r.F.FlagSet(StatusFlags.C))
+			{
+				correctionFactor |= 0x60;
+				_r.F |= StatusFlags.C;
+			}
+			else
+				_r.F &= ~StatusFlags.C;
+
+			if ((_r.A & 0x0F) > 0x09 || _r.F.FlagSet(StatusFlags.H))
+				correctionFactor |= 0x06;
+
+			if (!_r.F.FlagSet(StatusFlags.N))
+				_r.A += correctionFactor;
+			else
+				_r.A -= correctionFactor;
+
+			_r.F &= ~(StatusFlags.Z | StatusFlags.H);
+
+			if (_r.A == 0)
+				_r.F |= StatusFlags.Z;
+		}
+
+		#endregion
 	}
 }
