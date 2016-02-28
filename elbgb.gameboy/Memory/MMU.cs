@@ -10,7 +10,6 @@ namespace elbgb.gameboy.Memory
 	class MMU : IMemoryMappedComponent
 	{
 		private GameBoy _gb;
-		private PPU _ppu;
 
 		private bool _bootRomLocked;
 		private byte[] _bootRom;
@@ -18,7 +17,6 @@ namespace elbgb.gameboy.Memory
 		public MMU(GameBoy gameBoy, byte[] bootRom)
 		{
 			_gb = gameBoy;
-			_ppu = gameBoy.PPU;
 
 			_bootRom = bootRom;
 			_bootRomLocked = false;
@@ -29,6 +27,11 @@ namespace elbgb.gameboy.Memory
 			if (!_bootRomLocked && address < 0x100)
 			{
 				return _bootRom[address];
+			}
+			// timer 0xFF04 - 0xFF07
+			else if (address >= 0xFF04 && address <= 0xFF07)
+			{
+				return _gb.Timer.ReadByte(address);
 			}
 
 			throw new NotImplementedException();
@@ -43,7 +46,12 @@ namespace elbgb.gameboy.Memory
 			}
 			else if (address >= 0x8000 && address <= 0x9fff)
 			{
-				_ppu.WriteByte(address, value);
+				_gb.PPU.WriteByte(address, value);
+			}
+			// timer 0xFF04 - 0xFF07
+			else if (address >= 0xFF04 && address <= 0xFF07)
+			{
+				_gb.Timer.WriteByte(address, value);
 			}
 			else
 				throw new NotImplementedException();
