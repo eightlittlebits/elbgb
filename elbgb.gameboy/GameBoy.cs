@@ -9,26 +9,33 @@ using elbgb.gameboy.Display;
 
 namespace elbgb.gameboy
 {
-    public class GameBoy
-    {
+	public class GameBoy
+	{
+		private LR35902 _cpu;
+		private MMU _mmu;
 		private PPU _ppu;
 
-		private MMU _mmu;
-		private LR35902 _cpu;
-
-		internal PPU PPU { get { return _ppu; } }
+		private ulong _clockCycles;
 		
+		internal LR35902 CPU { get { return _cpu; } }
+		internal MMU MMU { get { return _mmu; } }
+		internal PPU PPU { get { return _ppu; } }
+
 		public GameBoy(byte[] bootRom)
 		{
-			_ppu = new PPU(this);
-
+			_cpu = new LR35902(this);
 			_mmu = new MMU(this, bootRom);
-			_cpu = new LR35902(_mmu);
+			_ppu = new PPU(this);			
 		}
 
 		public void RunInstruction()
 		{
 			_cpu.ExecuteSingleInstruction();
+		}
+
+		internal void AddMachineCycles(int cycleCount)
+		{
+			_clockCycles += (ulong)(4 * cycleCount);
 		}
 	}
 }

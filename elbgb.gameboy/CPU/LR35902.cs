@@ -9,28 +9,19 @@ namespace elbgb.gameboy.CPU
 {
 	class LR35902
 	{
-		private MMU _mmu;
-		private Registers _r;
+		private GameBoy _gb;
+		private Registers _r; 
 
-		private ulong _timestamp;
-
-		public ulong Timestamp { get { return _timestamp; } }
-
-		public LR35902(MMU mmu)
+		public LR35902(GameBoy gameBoy)
 		{
-			_mmu = mmu;
-		}
-
-		private void AddAdditionalMachineCycles(int cycleCount)
-		{
-			_timestamp += (ulong)(4 * cycleCount);
+			_gb = gameBoy;
 		}
 
 		// Wrap the MMU ReadByte to handle the timing updates
 		private byte ReadByte(ushort address)
 		{
-			byte value = _mmu.ReadByte(address);
-			_timestamp += 4;
+			byte value = _gb.MMU.ReadByte(address);
+			_gb.AddMachineCycles(1);
 
 			return value;
 		}
@@ -38,11 +29,8 @@ namespace elbgb.gameboy.CPU
 		// Wrap the MMU ReadWord to handle the timing updates
 		private ushort ReadWord(ushort address)
 		{
-			byte lo = _mmu.ReadByte(address);
-			_timestamp += 4;
-
-			byte hi = _mmu.ReadByte((ushort)(address + 1));
-			_timestamp += 4;
+			byte lo = ReadByte(address);
+			byte hi = ReadByte((ushort)(address + 1));
 
 			return (ushort)(hi << 8 | lo);
 		}
@@ -50,8 +38,8 @@ namespace elbgb.gameboy.CPU
 		// Wrap the MMU WriteByte to handle the timing updates
 		private void WriteByte(ushort address, byte value)
 		{
-			_mmu.WriteByte(address, value);
-			_timestamp += 4;
+			_gb.MMU.WriteByte(address, value);
+			_gb.AddMachineCycles(1);
 		}
 
 		#region stack handling
@@ -222,13 +210,13 @@ namespace elbgb.gameboy.CPU
 				case 0x31: _r.SP = ReadWord(_r.PC); _r.PC += 2; break; // LD SP,nn
 
 				// load the contents of register pair HL in stack pointer SP
-				case 0xF9: _r.SP = _r.HL; AddAdditionalMachineCycles(1); break; // LD SP,HL
+				case 0xF9: _r.SP = _r.HL; _gb.AddMachineCycles(1); break; // LD SP,HL
 
 				// push contents of register pair onto the stack
-				case 0xC5: AddAdditionalMachineCycles(1); PushWord(_r.BC); break; // PUSH BC
-				case 0xD5: AddAdditionalMachineCycles(1); PushWord(_r.DE); break; // PUSH DE
-				case 0xE5: AddAdditionalMachineCycles(1); PushWord(_r.HL); break; // PUSH HL
-				case 0xF5: AddAdditionalMachineCycles(1); PushWord(_r.AF); break; // PUSH AF
+				case 0xC5: _gb.AddMachineCycles(1); PushWord(_r.BC); break; // PUSH BC
+				case 0xD5: _gb.AddMachineCycles(1); PushWord(_r.DE); break; // PUSH DE
+				case 0xE5: _gb.AddMachineCycles(1); PushWord(_r.HL); break; // PUSH HL
+				case 0xF5: _gb.AddMachineCycles(1); PushWord(_r.AF); break; // PUSH AF
 
 				// pop contents of stack into register pair
 				case 0xC1: _r.BC = PopWord(); break; // POP BC
@@ -253,7 +241,7 @@ namespace elbgb.gameboy.CPU
 
 						_r.HL = (ushort)(_r.SP + e);
 
-						AddAdditionalMachineCycles(1);
+						_gb.AddMachineCycles(1);
 					} break;
 
 				// store the lower byte of SP at address nn specified by the 16-bit immediate operand nn
@@ -406,7 +394,7 @@ namespace elbgb.gameboy.CPU
 			if (condition)
 			{
 				_r.PC = address;
-				AddAdditionalMachineCycles(1);
+				_gb.AddMachineCycles(1);
 			}
 		}
 
@@ -417,7 +405,7 @@ namespace elbgb.gameboy.CPU
 			if (condition)
 			{
 				_r.PC += (ushort)offset;
-				AddAdditionalMachineCycles(1);
+				_gb.AddMachineCycles(1);
 			}
 		}
 
@@ -435,14 +423,14 @@ namespace elbgb.gameboy.CPU
 				PushWord(_r.PC);
 				_r.PC = address;
 
-				AddAdditionalMachineCycles(1);
+				_gb.AddMachineCycles(1);
 			}
 		}
 
 		private void Return()
 		{
 			_r.PC = PopWord();
-			AddAdditionalMachineCycles(1);
+			_gb.AddMachineCycles(1);
 		}
 
 		private void Return(bool condition)
@@ -450,10 +438,10 @@ namespace elbgb.gameboy.CPU
 			if (condition)
 			{
 				_r.PC = PopWord();
-				AddAdditionalMachineCycles(1);
+				_gb.AddMachineCycles(1);
 			}
 
-			AddAdditionalMachineCycles(1);
+			_gb.AddMachineCycles(1);
 		}
 
 		private void Reset(byte resetAddress)
@@ -462,7 +450,7 @@ namespace elbgb.gameboy.CPU
 
 			_r.PC = resetAddress;
 
-			AddAdditionalMachineCycles(1);
+			_gb.AddMachineCycles(1);
 		}
 
 		#endregion
