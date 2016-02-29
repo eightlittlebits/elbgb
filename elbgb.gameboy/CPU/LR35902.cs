@@ -259,15 +259,103 @@ namespace elbgb.gameboy.CPU
 
 				#region 8-bit arithmetic and logical operation instructions
 
-				case 0xAF: _r.A = Xor8Bit(_r.A, _r.A); break;				// XOR A
-				case 0xA8: _r.A = Xor8Bit(_r.A, _r.B); break;				// XOR B
-				case 0xA9: _r.A = Xor8Bit(_r.A, _r.C); break;				// XOR C
-				case 0xAA: _r.A = Xor8Bit(_r.A, _r.D); break;				// XOR D
-				case 0xAB: _r.A = Xor8Bit(_r.A, _r.E); break;				// XOR E
-				case 0xAC: _r.A = Xor8Bit(_r.A, _r.H); break;				// XOR H
-				case 0xAD: _r.A = Xor8Bit(_r.A, _r.L); break;				// XOR L
-				case 0xAE: _r.A = Xor8Bit(_r.A, ReadByte(_r.HL)); break;	// XOR (HL)
-				case 0xEE: _r.A = Xor8Bit(_r.A, ReadByte(_r.PC++)); break;	// XOR n
+				case 0x87: _r.A = Add8Bit(_r.A, _r.A); break;						// ADD A
+				case 0x80: _r.A = Add8Bit(_r.A, _r.B); break;						// ADD B
+				case 0x81: _r.A = Add8Bit(_r.A, _r.C); break;						// ADD C
+				case 0x82: _r.A = Add8Bit(_r.A, _r.D); break;						// ADD D
+				case 0x83: _r.A = Add8Bit(_r.A, _r.E); break;						// ADD E
+				case 0x84: _r.A = Add8Bit(_r.A, _r.H); break;						// ADD H
+				case 0x85: _r.A = Add8Bit(_r.A, _r.L); break;						// ADD L
+				case 0x86: _r.A = Add8Bit(_r.A, ReadByte(_r.HL)); break;			// ADD (HL)
+				case 0xC6: _r.A = Add8Bit(_r.A, ReadByte(_r.PC++)); break;			// ADD n
+
+				case 0x8F: _r.A = AddWithCarry8Bit(_r.A, _r.A); break;				// ADC A
+				case 0x88: _r.A = AddWithCarry8Bit(_r.A, _r.B); break;				// ADC B
+				case 0x89: _r.A = AddWithCarry8Bit(_r.A, _r.C); break;				// ADC C
+				case 0x8A: _r.A = AddWithCarry8Bit(_r.A, _r.D); break;				// ADC D
+				case 0x8B: _r.A = AddWithCarry8Bit(_r.A, _r.E); break;				// ADC E
+				case 0x8C: _r.A = AddWithCarry8Bit(_r.A, _r.H); break;				// ADC H
+				case 0x8D: _r.A = AddWithCarry8Bit(_r.A, _r.L); break;				// ADC L
+				case 0x8E: _r.A = AddWithCarry8Bit(_r.A, ReadByte(_r.HL)); break;	// ADC (HL)
+				case 0xCE: _r.A = AddWithCarry8Bit(_r.A, ReadByte(_r.PC++)); break;	// ADC n
+
+				case 0x97: _r.A = Sub8Bit(_r.A, _r.A); break;						// SUB A
+				case 0x90: _r.A = Sub8Bit(_r.A, _r.B); break;						// SUB B
+				case 0x91: _r.A = Sub8Bit(_r.A, _r.C); break;						// SUB C
+				case 0x92: _r.A = Sub8Bit(_r.A, _r.D); break;						// SUB D
+				case 0x93: _r.A = Sub8Bit(_r.A, _r.E); break;						// SUB E
+				case 0x94: _r.A = Sub8Bit(_r.A, _r.H); break;						// SUB H
+				case 0x95: _r.A = Sub8Bit(_r.A, _r.L); break;						// SUB L
+				case 0x96: _r.A = Sub8Bit(_r.A, ReadByte(_r.HL)); break;			// SUB (HL)
+				case 0xD6: _r.A = Sub8Bit(_r.A, ReadByte(_r.PC++)); break;			// SUB n
+
+				case 0x9F: _r.A = SubWithCarry8Bit(_r.A, _r.A); break;				// SBC A
+				case 0x98: _r.A = SubWithCarry8Bit(_r.A, _r.B); break;				// SBC B
+				case 0x99: _r.A = SubWithCarry8Bit(_r.A, _r.C); break;				// SBC C
+				case 0x9A: _r.A = SubWithCarry8Bit(_r.A, _r.D); break;				// SBC D
+				case 0x9B: _r.A = SubWithCarry8Bit(_r.A, _r.E); break;				// SBC E
+				case 0x9C: _r.A = SubWithCarry8Bit(_r.A, _r.H); break;				// SBC H
+				case 0x9D: _r.A = SubWithCarry8Bit(_r.A, _r.L); break;				// SBC L
+				case 0x9E: _r.A = SubWithCarry8Bit(_r.A, ReadByte(_r.HL)); break;	// SBC (HL)
+				case 0xDE: _r.A = SubWithCarry8Bit(_r.A, ReadByte(_r.PC++)); break;	// SBC n
+
+				case 0xA7: _r.A = And8Bit(_r.A, _r.A); break;						// AND A
+				case 0xA0: _r.A = And8Bit(_r.A, _r.B); break;						// AND B
+				case 0xA1: _r.A = And8Bit(_r.A, _r.C); break;						// AND C
+				case 0xA2: _r.A = And8Bit(_r.A, _r.D); break;						// AND D
+				case 0xA3: _r.A = And8Bit(_r.A, _r.E); break;						// AND E
+				case 0xA4: _r.A = And8Bit(_r.A, _r.H); break;						// AND H
+				case 0xA5: _r.A = And8Bit(_r.A, _r.L); break;						// AND L
+				case 0xA6: _r.A = And8Bit(_r.A, ReadByte(_r.HL)); break;			// AND (HL)
+				case 0xE6: _r.A = And8Bit(_r.A, ReadByte(_r.PC++)); break;			// AND n
+
+				case 0xB7: _r.A = Or8Bit(_r.A, _r.A); break;						// OR A
+				case 0xB0: _r.A = Or8Bit(_r.A, _r.B); break;						// OR B
+				case 0xB1: _r.A = Or8Bit(_r.A, _r.C); break;						// OR C
+				case 0xB2: _r.A = Or8Bit(_r.A, _r.D); break;						// OR D
+				case 0xB3: _r.A = Or8Bit(_r.A, _r.E); break;						// OR E
+				case 0xB4: _r.A = Or8Bit(_r.A, _r.H); break;						// OR H
+				case 0xB5: _r.A = Or8Bit(_r.A, _r.L); break;						// OR L
+				case 0xB6: _r.A = Or8Bit(_r.A, ReadByte(_r.HL)); break;				// OR (HL)
+				case 0xF6: _r.A = Or8Bit(_r.A, ReadByte(_r.PC++)); break;			// OR n
+
+				case 0xAF: _r.A = Xor8Bit(_r.A, _r.A); break;						// XOR A
+				case 0xA8: _r.A = Xor8Bit(_r.A, _r.B); break;						// XOR B
+				case 0xA9: _r.A = Xor8Bit(_r.A, _r.C); break;						// XOR C
+				case 0xAA: _r.A = Xor8Bit(_r.A, _r.D); break;						// XOR D
+				case 0xAB: _r.A = Xor8Bit(_r.A, _r.E); break;						// XOR E
+				case 0xAC: _r.A = Xor8Bit(_r.A, _r.H); break;						// XOR H
+				case 0xAD: _r.A = Xor8Bit(_r.A, _r.L); break;						// XOR L
+				case 0xAE: _r.A = Xor8Bit(_r.A, ReadByte(_r.HL)); break;			// XOR (HL)
+				case 0xEE: _r.A = Xor8Bit(_r.A, ReadByte(_r.PC++)); break;			// XOR n
+
+				case 0xBF: Compare8Bit(_r.A, _r.A); break;							// CP A
+				case 0xB8: Compare8Bit(_r.A, _r.B); break;							// CP B
+				case 0xB9: Compare8Bit(_r.A, _r.C); break;							// CP C
+				case 0xBA: Compare8Bit(_r.A, _r.D); break;							// CP D
+				case 0xBB: Compare8Bit(_r.A, _r.E); break;							// CP E
+				case 0xBC: Compare8Bit(_r.A, _r.H); break;							// CP H
+				case 0xBD: Compare8Bit(_r.A, _r.L); break;							// CP L
+				case 0xBE: Compare8Bit(_r.A, ReadByte(_r.HL)); break;				// CP (HL)
+				case 0xFE: Compare8Bit(_r.A, ReadByte(_r.PC++)); break;				// CP n
+
+				case 0x3C: _r.A = Inc8Bit(_r.A); break;								// INC A
+				case 0x04: _r.B = Inc8Bit(_r.B); break;								// INC B
+				case 0x0C: _r.C = Inc8Bit(_r.C); break;								// INC C
+				case 0x14: _r.D = Inc8Bit(_r.D); break;								// INC D
+				case 0x1C: _r.E = Inc8Bit(_r.E); break;								// INC E
+				case 0x24: _r.H = Inc8Bit(_r.H); break;								// INC H
+				case 0x2C: _r.L = Inc8Bit(_r.L); break;								// INC L
+				case 0x34: WriteByte(_r.HL, Inc8Bit(ReadByte(_r.HL))); break;		// INC (HL)
+
+				case 0x3D: _r.A = Dec8Bit(_r.A); break;								// DEC A
+				case 0x05: _r.B = Dec8Bit(_r.B); break;								// DEC B
+				case 0x0D: _r.C = Dec8Bit(_r.C); break;								// DEC C
+				case 0x15: _r.D = Dec8Bit(_r.D); break;								// DEC D
+				case 0x1D: _r.E = Dec8Bit(_r.E); break;								// DEC E
+				case 0x25: _r.H = Dec8Bit(_r.H); break;								// DEC H
+				case 0x2D: _r.L = Dec8Bit(_r.L); break;								// DEC L
+				case 0x35: WriteByte(_r.HL, Dec8Bit(ReadByte(_r.HL))); break;		// DEC (HL)
 
 				#endregion
 
@@ -455,6 +543,128 @@ namespace elbgb.gameboy.CPU
 
 		#endregion
 
+		#region 8-bit arithmetic and logical operation instruction handlers
+
+		private byte Add8Bit(byte b1, byte b2)
+		{
+			int result = b1 + b2;
+
+			// clear flags
+			_r.F = StatusFlags.Clear;
+
+			// carry
+			if (result > 0xFF)
+				_r.F |= StatusFlags.C;
+
+			// half carry
+			if ((b1 & 0x0F) + (b2 & 0x0F) > 0x0F)
+				_r.F |= StatusFlags.H;
+
+			// zero 
+			if (result == 0)
+				_r.F |= StatusFlags.Z;
+
+			return (byte)result;
+		}
+
+		private byte AddWithCarry8Bit(byte b1, byte b2)
+		{
+			int carry = _r.F.FlagSet(StatusFlags.C) ? 1 : 0;
+
+			int result = b1 + b2 + carry;
+
+			// clear flags
+			_r.F = StatusFlags.Clear;
+
+			// carry
+			if (result > 0xFF)
+				_r.F |= StatusFlags.C;
+
+			// half carry
+			if ((b1 & 0x0F) + (b2 & 0x0F) + carry > 0x0F)
+				_r.F |= StatusFlags.H;
+
+			// zero 
+			if (result == 0)
+				_r.F |= StatusFlags.Z;
+
+			return (byte)result;
+		}
+
+		private byte Sub8Bit(byte b1, byte b2)
+		{
+			int result = b1 - b2;
+
+			// set subtract
+			_r.F = StatusFlags.N;
+
+			// carry
+			if (result < 0x00)
+				_r.F |= StatusFlags.C;
+
+			// half carry
+			if ((b1 & 0x0F) - (b2 & 0x0F) < 0x00)
+				_r.F |= StatusFlags.H;
+
+			// zero 
+			if (result == 0)
+				_r.F |= StatusFlags.Z;
+
+			return (byte)result;
+		}
+
+		private byte SubWithCarry8Bit(byte b1, byte b2)
+		{
+			int carry = _r.F.FlagSet(StatusFlags.C) ? 1 : 0;
+
+			int result = b1 - b2 - carry;
+
+			// set subtract
+			_r.F = StatusFlags.N;
+
+			// carry
+			if (result < 0x00)
+				_r.F |= StatusFlags.C;
+
+			// half carry
+			if ((b1 & 0x0F) - (b2 & 0x0F) - carry < 0x00)
+				_r.F |= StatusFlags.H;
+
+			// zero 
+			if (result == 0)
+				_r.F |= StatusFlags.Z;
+
+			return (byte)result;
+		}
+
+		private byte And8Bit(byte b1, byte b2)
+		{
+			byte result = (byte)(b1 & b2);
+
+			// set half carry
+			_r.F = StatusFlags.H;
+
+			// zero
+			if (result == 0)
+				_r.F |= StatusFlags.Z;
+
+			return result;
+		}
+
+		private byte Or8Bit(byte b1, byte b2)
+		{
+			byte result = (byte)(b1 | b2);
+
+			// clear flags
+			_r.F = StatusFlags.Clear;
+
+			// zero
+			if (result == 0)
+				_r.F |= StatusFlags.Z;
+
+			return result;
+		}
+
 		private byte Xor8Bit(byte b1, byte b2)
 		{
 			byte result = (byte)(b1 ^ b2);
@@ -462,17 +672,77 @@ namespace elbgb.gameboy.CPU
 			// clear flags
 			_r.F = StatusFlags.Clear;
 
-			// set zero flag if required
+			// zero
 			if (result == 0)
 				_r.F |= StatusFlags.Z;
 
 			return result;
 		}
 
-		// test if bit bit is set in byte reg, preserve carry flag, set half carry, set zero if bit not set
+		private void Compare8Bit(byte b1, byte b2)
+		{
+			var result = b1 - b2;
+
+			// set subtract
+			_r.F = StatusFlags.N;
+
+			// carry
+			if (b1 < b2)
+				_r.F |= StatusFlags.C;
+
+			// half carry
+			if ((b1 & 0x0F) < (b2 & 0x0F))
+				_r.F |= StatusFlags.H;
+
+			// zero 
+			if (b1 == b2)
+				_r.F |= StatusFlags.Z;
+		}
+
+		private byte Inc8Bit(byte b)
+		{
+			// preserve carry
+			_r.F &= StatusFlags.C;
+
+			// half carry, if 0x0F before increment will carry
+			if ((b & 0x0F) == 0x0F)
+				_r.F |= StatusFlags.H;
+
+			// zero, if 0xFF before increment will inc to zero
+			if (b == 0xFF)
+				_r.F |= StatusFlags.Z;
+
+			return (byte)(b + 1);
+		}
+
+		private byte Dec8Bit(byte b)
+		{
+			// preserve carry
+			_r.F &= StatusFlags.C;
+
+			// set subtract
+			_r.F |= StatusFlags.N;
+
+			// half carry, if 0x00 before decrement will borrow
+			if ((b & 0x0F) == 0x00)
+				_r.F |= StatusFlags.H;
+
+			// zero, if 0x01 before decrement will dec to zero
+			if (b == 0x01)
+				_r.F |= StatusFlags.Z;
+
+			return (byte)(b - 1);
+		}
+
+		#endregion
+
+		// test if bit bit is set in byte reg
 		private void Bit(byte reg, int bit)
 		{
+			// preserve carry
 			_r.F &= StatusFlags.C;
+
+			// set half carry
 			_r.F |= StatusFlags.H;
 
 			// set zero flag if bit N of reg is not set
