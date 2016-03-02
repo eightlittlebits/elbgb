@@ -55,7 +55,11 @@ namespace elbgb.gameboy
 
 			_lastUpdate = _gb.Timestamp;
 
-			// update divider
+			UpdateDivider(cyclesToUpdate);
+		}
+
+		private void UpdateDivider(ulong cyclesToUpdate)
+		{
 			_div += (ushort)cyclesToUpdate;
 		}
 	}
