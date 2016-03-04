@@ -25,11 +25,11 @@ namespace elbgb.gameboy
 		internal MMU MMU { get { return _mmu; } }
 		internal PPU PPU { get { return _ppu; } }
 
-		public GameBoy(byte[] bootRom)
+		public GameBoy()
 		{
 			_cpu = new LR35902(this);
 			_timer = new Timer(this);
-			_mmu = new MMU(this, bootRom);
+			_mmu = new MMU(this);
 			_ppu = new PPU(this);
 		}
 

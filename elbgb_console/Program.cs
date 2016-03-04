@@ -12,10 +12,7 @@ namespace elbgb_console
 	{
 		static void Main(string[] args)
 		{
-			string dmgBootRomPath = args[0];
-			byte[] dmgBootRom = File.ReadAllBytes(dmgBootRomPath);
-
-			GameBoy gb = new GameBoy(dmgBootRom);
+			GameBoy gb = new GameBoy();
 
 			try
 			{
