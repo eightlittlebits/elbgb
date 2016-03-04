@@ -50,6 +50,7 @@
     <Compile Include="Memory\MMU.cs" />
     <Compile Include="Display\PPU.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Sound\PSG.cs" />
     <Compile Include="Timer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

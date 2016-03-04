@@ -7,7 +7,7 @@ using elbgb.gameboy.Display;
 
 namespace elbgb.gameboy.Memory
 {
-	class MMU //: IMemoryMappedComponent
+	class MMU
 	{
 		public static class Registers
 		{
@@ -117,6 +117,11 @@ namespace elbgb.gameboy.Memory
 					{
 						return _gb.Timer.ReadByte(address);
 					}
+					// sound registers
+					if (address >= 0xFF10 && address <= 0xFF3F)
+					{
+						return _gb.PSG.ReadByte(address);
+					}
 					// hi ram
 					else if (address >= 0xFF80 && address <= 0xFFFE)
 					{
@@ -191,6 +196,12 @@ namespace elbgb.gameboy.Memory
 					else if (address >= 0xFF04 && address <= 0xFF07)
 					{
 						_gb.Timer.WriteByte(address, value);
+						return;
+					}
+					// sound registers
+					if (address >= 0xFF10 && address <= 0xFF3F)
+					{
+						_gb.PSG.WriteByte(address, value);
 						return;
 					}
 					// hi ram

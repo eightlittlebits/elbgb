@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using elbgb.gameboy.CPU;
 using elbgb.gameboy.Memory;
 using elbgb.gameboy.Display;
+using elbgb.gameboy.Sound;
 
 namespace elbgb.gameboy
 {
@@ -14,6 +15,7 @@ namespace elbgb.gameboy
 		private LR35902 _cpu;
 		private MMU _mmu;
 		private PPU _ppu;
+		private PSG _psg;
 
 		private ulong _clockCycles;
 		private Timer _timer;
@@ -24,6 +26,7 @@ namespace elbgb.gameboy
 		internal Timer Timer { get { return _timer; } }
 		internal MMU MMU { get { return _mmu; } }
 		internal PPU PPU { get { return _ppu; } }
+		internal PSG PSG { get { return _psg; } }
 
 		public GameBoy()
 		{
@@ -31,6 +34,7 @@ namespace elbgb.gameboy
 			_timer = new Timer(this);
 			_mmu = new MMU(this);
 			_ppu = new PPU(this);
+			_psg = new PSG(this);
 		}
 
 		public void RunInstruction()
