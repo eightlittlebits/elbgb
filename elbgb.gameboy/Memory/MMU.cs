@@ -122,6 +122,11 @@ namespace elbgb.gameboy.Memory
 					{
 						return _gb.PSG.ReadByte(address);
 					}
+					// lcd registers
+					if (address >= 0xFF40 && address <= 0xFF4B)
+					{
+						return _gb.PPU.ReadByte(address);
+					}
 					// hi ram
 					else if (address >= 0xFF80 && address <= 0xFFFE)
 					{
@@ -202,6 +207,12 @@ namespace elbgb.gameboy.Memory
 					if (address >= 0xFF10 && address <= 0xFF3F)
 					{
 						_gb.PSG.WriteByte(address, value);
+						return;
+					}
+					// lcd registers
+					if (address >= 0xFF40 && address <= 0xFF4B)
+					{
+						_gb.PPU.WriteByte(address, value);
 						return;
 					}
 					// hi ram
