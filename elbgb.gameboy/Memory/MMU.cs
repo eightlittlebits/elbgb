@@ -37,12 +37,36 @@ namespace elbgb.gameboy.Memory
 		{
 			switch (address & 0xF000)
 			{
+				// rom / boot rom
 				case 0x0000:
 					if (!_bootRomLocked && address < 0x100)
 					{
 						return _bootRom[address];
 					}
 
+					// _external.ReadByte(address);
+					throw new NotImplementedException();
+					
+				// rom
+				case 0x1000:
+				case 0x2000:
+				case 0x3000:
+				case 0x4000:
+				case 0x5000:
+				case 0x6000:
+				case 0x7000:
+					// _external.ReadByte(address);
+					throw new NotImplementedException();
+
+				// vram
+				case 0x8000:
+				case 0x9000:
+					return _gb.PPU.ReadByte(address);
+
+				// external expansion RAM
+				case 0xA000:
+				case 0xB000:
+					// _external.ReadByte(address);
 					throw new NotImplementedException();
 
 				// working ram
@@ -50,16 +74,30 @@ namespace elbgb.gameboy.Memory
 				case 0xD000:
 					return _wram[address & 0x1FFF];
 
+				// working ram mirror
+				case 0xE000:
+					return _wram[address & 0x1FFF];
+
 				case 0xF000:
-					// timer IO registers
-					if (address >= 0xFF04 && address <= 0xFF07)
+					// working ram mirror
+					if (address <= 0xFDFF)
 					{
-						return _gb.Timer.ReadByte(address);
+						return _wram[address & 0x1FFF];
+					}
+					// oam
+					if (address >= 0xFE00 && address <= 0xFE9F)
+					{
+						return _gb.PPU.ReadByte(address);
 					}
 					// restricted area
 					else if (address >= 0xFEA0 && address <= 0xFEFF)
 					{
 						return 0;
+					}
+					// timer IO registers
+					if (address >= 0xFF04 && address <= 0xFF07)
+					{
+						return _gb.Timer.ReadByte(address);
 					}
 					// hi ram
 					else if (address >= 0xFF80 && address <= 0xFFFE)
@@ -78,10 +116,16 @@ namespace elbgb.gameboy.Memory
 		{
 			switch (address & 0xF000)
 			{
-				// working ram
-				case 0xC000:
-				case 0xD000:
-					_wram[address & 0x1FFF] = value;
+				// rom
+				case 0x0000:
+				case 0x1000:
+				case 0x2000:
+				case 0x3000:
+				case 0x4000:
+				case 0x5000:
+				case 0x6000:
+				case 0x7000:
+					// _external.WriteByte(address, value);
 					return;
 
 				// vram
@@ -90,16 +134,45 @@ namespace elbgb.gameboy.Memory
 					_gb.PPU.WriteByte(address, value);
 					return;
 
+				// external expansion RAM
+				case 0xA000:
+				case 0xB000:
+					// _external.WriteByte(address, value);
+					return;
+
+				// working ram
+				case 0xC000:
+				case 0xD000:
+					_wram[address & 0x1FFF] = value;
+					return;
+
+				// working ram mirror
+				case 0xE000:
+					_wram[address & 0x1FFF] = value;
+					return;
+
 				case 0xF000:
-					// timer IO registers
-					if (address >= 0xFF04 && address <= 0xFF07)
+					// working ram mirror
+					if (address <= 0xFDFF)
 					{
-						_gb.Timer.WriteByte(address, value);
+						_wram[address & 0x1FFF] = value;
+						return;
+					}
+					// oam
+					if (address >= 0xFE00 && address <= 0xFE9F)
+					{
+						_gb.PPU.WriteByte(address, value);
 						return;
 					}
 					// restricted area
 					else if (address >= 0xFEA0 && address <= 0xFEFF)
 					{
+						return;
+					}
+					// timer IO registers
+					else if (address >= 0xFF04 && address <= 0xFF07)
+					{
+						_gb.Timer.WriteByte(address, value);
 						return;
 					}
 					// hi ram
