@@ -24,9 +24,17 @@ namespace elbgb.gameboy.Display
 		}
 
 		private GameBoy _gb;
+		private ulong _lastUpdate;
 
 		private byte[] _vram;
 		private byte[] _oam;
+
+		private byte _scy;
+		private byte _scx;
+
+		private uint _scanlineClocks; // counter of clock cycles elapsed in the current scanline
+		
+		private byte _ly; // current scanline value
 
 		public PPU(GameBoy gameBoy)
 		{
@@ -37,6 +45,18 @@ namespace elbgb.gameboy.Display
 
 		public byte ReadByte(ushort address)
 		{
+			switch (address)
+			{
+				case Registers.SCY:
+					return _scy;
+
+				case Registers.SCX:
+					return _scx;
+
+				case Registers.LY:
+					return _ly;
+			}
+
 			throw new NotImplementedException();
 		}
 
@@ -51,7 +71,38 @@ namespace elbgb.gameboy.Display
 				_oam[address & 0xFF] = value;
 			}
 			else
-				return;
+			{
+				switch (address)
+				{
+					case Registers.SCY:
+						_scy = value; break;
+
+					case Registers.SCX:
+						_scx = value; break;
+				}
+			}
+		}
+
+		public void Update()
+		{
+			ulong cyclesToUpdate = _gb.Timestamp - _lastUpdate;
+
+			_lastUpdate = _gb.Timestamp;
+
+			// update LY, advancing to next line
+			_scanlineClocks += (uint)cyclesToUpdate;
+
+			// 456 clocks a scanline
+			if (_scanlineClocks >= 456)
+			{
+				_scanlineClocks -= 456;
+				_ly++;
+
+				if (_ly > 153)
+				{
+					_ly = 0;
+				}
+			}
 		}
 	}
 }

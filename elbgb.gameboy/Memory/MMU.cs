@@ -62,8 +62,7 @@ namespace elbgb.gameboy.Memory
 						return _bootRom[address];
 					}
 
-					// _external.ReadByte(address);
-					throw new NotImplementedException();
+					return _gb.Cartridge.ReadByte(address);
 					
 				// rom
 				case 0x1000:
@@ -73,8 +72,7 @@ namespace elbgb.gameboy.Memory
 				case 0x5000:
 				case 0x6000:
 				case 0x7000:
-					// _external.ReadByte(address);
-					throw new NotImplementedException();
+					return _gb.Cartridge.ReadByte(address);
 
 				// vram
 				case 0x8000:
@@ -84,8 +82,7 @@ namespace elbgb.gameboy.Memory
 				// external expansion RAM
 				case 0xA000:
 				case 0xB000:
-					// _external.ReadByte(address);
-					throw new NotImplementedException();
+					return _gb.Cartridge.ReadByte(address);
 
 				// working ram
 				case 0xC000:
@@ -153,7 +150,7 @@ namespace elbgb.gameboy.Memory
 				case 0x5000:
 				case 0x6000:
 				case 0x7000:
-					// _external.WriteByte(address, value);
+					_gb.Cartridge.WriteByte(address, value);
 					return;
 
 				// vram
@@ -165,7 +162,7 @@ namespace elbgb.gameboy.Memory
 				// external expansion RAM
 				case 0xA000:
 				case 0xB000:
-					// _external.WriteByte(address, value);
+					_gb.Cartridge.WriteByte(address, value);
 					return;
 
 				// working ram

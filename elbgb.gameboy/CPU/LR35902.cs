@@ -10,7 +10,7 @@ namespace elbgb.gameboy.CPU
 	class LR35902
 	{
 		private GameBoy _gb;
-		private Registers _r; 
+		private Registers _r;
 
 		public LR35902(GameBoy gameBoy)
 		{
@@ -361,10 +361,18 @@ namespace elbgb.gameboy.CPU
 
 				#region 16-bit arithmetic operation instructions
 
+				case 0x13: _r.DE++; _gb.AddMachineCycles(1); break; // INC DE
+
 				#endregion
+
+				#region rotate, shift and bit instructions
+
+				case 0x17: _r.A = RotateLeftThroughCarry(_r.A); break; // RLA
 
 				// extended opcodes are prefixed with OxCB, read next byte and run opcode 
 				case 0xCB: ExecuteExtendedOpcode(ReadByte(_r.PC++)); break;
+
+				#endregion
 
 				#region jump instructions
 
@@ -466,12 +474,16 @@ namespace elbgb.gameboy.CPU
 		{
 			switch (opcode)
 			{
-				case 0x7C: Bit(_r.H, 7); break;
+				case 0x11: _r.C = RotateLeftThroughCarry(_r.C); break; // RL C
+
+				case 0x7C: Bit(_r.H, 7); break; // BIT 7,H
 
 				default:
 					throw new NotImplementedException(string.Format("Invalid opcode 0x{0:X4} at {1:X4}", 0xCB00 | opcode, _r.PC - 2));
 			}
 		}
+
+
 
 		#region jump instruction handlers
 
@@ -736,6 +748,33 @@ namespace elbgb.gameboy.CPU
 
 		#endregion
 
+		#region rotate shift instruction handlers
+
+		private byte RotateLeftThroughCarry(byte b)
+		{
+			bool oldCarry = _r.F.FlagSet(StatusFlags.C);
+
+			// clear flags
+			_r.F = StatusFlags.Clear;
+
+			// set carry if top bit is set
+			if ((b & 0x80) == 0x80)
+				_r.F |= StatusFlags.C;
+
+			// shift left and place old carry in LSB
+			byte result = (byte)((b << 1) | (oldCarry ? 1 : 0));
+
+			// zero
+			if (result == 0)
+				_r.F |= StatusFlags.Z;
+
+			return result;
+		}
+
+		#endregion
+
+		#region bit instruction handlers
+
 		// test if bit bit is set in byte reg
 		private void Bit(byte reg, int bit)
 		{
@@ -751,6 +790,8 @@ namespace elbgb.gameboy.CPU
 				_r.F |= StatusFlags.Z;
 			}
 		}
+
+		#endregion
 
 		#region arithmetic and cpu control instruction handlers
 
