@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace elbgb.gameboy
 {
-	class Timer
+	class Timer : ClockedComponent
 	{
 		public static class Registers
 		{
@@ -16,18 +16,18 @@ namespace elbgb.gameboy
 			public const ushort TAC  = 0xFF07;
 		}
 
-		private GameBoy _gb;
-		private ulong _lastUpdate;
-
 		private ushort _div;
 
 		public Timer(GameBoy gameBoy)
+			: base(gameBoy)
 		{
-			_gb = gameBoy;
+
 		}
 
 		public byte ReadByte(ushort address)
 		{
+			SynchroniseWithSystemClock();
+
 			switch (address)
 			{
 				case Registers.DIV: return (byte)(_div >> 8);
@@ -39,6 +39,8 @@ namespace elbgb.gameboy
 
 		public void WriteByte(ushort address, byte value)
 		{
+			SynchroniseWithSystemClock();
+
 			switch (address)
 			{
 				// a write always clears the upper 8 bits of DIV, regardless of value
@@ -49,18 +51,14 @@ namespace elbgb.gameboy
 			}
 		}
 
-		public void Update()
+		public override void Update(ulong cycleCount)
 		{
-			ulong cyclesToUpdate = _gb.Timestamp - _lastUpdate;
-
-			_lastUpdate = _gb.Timestamp;
-
-			UpdateDivider(cyclesToUpdate);
+			UpdateDivider(cycleCount);
 		}
 
-		private void UpdateDivider(ulong cyclesToUpdate)
+		private void UpdateDivider(ulong cycleCount)
 		{
-			_div += (ushort)cyclesToUpdate;
+			_div += (ushort)cycleCount;
 		}
 	}
 }

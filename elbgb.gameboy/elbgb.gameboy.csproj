@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClockedComponent.cs" />
     <Compile Include="CPU\LR35902.cs" />
     <Compile Include="CPU\PairedRegister.cs" />
     <Compile Include="CPU\Registers.cs" />
@@ -53,6 +54,7 @@
     <Compile Include="Memory\NullCartridge.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sound\PSG.cs" />
+    <Compile Include="SystemClock.cs" />
     <Compile Include="Timer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

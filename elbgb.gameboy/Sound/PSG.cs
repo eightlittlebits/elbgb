@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace elbgb.gameboy.Sound
 {
-	class PSG
+	class PSG : ClockedComponent
 	{
 		public static class Registers
 		{
@@ -37,21 +37,27 @@ namespace elbgb.gameboy.Sound
 			public const ushort NR52 = 0xFF26;
 		}
 
-		private GameBoy _gb;
-
 		public PSG(GameBoy gameBoy)
+			: base(gameBoy)
 		{
-			_gb = gameBoy;
+
 		}
 
 		public byte ReadByte(ushort address)
 		{
+			SynchroniseWithSystemClock();
+
 			return 0;
 		}
 
 		public void WriteByte(ushort address, byte value)
 		{
-			return;
+			SynchroniseWithSystemClock();
+		}
+
+		public override void Update(ulong cycleCount)
+		{
+
 		}
 	}
 }

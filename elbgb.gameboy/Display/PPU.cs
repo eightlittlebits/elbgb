@@ -5,7 +5,7 @@ using System.Text;
 
 namespace elbgb.gameboy.Display
 {
-	class PPU
+	class PPU : ClockedComponent
 	{
 		public static class Registers
 		{
@@ -23,9 +23,6 @@ namespace elbgb.gameboy.Display
 			public const ushort WX   = 0xFF4B;
 		}
 
-		private GameBoy _gb;
-		private ulong _lastUpdate;
-
 		private byte[] _vram;
 		private byte[] _oam;
 
@@ -37,14 +34,16 @@ namespace elbgb.gameboy.Display
 		private byte _ly; // current scanline value
 
 		public PPU(GameBoy gameBoy)
+			: base(gameBoy)
 		{
-			_gb = gameBoy;
 			_vram = new byte[0x2000];
 			_oam = new byte[0xA0];
 		}
 
 		public byte ReadByte(ushort address)
 		{
+			SynchroniseWithSystemClock();
+
 			switch (address)
 			{
 				case Registers.SCY:
@@ -62,6 +61,8 @@ namespace elbgb.gameboy.Display
 
 		public void WriteByte(ushort address, byte value)
 		{
+			SynchroniseWithSystemClock();
+
 			if (address >= 0x8000 && address <= 0x9fff)
 			{
 				_vram[address & 0x1FFF] = value;
@@ -83,14 +84,10 @@ namespace elbgb.gameboy.Display
 			}
 		}
 
-		public void Update()
+		public override void Update(ulong cycleCount)
 		{
-			ulong cyclesToUpdate = _gb.Timestamp - _lastUpdate;
-
-			_lastUpdate = _gb.Timestamp;
-
 			// update LY, advancing to next line
-			_scanlineClocks += (uint)cyclesToUpdate;
+			_scanlineClocks += (uint)cycleCount;
 
 			// 456 clocks a scanline
 			if (_scanlineClocks >= 456)

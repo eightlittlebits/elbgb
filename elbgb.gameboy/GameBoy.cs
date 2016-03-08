@@ -12,24 +12,19 @@ namespace elbgb.gameboy
 {
 	public class GameBoy
 	{
-		// display refresh ~59.7 Hz, clock speed 4.194304 MHz, cycles per frame = 70224
-		private const int CyclesPerFrame = 70224;
-
+		private SystemClock _clock;
 		private LR35902 _cpu;
 		private MMU _mmu;
+		private Timer _timer;
 		private PPU _ppu;
 		private PSG _psg;
 
 		private ICartridge _romCartridge;
 
-		private ulong _clockCycles;
-		private Timer _timer;
-
-		internal ulong Timestamp { get { return _clockCycles; } }
-
+		internal SystemClock Clock { get { return _clock; } }
 		internal LR35902 CPU { get { return _cpu; } }
-		internal Timer Timer { get { return _timer; } }
 		internal MMU MMU { get { return _mmu; } }
+		internal Timer Timer { get { return _timer; } }
 		internal PPU PPU { get { return _ppu; } }
 		internal PSG PSG { get { return _psg; } }
 
@@ -37,6 +32,8 @@ namespace elbgb.gameboy
 
 		public GameBoy()
 		{
+			_clock = new SystemClock();
+
 			_cpu = new LR35902(this);
 			_mmu = new MMU(this);
 			_timer = new Timer(this);
@@ -50,13 +47,10 @@ namespace elbgb.gameboy
 		{
 			_cpu.ExecuteSingleInstruction();
 
-			_timer.Update();
-			_ppu.Update();
-		}
-
-		internal void AddMachineCycles(int cycleCount)
-		{
-			_clockCycles += (ulong)(4 * cycleCount);
+			// synchronise hardware components with system clock after instruction
+			_timer.SynchroniseWithSystemClock();
+			_ppu.SynchroniseWithSystemClock();
+			_psg.SynchroniseWithSystemClock();
 		}
 	}
 }

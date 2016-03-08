@@ -21,7 +21,7 @@ namespace elbgb.gameboy.CPU
 		private byte ReadByte(ushort address)
 		{
 			byte value = _gb.MMU.ReadByte(address);
-			_gb.AddMachineCycles(1);
+			_gb.Clock.AddMachineCycles(1);
 
 			return value;
 		}
@@ -39,7 +39,7 @@ namespace elbgb.gameboy.CPU
 		private void WriteByte(ushort address, byte value)
 		{
 			_gb.MMU.WriteByte(address, value);
-			_gb.AddMachineCycles(1);
+			_gb.Clock.AddMachineCycles(1);
 		}
 
 		#region stack handling
@@ -210,13 +210,13 @@ namespace elbgb.gameboy.CPU
 				case 0x31: _r.SP = ReadWord(_r.PC); _r.PC += 2; break; // LD SP,nn
 
 				// load the contents of register pair HL in stack pointer SP
-				case 0xF9: _r.SP = _r.HL; _gb.AddMachineCycles(1); break; // LD SP,HL
+				case 0xF9: _r.SP = _r.HL; _gb.Clock.AddMachineCycles(1); break; // LD SP,HL
 
 				// push contents of register pair onto the stack
-				case 0xC5: _gb.AddMachineCycles(1); PushWord(_r.BC); break; // PUSH BC
-				case 0xD5: _gb.AddMachineCycles(1); PushWord(_r.DE); break; // PUSH DE
-				case 0xE5: _gb.AddMachineCycles(1); PushWord(_r.HL); break; // PUSH HL
-				case 0xF5: _gb.AddMachineCycles(1); PushWord(_r.AF); break; // PUSH AF
+				case 0xC5: _gb.Clock.AddMachineCycles(1); PushWord(_r.BC); break; // PUSH BC
+				case 0xD5: _gb.Clock.AddMachineCycles(1); PushWord(_r.DE); break; // PUSH DE
+				case 0xE5: _gb.Clock.AddMachineCycles(1); PushWord(_r.HL); break; // PUSH HL
+				case 0xF5: _gb.Clock.AddMachineCycles(1); PushWord(_r.AF); break; // PUSH AF
 
 				// pop contents of stack into register pair
 				case 0xC1: _r.BC = PopWord(); break; // POP BC
@@ -241,7 +241,7 @@ namespace elbgb.gameboy.CPU
 
 						_r.HL = (ushort)(_r.SP + e);
 
-						_gb.AddMachineCycles(1);
+						_gb.Clock.AddMachineCycles(1);
 					} break;
 
 				// store the lower byte of SP at address nn specified by the 16-bit immediate operand nn
@@ -361,7 +361,7 @@ namespace elbgb.gameboy.CPU
 
 				#region 16-bit arithmetic operation instructions
 
-				case 0x13: _r.DE++; _gb.AddMachineCycles(1); break; // INC DE
+				case 0x13: _r.DE++; _gb.Clock.AddMachineCycles(1); break; // INC DE
 
 				#endregion
 
@@ -494,7 +494,7 @@ namespace elbgb.gameboy.CPU
 			if (condition)
 			{
 				_r.PC = address;
-				_gb.AddMachineCycles(1);
+				_gb.Clock.AddMachineCycles(1);
 			}
 		}
 
@@ -505,7 +505,7 @@ namespace elbgb.gameboy.CPU
 			if (condition)
 			{
 				_r.PC += (ushort)offset;
-				_gb.AddMachineCycles(1);
+				_gb.Clock.AddMachineCycles(1);
 			}
 		}
 
@@ -523,14 +523,14 @@ namespace elbgb.gameboy.CPU
 				PushWord(_r.PC);
 				_r.PC = address;
 
-				_gb.AddMachineCycles(1);
+				_gb.Clock.AddMachineCycles(1);
 			}
 		}
 
 		private void Return()
 		{
 			_r.PC = PopWord();
-			_gb.AddMachineCycles(1);
+			_gb.Clock.AddMachineCycles(1);
 		}
 
 		private void Return(bool condition)
@@ -538,10 +538,10 @@ namespace elbgb.gameboy.CPU
 			if (condition)
 			{
 				_r.PC = PopWord();
-				_gb.AddMachineCycles(1);
+				_gb.Clock.AddMachineCycles(1);
 			}
 
-			_gb.AddMachineCycles(1);
+			_gb.Clock.AddMachineCycles(1);
 		}
 
 		private void Reset(byte resetAddress)
@@ -550,7 +550,7 @@ namespace elbgb.gameboy.CPU
 
 			_r.PC = resetAddress;
 
-			_gb.AddMachineCycles(1);
+			_gb.Clock.AddMachineCycles(1);
 		}
 
 		#endregion
