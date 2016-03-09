@@ -26,12 +26,11 @@ namespace elbgb.gameboy.Display
 		private byte[] _vram;
 		private byte[] _oam;
 
-		private byte _scy;
-		private byte _scx;
+		private byte _scrollY, _scrollX;
 
 		private uint _scanlineClocks; // counter of clock cycles elapsed in the current scanline
 		
-		private byte _ly; // current scanline value
+		private byte _currentScanline; 
 
 		public PPU(GameBoy gameBoy)
 			: base(gameBoy)
@@ -47,13 +46,13 @@ namespace elbgb.gameboy.Display
 			switch (address)
 			{
 				case Registers.SCY:
-					return _scy;
+					return _scrollY;
 
 				case Registers.SCX:
-					return _scx;
+					return _scrollX;
 
 				case Registers.LY:
-					return _ly;
+					return _currentScanline;
 			}
 
 			throw new ArgumentOutOfRangeException("address");
@@ -76,10 +75,10 @@ namespace elbgb.gameboy.Display
 				switch (address)
 				{
 					case Registers.SCY:
-						_scy = value; break;
+						_scrollY = value; break;
 
 					case Registers.SCX:
-						_scx = value; break;
+						_scrollX = value; break;
 
 					default:
 						throw new ArgumentOutOfRangeException("address");
@@ -96,11 +95,11 @@ namespace elbgb.gameboy.Display
 			if (_scanlineClocks >= 456)
 			{
 				_scanlineClocks -= 456;
-				_ly++;
+				_currentScanline++;
 
-				if (_ly > 153)
+				if (_currentScanline > 153)
 				{
-					_ly = 0;
+					_currentScanline = 0;
 				}
 			}
 		}
