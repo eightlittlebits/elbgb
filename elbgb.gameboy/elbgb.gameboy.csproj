@@ -48,6 +48,7 @@
     <Compile Include="CPU\StatusFlags.cs" />
     <Compile Include="GameBoy.cs" />
     <Compile Include="IMemoryMappedComponent.cs" />
+    <Compile Include="Interrupt.cs" />
     <Compile Include="Memory\ICartridge.cs" />
     <Compile Include="Memory\MMU.cs" />
     <Compile Include="Display\PPU.cs" />

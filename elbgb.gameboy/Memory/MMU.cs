@@ -11,7 +11,9 @@ namespace elbgb.gameboy.Memory
 	{
 		public static class Registers
 		{
+			public const ushort IF = 0xFF0F;
 			public const ushort BOOTROMLOCK = 0xFF50;
+			public const ushort IE = 0xFFFF;
 		}
 
 		private GameBoy _gb;
@@ -63,6 +65,7 @@ namespace elbgb.gameboy.Memory
 					}
 
 					return _gb.Cartridge.ReadByte(address);
+
 				// rom
 				case 0x1000:
 				case 0x2000:

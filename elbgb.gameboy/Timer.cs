@@ -132,7 +132,7 @@ namespace elbgb.gameboy
 					{
 						_tima = _tma;
 
-						// TODO(david): request timer overflow interrupt
+						_gb.RequestInterrupt(Interrupt.TimerOverflow);
 					}
 				}
 			}

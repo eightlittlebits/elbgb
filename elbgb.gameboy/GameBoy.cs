@@ -52,5 +52,14 @@ namespace elbgb.gameboy
 			_ppu.SynchroniseWithSystemClock();
 			_psg.SynchroniseWithSystemClock();
 		}
+
+		internal void RequestInterrupt(Interrupt interrupt)
+		{
+			byte interruptRequest = _mmu.ReadByte(MMU.Registers.IF);
+
+			interruptRequest |= (byte)interrupt;
+
+			_mmu.WriteByte(MMU.Registers.IF, interruptRequest);
+		}
 	}
 }
