@@ -56,7 +56,7 @@ namespace elbgb.gameboy.Display
 					return _ly;
 			}
 
-			throw new NotImplementedException();
+			throw new ArgumentOutOfRangeException("address");
 		}
 
 		public void WriteByte(ushort address, byte value)
@@ -80,6 +80,9 @@ namespace elbgb.gameboy.Display
 
 					case Registers.SCX:
 						_scx = value; break;
+
+					default:
+						throw new ArgumentOutOfRangeException("address");
 				}
 			}
 		}

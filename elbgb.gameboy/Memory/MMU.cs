@@ -63,7 +63,6 @@ namespace elbgb.gameboy.Memory
 					}
 
 					return _gb.Cartridge.ReadByte(address);
-					
 				// rom
 				case 0x1000:
 				case 0x2000:
@@ -133,7 +132,7 @@ namespace elbgb.gameboy.Memory
 						throw new NotImplementedException();
 
 				default:
-					throw new NotImplementedException();
+					throw new ArgumentOutOfRangeException("address");
 			}
 		}
 
@@ -229,7 +228,7 @@ namespace elbgb.gameboy.Memory
 
 
 				default:
-					throw new NotImplementedException();
+					throw new ArgumentOutOfRangeException("address");
 			}
 		}
 	}

@@ -33,7 +33,7 @@ namespace elbgb.gameboy
 				case Registers.DIV: return (byte)(_div >> 8);
 
 				default:
-					throw new NotImplementedException();
+					throw new ArgumentOutOfRangeException("address");
 			}
 		}
 
@@ -47,7 +47,7 @@ namespace elbgb.gameboy
 				case Registers.DIV: _div &= 0x00FF; break;
 
 				default:
-					throw new NotImplementedException();
+					throw new ArgumentOutOfRangeException("address");
 			}
 		}
 
