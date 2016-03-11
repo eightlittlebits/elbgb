@@ -10,7 +10,7 @@ namespace elbgb.gameboy
 	enum Interrupt : byte
 	{
 		VBlank				= 1 << 0,
-		LCDC				= 1 << 1,
+		LCDCStatus			= 1 << 1,
 		TimerOverflow		= 1 << 2,
 		SerialIOComplete	= 1 << 3,
 		Input				= 1 << 4,

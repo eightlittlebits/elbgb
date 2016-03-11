@@ -24,7 +24,7 @@ namespace elbgb.gameboy.Display
 			public const ushort BGP	 = 0xFF47; // background palette
 			public const ushort OBP0 = 0xFF48; // object (sprite) palette 0
 			public const ushort OBP1 = 0xFF49; // object (sprite) palette 1
-			
+
 			// LCD display registers
 			public const ushort WY	 = 0xFF4A; // window y
 			public const ushort WX   = 0xFF4B; // window x
@@ -33,7 +33,7 @@ namespace elbgb.gameboy.Display
 		private byte[] _vram;
 		private byte[] _oam;
 
-		private byte _lcdControl;
+		private byte _lcdControl;					// LCDC value store
 		private bool _displayEnabled;				// LCDC bit 7 - 0: Off / 1: On
 		private ushort _windowTileBaseAddress;		// LCDC bit 6 - 0: 0x9800 - 0x9Bff / 1 : 0x9C00 = 0x9FFF
 		private bool _windowEnabled;				// LCDC bit 5 - 0: Off / 1: On
@@ -43,7 +43,12 @@ namespace elbgb.gameboy.Display
 		private bool _spritesEnabled;				// LCDC bit 1 - 0: Off / 1: On
 		private bool _backgroundEnabled;			// LCDC bit 0 - 0: Off / 1: On
 
-		private byte _scrollY, _scrollX;
+		private byte _lcdStatus;					// STAT value store
+
+		private byte _scrollY, _scrollX;			// SCY, SCX
+
+		private byte _currentScanline;				// LY
+		private byte _scanlineCompare;				// LYC
 
 		// palette data
 		byte _bgp;									// BGP value store
@@ -53,8 +58,6 @@ namespace elbgb.gameboy.Display
 		byte[][] _spritePalette;					// object (sprite) palette data
 
 		private uint _scanlineClocks; // counter of clock cycles elapsed in the current scanline
-		
-		private byte _currentScanline; 
 
 		public PPU(GameBoy gameBoy)
 			: base(gameBoy)
@@ -78,6 +81,9 @@ namespace elbgb.gameboy.Display
 				case Registers.LCDC:
 					return _lcdControl;
 
+				case Registers.STAT:
+					return _lcdStatus;
+
 				case Registers.SCY:
 					return _scrollY;
 
@@ -86,6 +92,9 @@ namespace elbgb.gameboy.Display
 
 				case Registers.LY:
 					return _currentScanline;
+
+				case Registers.LYC:
+					return _scanlineCompare;
 
 				case Registers.BGP:
 					return _bgp;
@@ -120,21 +129,47 @@ namespace elbgb.gameboy.Display
 						_lcdControl = value;
 
 						_displayEnabled = (_lcdControl & 0x80) == 0x80;
+
+						// reset LY when display is disabled
+						if (!_displayEnabled)
+						{
+							_currentScanline = 0;
+							CompareScanlineValue();
+						}
+
 						_windowTileBaseAddress = (ushort)((_lcdControl & 0x40) == 0x40 ? 0x9C00 : 0x9800);
 						_windowEnabled = (_lcdControl & 0x20) == 0x20;
 						_backgroundCharBaseAddress = (ushort)((_lcdControl & 0x10) == 0x10 ? 0x8000 : 0x8800);
 						_backgroundTileBaseAddress = (ushort)((_lcdControl & 0x08) == 0x08 ? 0x9C00 : 0x9800);
-						_spriteHeight = (_lcdControl & 0x04) == 0x04 ? 16 : 8; 
+						_spriteHeight = (_lcdControl & 0x04) == 0x04 ? 16 : 8;
 						_spritesEnabled = (_lcdControl & 0x02) == 0x02;
 						_backgroundEnabled = (_lcdControl & 0x01) == 0x01;
 
 						break;
 
+					case Registers.STAT:
+						// capture lcd interrupt selection from value
+						_lcdStatus = (byte)((_lcdStatus & 0x07) | (value & 0x78));
+
+						// a write to the LY = LYC match flag clears the flag
+						if ((value & 0x04) == 0x04)
+						{
+							unchecked { _lcdStatus &= (byte)~0x04; }
+						}
+
+						break;
+
 					case Registers.SCY:
-						_scrollY = value; break;
+						_scrollY = value;
+						break;
 
 					case Registers.SCX:
-						_scrollX = value; break;
+						_scrollX = value;
+						break;
+
+					case Registers.LYC:
+						_scanlineCompare = value;
+						break;
 
 					case Registers.BGP:
 						_bgp = value;
@@ -174,6 +209,25 @@ namespace elbgb.gameboy.Display
 			return palette;
 		}
 
+		private void CompareScanlineValue()
+		{
+			// compares the current scanline LY with the LYC compare value
+			// set status flag and optionally raise interrupt if they match
+			if (_currentScanline == _scanlineCompare)
+			{
+				// set match flag in lcd status register (bit 2)
+				_lcdStatus |= 0x04;
+
+				// if the LYC = LY interrupt selection is set then raise the interrupt
+				if ((_lcdStatus & 0x40) == 0x40) _gb.RequestInterrupt(Interrupt.LCDCStatus);
+			}
+			else
+			{
+				// clear match flag in lcd status register (bit 2)
+				unchecked { _lcdStatus &= (byte)~0x04; }
+			}
+		}
+
 		public override void Update(ulong cycleCount)
 		{
 			// only run PPU update if display is enabled
@@ -191,6 +245,8 @@ namespace elbgb.gameboy.Display
 					{
 						_currentScanline = 0;
 					}
+
+					CompareScanlineValue();
 				}
 			}
 		}
