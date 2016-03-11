@@ -176,18 +176,21 @@ namespace elbgb.gameboy.Display
 
 		public override void Update(ulong cycleCount)
 		{
-			// update LY, advancing to next line
-			_scanlineClocks += (uint)cycleCount;
-
-			// 456 clocks a scanline
-			if (_scanlineClocks >= 456)
+			// only run PPU update if display is enabled
+			if (_displayEnabled)
 			{
-				_scanlineClocks -= 456;
-				_currentScanline++;
+				_scanlineClocks += (uint)cycleCount;
 
-				if (_currentScanline > 153)
+				// 456 clocks a scanline
+				if (_scanlineClocks >= 456)
 				{
-					_currentScanline = 0;
+					_scanlineClocks -= 456;
+					_currentScanline++;
+
+					if (_currentScanline > 153)
+					{
+						_currentScanline = 0;
+					}
 				}
 			}
 		}
