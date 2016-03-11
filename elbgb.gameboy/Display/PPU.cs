@@ -21,9 +21,9 @@ namespace elbgb.gameboy.Display
 			public const ushort DMA	 = 0xFF46; 
 			
 			// palette data
-			public const ushort BGP	 = 0xFF47;
-			public const ushort OBP0 = 0xFF48;
-			public const ushort OBP1 = 0xFF49;
+			public const ushort BGP	 = 0xFF47; // background palette
+			public const ushort OBP0 = 0xFF48; // object (sprite) palette 0
+			public const ushort OBP1 = 0xFF49; // object (sprite) palette 1
 			
 			// LCD display registers
 			public const ushort WY	 = 0xFF4A; // window y
@@ -45,6 +45,13 @@ namespace elbgb.gameboy.Display
 
 		private byte _scrollY, _scrollX;
 
+		// palette data
+		byte _bgp;									// BGP value store
+		byte[] _backgroundPalette;					// background palette data
+
+		byte _obp0, _obp1;							// OBPn value store
+		byte[][] _spritePalette;					// object (sprite) palette data
+
 		private uint _scanlineClocks; // counter of clock cycles elapsed in the current scanline
 		
 		private byte _currentScanline; 
@@ -54,6 +61,12 @@ namespace elbgb.gameboy.Display
 		{
 			_vram = new byte[0x2000];
 			_oam = new byte[0xA0];
+
+			_backgroundPalette = new byte[4];
+
+			_spritePalette = new byte[2][];
+			_spritePalette[0] = new byte[4];
+			_spritePalette[1] = new byte[4];
 		}
 
 		public byte ReadByte(ushort address)
@@ -73,6 +86,15 @@ namespace elbgb.gameboy.Display
 
 				case Registers.LY:
 					return _currentScanline;
+
+				case Registers.BGP:
+					return _bgp;
+
+				case Registers.OBP0:
+					return _obp0;
+
+				case Registers.OBP1:
+					return _obp1;
 			}
 
 			throw new ArgumentOutOfRangeException("address");
@@ -114,10 +136,42 @@ namespace elbgb.gameboy.Display
 					case Registers.SCX:
 						_scrollX = value; break;
 
+					case Registers.BGP:
+						_bgp = value;
+
+						_backgroundPalette = ExtractPaletteData(_bgp, 0);
+						break;
+
+					case Registers.OBP0:
+						_obp0 = value;
+
+						// extract sprite palette data, start from index 1, palette entry 00 is always 00
+						_spritePalette[0] = ExtractPaletteData(_obp0, 1);
+						break;
+
+					case Registers.OBP1:
+						_obp1 = value;
+
+						// extract sprite palette data, start from index 1, palette entry 00 is always 00
+						_spritePalette[1] = ExtractPaletteData(_obp1, 1);
+						break;
+
 					default:
 						throw new ArgumentOutOfRangeException("address");
 				}
 			}
+		}
+
+		private byte[] ExtractPaletteData(byte value, int startingindex)
+		{
+			byte[] palette = new byte[4];
+
+			for (int i = startingindex; i < 4; i++)
+			{
+				palette[i] = (byte)((value >> i * 2) & 0x03);
+			}
+
+			return palette;
 		}
 
 		public override void Update(ulong cycleCount)
