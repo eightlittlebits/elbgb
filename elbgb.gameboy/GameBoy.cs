@@ -19,7 +19,7 @@ namespace elbgb.gameboy
 		private PPU _ppu;
 		private PSG _psg;
 
-		private ICartridge _romCartridge;
+		private Cartridge _romCartridge;
 
 		internal SystemClock Clock { get { return _clock; } }
 		internal LR35902 CPU { get { return _cpu; } }
@@ -28,7 +28,7 @@ namespace elbgb.gameboy
 		internal PPU PPU { get { return _ppu; } }
 		internal PSG PSG { get { return _psg; } }
 
-		internal ICartridge Cartridge { get { return _romCartridge; } }
+		internal Cartridge Cartridge { get { return _romCartridge; } }
 
 		public GameBoy()
 		{
@@ -40,7 +40,7 @@ namespace elbgb.gameboy
 			_ppu = new PPU(this);
 			_psg = new PSG(this);
 
-			_romCartridge = new NullCartridge();
+			_romCartridge = Cartridge.LoadRom(null);
 		}
 
 		public void RunInstruction()

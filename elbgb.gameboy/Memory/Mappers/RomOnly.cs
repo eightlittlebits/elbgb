@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace elbgb.gameboy.Memory
+namespace elbgb.gameboy.Memory.Mappers
 {
-	class NullCartridge : Cartridge
+	class RomOnly : Cartridge
 	{
-		public NullCartridge(CartridgeHeader header, byte[] romData)
+		public RomOnly(CartridgeHeader header, byte[] romData)
 			: base(header, romData)
 		{
 
@@ -16,12 +16,12 @@ namespace elbgb.gameboy.Memory
 
 		public override byte ReadByte(ushort address)
 		{
-			return 0;
+			throw new NotImplementedException();
 		}
 
 		public override void WriteByte(ushort address, byte value)
 		{
-			return;
+			throw new NotImplementedException();
 		}
 	}
 }
