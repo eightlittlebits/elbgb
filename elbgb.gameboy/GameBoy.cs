@@ -45,6 +45,7 @@ namespace elbgb.gameboy
 
 		public void RunInstruction()
 		{
+			_cpu.ProcessInterrupts();
 			_cpu.ExecuteSingleInstruction();
 
 			// synchronise hardware components with system clock after instruction

@@ -12,6 +12,8 @@ namespace elbgb.gameboy.CPU
 		private GameBoy _gb;
 		private Registers _r;
 
+		private bool _halted;
+
 		public LR35902(GameBoy gameBoy)
 		{
 			_gb = gameBoy;
@@ -74,8 +76,68 @@ namespace elbgb.gameboy.CPU
 
 		#endregion
 
+		internal void ProcessInterrupts()
+		{
+			byte interruptFlag = _gb.MMU.ReadByte(MMU.Registers.IF);
+			byte interruptEnable = _gb.MMU.ReadByte(MMU.Registers.IE);
+
+			// bitwise and of the enable flag and the interrupt flag will only leave any bits set
+			// if the interrupt has been requested and the interrupt is enabled
+			int interrupt = interruptFlag & interruptEnable;
+
+			// pending interrupt to service?
+			if (interrupt != 0)
+			{
+				// clear the halt flag on interrupt
+				_halted = false;
+
+				// interrupts enabled?
+				if (_r.IME)
+				{
+					// check each bit in the interrupt to find out which needs to be processed
+					for (int i = 0; i < 5; i++)
+					{
+						if ((interrupt & (1 << i)) == (1 << i))
+						{
+							// disable interrupts
+							_r.IME = false;
+
+							// clear the interrupt flag
+							_gb.MMU.WriteByte(MMU.Registers.IF, (byte)(interruptFlag & ~(1 << i)));
+
+							// push current PC to stack
+							_gb.MMU.WriteByte(--_r.SP, (byte)(_r.PC >> 8));
+							_gb.MMU.WriteByte(--_r.SP, (byte)_r.PC);
+
+							// jump to interrupt address based on interrupt
+							switch (i)
+							{
+								case 0: _r.PC = 0x0040; break; // Vertical Blank
+								case 1: _r.PC = 0x0048; break; // LCDC Status
+								case 2: _r.PC = 0x0050; break; // Timer Overflow
+								case 3: _r.PC = 0x0058; break; // Serial Transfer Complete
+								case 4: _r.PC = 0x0060; break; // User Input
+							}
+
+							// add processing cycles
+							// TODO(david): Find out how many cycles servicing the interrupt takes
+
+							// interrupt processed, break from loop
+							break;
+						}
+					}
+				}
+			}
+		}
+
 		public void ExecuteSingleInstruction()
 		{
+			if (_halted)
+			{
+				_gb.Clock.AddMachineCycles(1);
+				return;
+			}
+			
 			byte opcode = ReadByte(_r.PC++);
 
 			switch (opcode)
@@ -457,8 +519,8 @@ namespace elbgb.gameboy.CPU
 				case 0xF3: _r.IME = false; break; // DI
 				case 0xFB: _r.IME = true; break; // EI
 
-				// TODO(david): Implement HALT
-				case 0x76: break; // HALT
+				// stops execution until an interrupt occurs
+				case 0x76: _halted = true; break; // HALT
 
 				// TODO(david): Implement STOP
 				case 0x10: _r.PC++; break; // STOP
@@ -822,5 +884,6 @@ namespace elbgb.gameboy.CPU
 		}
 
 		#endregion
+
 	}
 }

@@ -43,6 +43,9 @@ namespace elbgb.gameboy.Memory
 		private byte[] _wram;
 		private byte[] _hram;
 
+		private byte _interruptFlag;
+		private byte _interruptEnable;
+
 		public MMU(GameBoy gameBoy)
 		{
 			_gb = gameBoy;
@@ -102,7 +105,7 @@ namespace elbgb.gameboy.Memory
 						return _wram[address & 0x1FFF];
 					}
 					// oam
-					if (address >= 0xFE00 && address <= 0xFE9F)
+					else if (address >= 0xFE00 && address <= 0xFE9F)
 					{
 						return _gb.PPU.ReadByte(address);
 					}
@@ -112,17 +115,22 @@ namespace elbgb.gameboy.Memory
 						return 0;
 					}
 					// timer IO registers
-					if (address >= 0xFF04 && address <= 0xFF07)
+					else if (address >= 0xFF04 && address <= 0xFF07)
 					{
 						return _gb.Timer.ReadByte(address);
 					}
+					// interrupt flag
+					else if (address == Registers.IF)
+					{
+						return _interruptFlag;
+					}
 					// sound registers
-					if (address >= 0xFF10 && address <= 0xFF3F)
+					else if (address >= 0xFF10 && address <= 0xFF3F)
 					{
 						return _gb.PSG.ReadByte(address);
 					}
 					// lcd registers
-					if (address >= 0xFF40 && address <= 0xFF4B)
+					else if (address >= 0xFF40 && address <= 0xFF4B)
 					{
 						return _gb.PPU.ReadByte(address);
 					}
@@ -130,6 +138,11 @@ namespace elbgb.gameboy.Memory
 					else if (address >= 0xFF80 && address <= 0xFFFE)
 					{
 						return _hram[address & 0x7F];
+					}
+					// interrupt enable
+					else if (address == Registers.IE)
+					{
+						return _interruptEnable;
 					}
 					else
 						throw new NotImplementedException();
@@ -186,7 +199,7 @@ namespace elbgb.gameboy.Memory
 						return;
 					}
 					// oam
-					if (address >= 0xFE00 && address <= 0xFE9F)
+					else if (address >= 0xFE00 && address <= 0xFE9F)
 					{
 						_gb.PPU.WriteByte(address, value);
 						return;
@@ -202,14 +215,20 @@ namespace elbgb.gameboy.Memory
 						_gb.Timer.WriteByte(address, value);
 						return;
 					}
+					// interrupt flag
+					else if (address == Registers.IF)
+					{
+						_interruptFlag = (byte)(value & 0x1F);
+						return;
+					}
 					// sound registers
-					if (address >= 0xFF10 && address <= 0xFF3F)
+					else if (address >= 0xFF10 && address <= 0xFF3F)
 					{
 						_gb.PSG.WriteByte(address, value);
 						return;
 					}
 					// lcd registers
-					if (address >= 0xFF40 && address <= 0xFF4B)
+					else if (address >= 0xFF40 && address <= 0xFF4B)
 					{
 						_gb.PPU.WriteByte(address, value);
 						return;
@@ -224,6 +243,12 @@ namespace elbgb.gameboy.Memory
 					{
 						// TODO(david): do we set a value at this location? can we read from it?
 						_bootRomLocked = true;
+						return;
+					}
+					// interrupt enable
+					else if (address == Registers.IE)
+					{
+						_interruptEnable = (byte)(value & 0x1F);
 						return;
 					}
 					else
