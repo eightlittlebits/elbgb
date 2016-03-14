@@ -60,7 +60,8 @@ namespace elbgb.gameboy.Memory
 		{
 			switch (address & 0xF000)
 			{
-				// rom / boot rom
+				// 0x0000 - 0x0100 - boot rom
+				// 0x0000 - 0x7FFF - rom 
 				case 0x0000:
 					if (!_bootRomLocked && address < 0x100)
 					{
@@ -69,194 +70,218 @@ namespace elbgb.gameboy.Memory
 
 					return _gb.Cartridge.ReadByte(address);
 
-				// rom
-				case 0x1000:
-				case 0x2000:
-				case 0x3000:
-				case 0x4000:
-				case 0x5000:
-				case 0x6000:
-				case 0x7000:
+				// 0x0000 - 0x7FFF - rom
+				case 0x1000: case 0x2000: case 0x3000: case 0x4000:
+				case 0x5000: case 0x6000: case 0x7000:
 					return _gb.Cartridge.ReadByte(address);
 
-				// vram
+				// 0x8000 - 0x9FFF - vram
 				case 0x8000:
 				case 0x9000:
 					return _gb.PPU.ReadByte(address);
 
-				// external expansion RAM
+				// 0xA000 - 0xBFFF - external expansion RAM
 				case 0xA000:
 				case 0xB000:
 					return _gb.Cartridge.ReadByte(address);
 
-				// working ram
+				// 0xC000 - 0xDFFF - working ram
 				case 0xC000:
 				case 0xD000:
 					return _wram[address & 0x1FFF];
 
-				// working ram mirror
+				// 0xE000 - 0xFDFF mirrors working ram
 				case 0xE000:
 					return _wram[address & 0x1FFF];
 
 				case 0xF000:
-					// working ram mirror
+					// 0xE000 - 0xFDFF mirrors working ram
 					if (address <= 0xFDFF)
 					{
 						return _wram[address & 0x1FFF];
 					}
-					// oam
+					// 0xFE00 - 0xFE9F - OAM memory
 					else if (address >= 0xFE00 && address <= 0xFE9F)
 					{
 						return _gb.PPU.ReadByte(address);
 					}
-					// restricted area
+					// 0xFEA0 - 0xFEFF - restricted area - return 0
 					else if (address >= 0xFEA0 && address <= 0xFEFF)
 					{
 						return 0;
 					}
-					// timer IO registers
+					// 0xFF04 - 0xFF07 - timer registers
 					else if (address >= 0xFF04 && address <= 0xFF07)
 					{
 						return _gb.Timer.ReadByte(address);
 					}
-					// interrupt flag
+					// 0xFF0F - interrupt flag
 					else if (address == Registers.IF)
 					{
 						return _interruptFlag;
 					}
-					// sound registers
+					// 0xFF10 - 0xFF26 - NR xx sound registers
+					// 0xFF30 - 0xFF3F - waveform ram
 					else if (address >= 0xFF10 && address <= 0xFF3F)
 					{
 						return _gb.PSG.ReadByte(address);
 					}
-					// lcd registers
+					// 0xFF40 - 0xFF4B - lcd registers
 					else if (address >= 0xFF40 && address <= 0xFF4B)
 					{
 						return _gb.PPU.ReadByte(address);
 					}
-					// hi ram
+					// 0xFF80 - 0xFFFE - hi ram
 					else if (address >= 0xFF80 && address <= 0xFFFE)
 					{
 						return _hram[address & 0x7F];
 					}
-					// interrupt enable
+					// 0xFFFF - interrupt enable
 					else if (address == Registers.IE)
 					{
 						return _interruptEnable;
 					}
 					else
 						throw new NotImplementedException();
-
-				default:
-					throw new ArgumentOutOfRangeException("address");
 			}
+
+			// return 0 for any unhandled addresses
+			return 0;
 		}
 
 		public void WriteByte(ushort address, byte value)
 		{
 			switch (address & 0xF000)
 			{
-				// rom
-				case 0x0000:
-				case 0x1000:
-				case 0x2000:
-				case 0x3000:
-				case 0x4000:
-				case 0x5000:
-				case 0x6000:
-				case 0x7000:
+				// 0x0000 - 0x7FFF - rom
+				case 0x0000: case 0x1000: case 0x2000: case 0x3000:
+				case 0x4000: case 0x5000: case 0x6000: case 0x7000:
 					_gb.Cartridge.WriteByte(address, value);
 					return;
 
-				// vram
+				// 0x8000 - 0x9FFF - vram
 				case 0x8000:
 				case 0x9000:
 					_gb.PPU.WriteByte(address, value);
 					return;
 
-				// external expansion RAM
+				// 0xA000 - 0xBFFF - external expansion RAM
 				case 0xA000:
 				case 0xB000:
 					_gb.Cartridge.WriteByte(address, value);
 					return;
 
-				// working ram
+				// 0xC000 - 0xDFFF - working ram
 				case 0xC000:
 				case 0xD000:
 					_wram[address & 0x1FFF] = value;
 					return;
 
-				// working ram mirror
+				// 0xE000 - 0xFDFF mirrors working ram
 				case 0xE000:
 					_wram[address & 0x1FFF] = value;
 					return;
 
 				case 0xF000:
-					// working ram mirror
-					if (address <= 0xFDFF)
+					switch (address & 0x0F00)
 					{
-						_wram[address & 0x1FFF] = value;
-						return;
-					}
-					// oam
-					else if (address >= 0xFE00 && address <= 0xFE9F)
-					{
-						_gb.PPU.WriteByte(address, value);
-						return;
-					}
-					// restricted area
-					else if (address >= 0xFEA0 && address <= 0xFEFF)
-					{
-						return;
-					}
-					// timer IO registers
-					else if (address >= 0xFF04 && address <= 0xFF07)
-					{
-						_gb.Timer.WriteByte(address, value);
-						return;
-					}
-					// interrupt flag
-					else if (address == Registers.IF)
-					{
-						_interruptFlag = (byte)(value & 0x1F);
-						return;
-					}
-					// sound registers
-					else if (address >= 0xFF10 && address <= 0xFF3F)
-					{
-						_gb.PSG.WriteByte(address, value);
-						return;
-					}
-					// lcd registers
-					else if (address >= 0xFF40 && address <= 0xFF4B)
-					{
-						_gb.PPU.WriteByte(address, value);
-						return;
-					}
-					// hi ram
-					else if (address >= 0xFF80 && address <= 0xFFFE)
-					{
-						_hram[address & 0x7F] = value;
-						return;
-					}
-					else if (address == Registers.BOOTROMLOCK)
-					{
-						// TODO(david): do we set a value at this location? can we read from it?
-						_bootRomLocked = true;
-						return;
-					}
-					// interrupt enable
-					else if (address == Registers.IE)
-					{
-						_interruptEnable = (byte)(value & 0x1F);
-						return;
-					}
-					else
-						throw new NotImplementedException();
+						// 0xE000 - 0xFDFF mirrors working ram
+						case 0x000: case 0x100: case 0x200: case 0x300:
+						case 0x400: case 0x500: case 0x600: case 0x700:
+						case 0x800: case 0x900: case 0xA00: case 0xB00:
+						case 0xC00: case 0xD00:
+							_wram[address & 0x1FFF] = value;
+							break;
 
+						// 0xFE00 - 0xFE9F - OAM memory
+						// 0xFEA0 - 0xFEFF - restricted area - ignore any writes  
+						case 0xE00:
+							if (address <= 0xFE9F)
+							{
+								_gb.PPU.WriteByte(address, value);
+							}
+							break;
 
-				default:
-					throw new ArgumentOutOfRangeException("address");
+						case 0xF00:
+							switch (address & 0x00F0)
+							{
+								case 0x00:
+									switch (address & 0x000F)
+									{
+										// 0xFF00 - input
+										case 0x0: // P1
+											break;
+
+										// 0xFF01 - 0xFF02 - serial I/O
+										case 0x1: // SB
+										case 0x2: // SC
+										break;
+										
+										// 0xFF04 - 0xFF07 - timer registers
+										case 0x4: // DIV
+										case 0x5: // TIMA
+										case 0x6: // TMA
+										case 0x7: // TAC
+											_gb.Timer.WriteByte(address, value);
+											break;
+										
+										// 0xFF0F - interrupt flag
+										case 0xF: // IF
+											_interruptFlag = (byte)(value & 0x1F);
+											break;
+									}
+									break;
+
+								// 0xFF10 - 0xFF26 - NR xx sound registers
+								case 0x10:
+								case 0x20:
+									_gb.PSG.WriteByte(address, value); break;
+
+								// 0xFF30 - 0xFF3F - waveform ram
+								case 0x30:
+									_gb.PSG.WriteByte(address, value); break;
+
+								// 0xFF40 - 0xFF4B - lcd registers
+								case 0x40:
+									_gb.PPU.WriteByte(address, value); break;
+
+								case 0x50: 
+									switch (address & 0x000F)
+									{
+										// 0xFF50 - boot rom lock
+										case 0x0: 
+											_bootRomLocked = true;
+											break;
+									}
+									break;
+								
+								// 0xFF80 - 0xFFFE - hi ram
+								case 0x80: case 0x90: case 0xA0: case 0xB0:
+								case 0xC0: case 0xD0: case 0xE0:
+									_hram[address & 0x7F] = value; 
+									break;
+
+								case 0xF0:
+									switch (address & 0x000F)
+									{
+										// 0xFF80 - 0xFFFE - hi ram
+										case 0x0: case 0x1: case 0x2: case 0x3: 
+										case 0x4: case 0x5: case 0x6: case 0x7: 
+										case 0x8: case 0x9: case 0xA: case 0xB: 
+										case 0xC: case 0xD: case 0xE: 
+											_hram[address & 0x7F] = value;
+											break;
+
+										// 0xFFFF - interrupt enable
+										case 0xF: // IE
+											_interruptEnable = (byte)(value & 0x1F);
+											break;
+									}
+									break;
+							}
+							break;
+					}
+					break;
 			}
 		}
 	}
