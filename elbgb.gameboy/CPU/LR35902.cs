@@ -432,6 +432,11 @@ namespace elbgb.gameboy.CPU
 
 				#region 16-bit arithmetic operation instructions
 
+				case 0x09: _r.HL = Add16Bit(_r.HL, _r.BC); _gb.Clock.AddMachineCycles(1); break; // ADD HL,BC
+				case 0x19: _r.HL = Add16Bit(_r.HL, _r.DE); _gb.Clock.AddMachineCycles(1); break; // ADD HL,DE
+				case 0x29: _r.HL = Add16Bit(_r.HL, _r.HL); _gb.Clock.AddMachineCycles(1); break; // ADD HL,HL
+				case 0x39: _r.HL = Add16Bit(_r.HL, _r.SP); _gb.Clock.AddMachineCycles(1); break; // ADD HL,SP
+
 				case 0x03: _r.BC++; _gb.Clock.AddMachineCycles(1); break; // INC BC
 				case 0x13: _r.DE++; _gb.Clock.AddMachineCycles(1); break; // INC DE
 				case 0x23: _r.HL++; _gb.Clock.AddMachineCycles(1); break; // INC HL
@@ -821,6 +826,28 @@ namespace elbgb.gameboy.CPU
 				_r.F |= StatusFlags.Z;
 
 			return (byte)(b - 1);
+		}
+
+		#endregion
+
+		#region 16-bit arithmetic operation instruction handlers
+
+		private ushort Add16Bit(ushort u1, ushort u2)
+		{
+			int result = u1 + u2;
+
+			// preserve zero
+			_r.F &= StatusFlags.Z;
+
+			// carry
+			if (result > 0xFFFF)
+				_r.F |= StatusFlags.C;
+
+			// half carry
+			if ((u1 & 0x0FFF) + (u2 & 0x0FFF) > 0x0FFF)
+				_r.F |= StatusFlags.H;
+
+			return (ushort)result;
 		}
 
 		#endregion
