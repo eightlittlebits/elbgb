@@ -501,7 +501,7 @@ namespace elbgb.gameboy.CPU
 				#region general purpose arithmetic operations and CPU control instructions
 
 				// adjust the result in the accumulator after a BCD addition or subtraction
-				case 0x23: DecimalAdjustAccumulator(); break; // DAA
+				case 0x27: DecimalAdjustAccumulator(); break; // DAA
 
 				// takes the ones complement of register a
 				case 0x2F: _r.A = (byte)~_r.A; _r.F |= (StatusFlags.N | StatusFlags.H); break; // CPL
