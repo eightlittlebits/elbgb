@@ -536,7 +536,7 @@ namespace elbgb.gameboy.CPU
 				#endregion
 
 				default:
-					throw new NotImplementedException(string.Format("Invalid opcode 0x{0:X2} at {1:X4}", opcode, _r.PC - 1));
+					throw new NotImplementedException(string.Format("Invalid opcode 0x{0:X2} at 0x{1:X4}", opcode, _r.PC - 1));
 			}
 		}
 
@@ -549,12 +549,10 @@ namespace elbgb.gameboy.CPU
 				case 0x7C: Bit(_r.H, 7); break; // BIT 7,H
 
 				default:
-					throw new NotImplementedException(string.Format("Invalid opcode 0x{0:X4} at {1:X4}", 0xCB00 | opcode, _r.PC - 2));
+					throw new NotImplementedException(string.Format("Invalid extended opcode 0x{0:X4} at 0x{1:X4}", 0xCB00 | opcode, _r.PC - 2));
 			}
 		}
-
-
-
+		
 		#region jump instruction handlers
 
 		private void JumpImmediate(bool condition = true)
