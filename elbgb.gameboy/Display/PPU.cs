@@ -51,11 +51,13 @@ namespace elbgb.gameboy.Display
 		private byte _scanlineCompare;				// LYC
 
 		// palette data
-		byte _bgp;									// BGP value store
-		byte[] _backgroundPalette;					// background palette data
+		private byte _bgp;							// BGP value store
+		private byte[] _backgroundPalette;			// background palette data
 
-		byte _obp0, _obp1;							// OBPn value store
-		byte[][] _spritePalette;					// object (sprite) palette data
+		private byte _obp0, _obp1;					// OBPn value store
+		private byte[][] _spritePalette;			// object (sprite) palette data
+
+		private byte _windowY, _windowX;			// WY, WX
 
 		private uint _scanlineClocks; // counter of clock cycles elapsed in the current scanline
 
@@ -104,6 +106,12 @@ namespace elbgb.gameboy.Display
 
 				case Registers.OBP1:
 					return _obp1;
+
+				case Registers.WY:
+					return _windowY;
+
+				case Registers.WX:
+					return _windowX;
 			}
 
 			throw new ArgumentOutOfRangeException("address");
@@ -171,6 +179,16 @@ namespace elbgb.gameboy.Display
 						_scanlineCompare = value;
 						break;
 
+					case Registers.DMA:
+						// TODO(david): this should take 671 cycles (160 microseconds), does it make a difference?
+						int dmaStartAddress = value << 8;
+
+						for (int i = 0; i < 0xA0; i++)
+						{
+							_oam[i] = _gb.MMU.ReadByte((ushort)(dmaStartAddress + i));
+						}
+						break;
+
 					case Registers.BGP:
 						_bgp = value;
 
@@ -189,6 +207,14 @@ namespace elbgb.gameboy.Display
 
 						// extract sprite palette data, start from index 1, palette entry 00 is always 00
 						_spritePalette[1] = ExtractPaletteData(_obp1, 1);
+						break;
+
+					case Registers.WY:
+						_windowY = value;
+						break;
+
+					case Registers.WX:
+						_windowX = value;
 						break;
 
 					default:
