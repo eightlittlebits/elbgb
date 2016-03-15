@@ -560,7 +560,11 @@ namespace elbgb.gameboy.CPU
 			{
 				case 0x11: _r.C = RotateLeftThroughCarry(_r.C); break; // RL C
 
+				case 0x37: _r.A = Swap(_r.A); break; // SWAP A
+
 				case 0x7C: Bit(_r.H, 7); break; // BIT 7,H
+
+				case 0x87: _r.A = Res(_r.A, 0); break; // RES 0,A
 
 				default:
 					throw new NotImplementedException(string.Format("Invalid extended opcode 0x{0:X4} at 0x{1:X4}", 0xCB00 | opcode, _r.PC - 2));
@@ -875,6 +879,22 @@ namespace elbgb.gameboy.CPU
 			return result;
 		}
 
+		private byte Swap(byte b)
+		{
+			// clear flags
+			_r.F = StatusFlags.Clear;
+
+			// swap high and low nibble
+
+			var result = ((b & 0xF0) >> 4) | ((b & 0x0F) >> 4);
+
+			// zero
+			if (result == 0)
+				_r.F |= StatusFlags.Z;
+
+			return (byte)result;
+		}
+
 		#endregion
 
 		#region bit instruction handlers
@@ -893,6 +913,11 @@ namespace elbgb.gameboy.CPU
 			{
 				_r.F |= StatusFlags.Z;
 			}
+		}
+
+		private byte Res(byte reg, int bit)
+		{
+			return (byte)(reg &= (byte)~(1 << bit));
 		}
 
 		#endregion
