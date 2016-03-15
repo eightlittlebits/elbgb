@@ -15,9 +15,50 @@ namespace elbgb.gameboy.Memory
 
 		public static Cartridge LoadRom(byte[] romData)
 		{
+			if (romData == null)
+			{
+				return new NullCartridge(default(CartridgeHeader), null);
+			}
+
 			CartridgeHeader header = ReadCartridgeHeader(romData);
 
-			return null;
+			switch (header.CartridgeType)
+			{
+				case CartridgeType.RomOnly:
+					return new RomOnly(header, romData);
+
+				case CartridgeType.Mbc1:
+				case CartridgeType.Mbc1Ram:
+				case CartridgeType.Mbc1RamBattery:
+				case CartridgeType.Mbc2:
+				case CartridgeType.Mbc2Battery:
+				case CartridgeType.RomRam:
+				case CartridgeType.RomRamBattery:
+				case CartridgeType.MMM01:
+				case CartridgeType.MMM01Ram:
+				case CartridgeType.MMM01RamBattery:
+				case CartridgeType.Mbc3TimerBattery:
+				case CartridgeType.Mbc3TimerRamBattery:
+				case CartridgeType.Mbc3:
+				case CartridgeType.Mbc3Ram:
+				case CartridgeType.Mbc3RamBattery:
+				case CartridgeType.Mbc4:
+				case CartridgeType.Mbc4Ram:
+				case CartridgeType.Mbc4RamBattery:
+				case CartridgeType.Mbc5:
+				case CartridgeType.Mbc5Ram:
+				case CartridgeType.Mbc5RamBattery:
+				case CartridgeType.Mbc5Rumble:
+				case CartridgeType.Mbc5RumbleRam:
+				case CartridgeType.Mbc5RumbleRamBattery:
+				case CartridgeType.PocketCamera:
+				case CartridgeType.BandaiTama5:
+				case CartridgeType.HudsonHuC3:
+				case CartridgeType.HudsonHuC1:
+				default:
+					string message = string.Format("Mapper {0} ({0:X2}) not implemented.", header.CartridgeType);
+					throw new NotImplementedException(message);
+			}
 		}
 
 		protected Cartridge(CartridgeHeader header, byte[] romData)

@@ -12,7 +12,12 @@ namespace elbgb_console
 	{
 		static void Main(string[] args)
 		{
+			string romPath = args[0];
+			byte[] rom = File.ReadAllBytes(romPath);
+			
 			GameBoy gb = new GameBoy();
+
+			gb.LoadRom(rom);
 
 			try
 			{
@@ -23,11 +28,8 @@ namespace elbgb_console
 			}
 			catch (Exception ex)
 			{
-
 				Console.WriteLine(ex.ToString());
 			}
-
-			Console.ReadLine();
 		}
 	}
 }

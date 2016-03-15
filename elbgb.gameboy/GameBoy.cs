@@ -43,6 +43,11 @@ namespace elbgb.gameboy
 			_romCartridge = Cartridge.LoadRom(null);
 		}
 
+		public void LoadRom(byte[] romData)
+		{
+			_romCartridge = Cartridge.LoadRom(romData);
+		}
+
 		public void RunInstruction()
 		{
 			_cpu.ProcessInterrupts();
