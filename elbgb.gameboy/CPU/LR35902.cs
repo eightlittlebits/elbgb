@@ -423,7 +423,15 @@ namespace elbgb.gameboy.CPU
 
 				#region 16-bit arithmetic operation instructions
 
+				case 0x03: _r.BC++; _gb.Clock.AddMachineCycles(1); break; // INC BC
 				case 0x13: _r.DE++; _gb.Clock.AddMachineCycles(1); break; // INC DE
+				case 0x23: _r.HL++; _gb.Clock.AddMachineCycles(1); break; // INC HL
+				case 0x33: _r.SP++; _gb.Clock.AddMachineCycles(1); break; // INC SP
+
+				case 0x0B: _r.BC--; _gb.Clock.AddMachineCycles(1); break; // DEC BC
+				case 0x1B: _r.DE--; _gb.Clock.AddMachineCycles(1); break; // DEC DE
+				case 0x2B: _r.HL--; _gb.Clock.AddMachineCycles(1); break; // DEC HL
+				case 0x3B: _r.SP--; _gb.Clock.AddMachineCycles(1); break; // DEC SP
 
 				#endregion
 
