@@ -635,7 +635,7 @@ namespace elbgb.gameboy.CPU
 				_r.F |= StatusFlags.H;
 
 			// zero 
-			if (result == 0)
+			if ((result & 0xFF) == 0)
 				_r.F |= StatusFlags.Z;
 
 			return (byte)result;
@@ -659,7 +659,7 @@ namespace elbgb.gameboy.CPU
 				_r.F |= StatusFlags.H;
 
 			// zero 
-			if (result == 0)
+			if ((result & 0xFF) == 0)
 				_r.F |= StatusFlags.Z;
 
 			return (byte)result;
@@ -681,7 +681,7 @@ namespace elbgb.gameboy.CPU
 				_r.F |= StatusFlags.H;
 
 			// zero 
-			if (result == 0)
+			if ((result & 0xFF) == 0)
 				_r.F |= StatusFlags.Z;
 
 			return (byte)result;
@@ -705,7 +705,7 @@ namespace elbgb.gameboy.CPU
 				_r.F |= StatusFlags.H;
 
 			// zero 
-			if (result == 0)
+			if ((result & 0xFF) == 0)
 				_r.F |= StatusFlags.Z;
 
 			return (byte)result;
@@ -755,7 +755,7 @@ namespace elbgb.gameboy.CPU
 
 		private void Compare8Bit(byte b1, byte b2)
 		{
-			var result = b1 - b2;
+			int result = b1 - b2;
 
 			// set subtract
 			_r.F = StatusFlags.N;
