@@ -95,8 +95,13 @@ namespace elbgb.gameboy.Memory
 					return _wram[address & 0x1FFF];
 
 				case 0xF000:
+					// TODO(david): Actually implement Input
+					if (address == 0xFF00)
+					{
+						return 0xFF;
+					}
 					// 0xE000 - 0xFDFF mirrors working ram
-					if (address <= 0xFDFF)
+					else if (address <= 0xFDFF)
 					{
 						return _wram[address & 0x1FFF];
 					}
