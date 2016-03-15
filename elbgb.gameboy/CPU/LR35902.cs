@@ -99,15 +99,25 @@ namespace elbgb.gameboy.CPU
 					{
 						if ((interrupt & (1 << i)) == (1 << i))
 						{
+							// according to pandocs the ISR should take 5 cycles:
+							// 2 wait cycles
+							// push high and low of PC to stack
+							// set low byte of pc to interrupt address
+							// http://gbdev.gg8.se/wiki/articles/Interrupts
+
+							// TODO(david): try and confirm the timings
+
+							// 2 wait cycles
+							_gb.Clock.AddMachineCycles(2);
+
 							// disable interrupts
 							_r.IME = false;
 
 							// clear the interrupt flag
 							_gb.MMU.WriteByte(MMU.Registers.IF, (byte)(interruptFlag & ~(1 << i)));
 
-							// push current PC to stack
-							_gb.MMU.WriteByte(--_r.SP, (byte)(_r.PC >> 8));
-							_gb.MMU.WriteByte(--_r.SP, (byte)_r.PC);
+							// push current PC to stack - 2 cycles
+							PushWord(_r.PC);
 
 							// jump to interrupt address based on interrupt
 							switch (i)
@@ -119,8 +129,7 @@ namespace elbgb.gameboy.CPU
 								case 4: _r.PC = 0x0060; break; // User Input
 							}
 
-							// add processing cycles
-							// TODO(david): Find out how many cycles servicing the interrupt takes
+							_gb.Clock.AddMachineCycles(1);
 
 							// interrupt processed, break from loop
 							break;
