@@ -451,7 +451,9 @@ namespace elbgb.gameboy.CPU
 
 				#region rotate, shift and bit instructions
 
-				case 0x17: _r.A = RotateLeftThroughCarry(_r.A); break; // RLA
+				// the same rotate methods are used for the extended opcodes, these do not set the Z flag
+				case 0x07: _r.A = RotateLeft(_r.A); _r.F &= ~StatusFlags.Z; break; // RLCA
+				case 0x17: _r.A = RotateLeftThroughCarry(_r.A); _r.F &= ~StatusFlags.Z; break; // RLA
 
 				// extended opcodes are prefixed with OxCB, read next byte and run opcode 
 				case 0xCB: ExecuteExtendedOpcode(ReadByte(_r.PC++)); break;
@@ -558,9 +560,45 @@ namespace elbgb.gameboy.CPU
 		{
 			switch (opcode)
 			{
-				case 0x11: _r.C = RotateLeftThroughCarry(_r.C); break; // RL C
+				#region rotate shift instruction handlers
 
+				case 0x10: _r.B = RotateLeftThroughCarry(_r.B); break; // RL B
+				case 0x11: _r.C = RotateLeftThroughCarry(_r.C); break; // RL C
+				case 0x12: _r.D = RotateLeftThroughCarry(_r.D); break; // RL D
+				case 0x13: _r.E = RotateLeftThroughCarry(_r.E); break; // RL E
+				case 0x14: _r.H = RotateLeftThroughCarry(_r.H); break; // RL H
+				case 0x15: _r.L = RotateLeftThroughCarry(_r.L); break; // RL L
+				case 0x16: WriteByte(_r.HL, RotateLeftThroughCarry(ReadByte(_r.HL))); break; // RL (HL)
+				case 0x17: _r.A = RotateLeftThroughCarry(_r.A); break; // RL A
+
+				case 0x20: _r.B = ShiftLeftArithmetic(_r.B); break; // SLA B
+				case 0x21: _r.C = ShiftLeftArithmetic(_r.C); break; // SLA C
+				case 0x22: _r.D = ShiftLeftArithmetic(_r.D); break; // SLA D
+				case 0x23: _r.E = ShiftLeftArithmetic(_r.E); break; // SLA E
+				case 0x24: _r.H = ShiftLeftArithmetic(_r.H); break; // SLA H
+				case 0x25: _r.L = ShiftLeftArithmetic(_r.L); break; // SLA L
+				case 0x26: WriteByte(_r.HL, ShiftLeftArithmetic(ReadByte(_r.HL))); break; // SLA (HL)
+				case 0x27: _r.A = ShiftLeftArithmetic(_r.A); break; // SLA A
+					
+				case 0x38: _r.B = ShiftRightLogical(_r.B); break; // SRL B
+				case 0x39: _r.C = ShiftRightLogical(_r.C); break; // SRL C
+				case 0x3A: _r.D = ShiftRightLogical(_r.D); break; // SRL D
+				case 0x3B: _r.E = ShiftRightLogical(_r.E); break; // SRL E
+				case 0x3C: _r.H = ShiftRightLogical(_r.H); break; // SRL H
+				case 0x3D: _r.L = ShiftRightLogical(_r.L); break; // SRL L
+				case 0x3E: WriteByte(_r.HL, ShiftRightLogical(ReadByte(_r.HL))); break; // SRL (HL)
+				case 0x3F: _r.A = ShiftRightLogical(_r.A); break;	// SRL A
+
+				case 0x30: _r.B = Swap(_r.B); break; // SWAP B
+				case 0x31: _r.C = Swap(_r.C); break; // SWAP C
+				case 0x32: _r.D = Swap(_r.D); break; // SWAP D
+				case 0x33: _r.E = Swap(_r.E); break; // SWAP E
+				case 0x34: _r.H = Swap(_r.H); break; // SWAP H
+				case 0x35: _r.L = Swap(_r.L); break; // SWAP L
+				case 0x36: WriteByte(_r.HL, Swap(ReadByte(_r.HL))); break; // SWAP (HL)
 				case 0x37: _r.A = Swap(_r.A); break; // SWAP A
+
+				#endregion
 
 				#region bit operation instructions
 
@@ -1074,6 +1112,30 @@ namespace elbgb.gameboy.CPU
 
 		#region rotate shift instruction handlers
 
+		private byte RotateLeft(byte b)
+		{
+			// clear flags
+			_r.F = StatusFlags.Clear;
+
+			// grab bit 7
+			bool bit7 = ((b & 0x80) == 0x80);
+			
+			// set carry flag if old bit 7 was set
+			if (bit7)
+			{
+				_r.F |= StatusFlags.C;
+			}
+
+			// shift left and place old bit 7 in LSB
+			byte result = (byte)((b << 1) | (bit7 ? 1 : 0));
+
+			// zero
+			if (result == 0)
+				_r.F |= StatusFlags.Z;
+
+			return result;
+		}
+
 		private byte RotateLeftThroughCarry(byte b)
 		{
 			bool oldCarry = _r.F.FlagSet(StatusFlags.C);
@@ -1087,6 +1149,49 @@ namespace elbgb.gameboy.CPU
 
 			// shift left and place old carry in LSB
 			byte result = (byte)((b << 1) | (oldCarry ? 1 : 0));
+
+			// zero
+			if (result == 0)
+				_r.F |= StatusFlags.Z;
+
+			return result;
+		}
+
+		private byte ShiftLeftArithmetic(byte b)
+		{
+			// clear flags
+			_r.F = StatusFlags.Clear;
+
+			// set carry if top bit is set
+			if ((b & 0x80) == 0x80)
+				_r.F |= StatusFlags.C;
+
+			// shift left
+			byte result = (byte)(b << 1);
+
+			// zero
+			if (result == 0)
+				_r.F |= StatusFlags.Z;
+
+			return result;
+		}
+
+		private byte ShiftRightLogical(byte b)
+		{
+			// clear flags
+			_r.F = StatusFlags.Clear;
+
+			// grab bit 1
+			bool bit1 = ((b & 0x01) == 0x01);
+
+			// set carry flag if old bit 7 was set
+			if (bit1)
+			{
+				_r.F |= StatusFlags.C;
+			}
+
+			// shift right
+			byte result = (byte)(b >> 1);
 
 			// zero
 			if (result == 0)
