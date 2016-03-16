@@ -267,6 +267,11 @@ namespace elbgb.gameboy.Display
 					_scanlineClocks -= 456;
 					_currentScanline++;
 
+					if (_currentScanline == 144)
+					{
+						_gb.RequestInterrupt(Interrupt.VBlank);
+					}
+
 					if (_currentScanline > 153)
 					{
 						_currentScanline = 0;
