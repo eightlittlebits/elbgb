@@ -562,10 +562,226 @@ namespace elbgb.gameboy.CPU
 
 				case 0x37: _r.A = Swap(_r.A); break; // SWAP A
 
-				case 0x7C: Bit(_r.H, 7); break; // BIT 7,H
+				#region bit operation instructions
 
+				case 0x40: Bit(_r.B, 0); break; // BIT 0,B
+				case 0x41: Bit(_r.C, 0); break; // BIT 0,C
+				case 0x42: Bit(_r.D, 0); break; // BIT 0,D
+				case 0x43: Bit(_r.E, 0); break; // BIT 0,E
+				case 0x44: Bit(_r.H, 0); break; // BIT 0,H
+				case 0x45: Bit(_r.L, 0); break; // BIT 0,L
+				case 0x46: Bit(ReadByte(_r.HL), 0); break; // BIT 0,(HL)
+				case 0x47: Bit(_r.A, 0); break; // BIT 0,A
+
+				case 0x48: Bit(_r.B, 1); break; // BIT 1,B
+				case 0x49: Bit(_r.C, 1); break; // BIT 1,C
+				case 0x4A: Bit(_r.D, 1); break; // BIT 1,D
+				case 0x4B: Bit(_r.E, 1); break; // BIT 1,E
+				case 0x4C: Bit(_r.H, 1); break; // BIT 1,H
+				case 0x4D: Bit(_r.L, 1); break; // BIT 1,L
+				case 0x4E: Bit(ReadByte(_r.HL), 1); break; // BIT 1,(HL)
+				case 0x4F: Bit(_r.A, 1); break; // BIT 1,A
+
+				case 0x50: Bit(_r.B, 2); break; // BIT 2,B
+				case 0x51: Bit(_r.C, 2); break; // BIT 2,C
+				case 0x52: Bit(_r.D, 2); break; // BIT 2,D
+				case 0x53: Bit(_r.E, 2); break; // BIT 2,E
+				case 0x54: Bit(_r.H, 2); break; // BIT 2,H
+				case 0x55: Bit(_r.L, 2); break; // BIT 2,L
+				case 0x56: Bit(ReadByte(_r.HL), 2); break; // BIT 2,(HL)
+				case 0x57: Bit(_r.A, 2); break; // BIT 2,A
+
+				case 0x58: Bit(_r.B, 3); break; // BIT 3,B
+				case 0x59: Bit(_r.C, 3); break; // BIT 3,C
+				case 0x5A: Bit(_r.D, 3); break; // BIT 3,D
+				case 0x5B: Bit(_r.E, 3); break; // BIT 3,E
+				case 0x5C: Bit(_r.H, 3); break; // BIT 3,H
+				case 0x5D: Bit(_r.L, 3); break; // BIT 3,L
+				case 0x5E: Bit(ReadByte(_r.HL), 3); break; // BIT 3,(HL)
+				case 0x5F: Bit(_r.A, 3); break; // BIT 3,A
+
+				case 0x60: Bit(_r.B, 4); break; // BIT 4,B
+				case 0x61: Bit(_r.C, 4); break; // BIT 4,C
+				case 0x62: Bit(_r.D, 4); break; // BIT 4,D
+				case 0x63: Bit(_r.E, 4); break; // BIT 4,E
+				case 0x64: Bit(_r.H, 4); break; // BIT 4,H
+				case 0x65: Bit(_r.L, 4); break; // BIT 4,L
+				case 0x66: Bit(ReadByte(_r.HL), 4); break; // BIT 4,(HL)
+				case 0x67: Bit(_r.A, 4); break; // BIT 4,A
+
+				case 0x68: Bit(_r.B, 5); break; // BIT 5,B
+				case 0x69: Bit(_r.C, 5); break; // BIT 5,C
+				case 0x6A: Bit(_r.D, 5); break; // BIT 5,D
+				case 0x6B: Bit(_r.E, 5); break; // BIT 5,E
+				case 0x6C: Bit(_r.H, 5); break; // BIT 5,H
+				case 0x6D: Bit(_r.L, 5); break; // BIT 5,L
+				case 0x6E: Bit(ReadByte(_r.HL), 5); break; // BIT 5,(HL)
+				case 0x6F: Bit(_r.A, 5); break; // BIT 5,A
+
+				case 0x70: Bit(_r.B, 6); break; // BIT 6,B
+				case 0x71: Bit(_r.C, 6); break; // BIT 6,C
+				case 0x72: Bit(_r.D, 6); break; // BIT 6,D
+				case 0x73: Bit(_r.E, 6); break; // BIT 6,E
+				case 0x74: Bit(_r.H, 6); break; // BIT 6,H
+				case 0x75: Bit(_r.L, 6); break; // BIT 6,L
+				case 0x76: Bit(ReadByte(_r.HL), 6); break; // BIT 6,(HL)
+				case 0x77: Bit(_r.A, 6); break; // BIT 6,A
+
+				case 0x78: Bit(_r.B, 7); break; // BIT 7,B
+				case 0x79: Bit(_r.C, 7); break; // BIT 7,C
+				case 0x7A: Bit(_r.D, 7); break; // BIT 7,D
+				case 0x7B: Bit(_r.E, 7); break; // BIT 7,E
+				case 0x7C: Bit(_r.H, 7); break; // BIT 7,H
+				case 0x7D: Bit(_r.L, 7); break; // BIT 7,L
+				case 0x7E: Bit(ReadByte(_r.HL), 7); break; // BIT 7,(HL)
+				case 0x7F: Bit(_r.A, 7); break; // BIT 7,A
+
+				case 0xC0: _r.B = Set(_r.B, 0); break; // SET 0,B
+				case 0xC1: _r.C = Set(_r.C, 0); break; // SET 0,C
+				case 0xC2: _r.D = Set(_r.D, 0); break; // SET 0,D
+				case 0xC3: _r.E = Set(_r.E, 0); break; // SET 0,E
+				case 0xC4: _r.H = Set(_r.H, 0); break; // SET 0,H
+				case 0xC5: _r.L = Set(_r.L, 0); break; // SET 0,L
+				case 0xC6: WriteByte(_r.HL, Set(ReadByte(_r.HL), 0)); break; // SET 0,(HL)
+				case 0xC7: _r.A = Set(_r.A, 0); break; // SET 0,A
+
+				case 0xC8: _r.B = Set(_r.B, 1); break; // SET 1,B
+				case 0xC9: _r.C = Set(_r.C, 1); break; // SET 1,C
+				case 0xCA: _r.D = Set(_r.D, 1); break; // SET 1,D
+				case 0xCB: _r.E = Set(_r.E, 1); break; // SET 1,E
+				case 0xCC: _r.H = Set(_r.H, 1); break; // SET 1,H
+				case 0xCD: _r.L = Set(_r.L, 1); break; // SET 1,L
+				case 0xCE: WriteByte(_r.HL, Set(ReadByte(_r.HL), 1)); break; // SET 1,(HL)
+				case 0xCF: _r.A = Set(_r.A, 1); break; // SET 1,A
+
+				case 0xD0: _r.B = Set(_r.B, 2); break; // SET 2,B
+				case 0xD1: _r.C = Set(_r.C, 2); break; // SET 2,C
+				case 0xD2: _r.D = Set(_r.D, 2); break; // SET 2,D
+				case 0xD3: _r.E = Set(_r.E, 2); break; // SET 2,E
+				case 0xD4: _r.H = Set(_r.H, 2); break; // SET 2,H
+				case 0xD5: _r.L = Set(_r.L, 2); break; // SET 2,L
+				case 0xD6: WriteByte(_r.HL, Set(ReadByte(_r.HL), 2)); break; // SET 2,(HL)
+				case 0xD7: _r.A = Set(_r.A, 2); break; // SET 2,A
+
+				case 0xD8: _r.B = Set(_r.B, 3); break; // SET 3,B
+				case 0xD9: _r.C = Set(_r.C, 3); break; // SET 3,C
+				case 0xDA: _r.D = Set(_r.D, 3); break; // SET 3,D
+				case 0xDB: _r.E = Set(_r.E, 3); break; // SET 3,E
+				case 0xDC: _r.H = Set(_r.H, 3); break; // SET 3,H
+				case 0xDD: _r.L = Set(_r.L, 3); break; // SET 3,L
+				case 0xDE: WriteByte(_r.HL, Set(ReadByte(_r.HL), 3)); break; // SET 3,(HL)
+				case 0xDF: _r.A = Set(_r.A, 3); break; // SET 3,A
+
+				case 0xE0: _r.B = Set(_r.B, 4); break; // SET 4,B
+				case 0xE1: _r.C = Set(_r.C, 4); break; // SET 4,C
+				case 0xE2: _r.D = Set(_r.D, 4); break; // SET 4,D
+				case 0xE3: _r.E = Set(_r.E, 4); break; // SET 4,E
+				case 0xE4: _r.H = Set(_r.H, 4); break; // SET 4,H
+				case 0xE5: _r.L = Set(_r.L, 4); break; // SET 4,L
+				case 0xE6: WriteByte(_r.HL, Set(ReadByte(_r.HL), 4)); break; // SET 4,(HL)
+				case 0xE7: _r.A = Set(_r.A, 4); break; // SET 4,A
+
+				case 0xE8: _r.B = Set(_r.B, 5); break; // SET 5,B
+				case 0xE9: _r.C = Set(_r.C, 5); break; // SET 5,C
+				case 0xEA: _r.D = Set(_r.D, 5); break; // SET 5,D
+				case 0xEB: _r.E = Set(_r.E, 5); break; // SET 5,E
+				case 0xEC: _r.H = Set(_r.H, 5); break; // SET 5,H
+				case 0xED: _r.L = Set(_r.L, 5); break; // SET 5,L
+				case 0xEE: WriteByte(_r.HL, Set(ReadByte(_r.HL), 5)); break; // SET 5,(HL)
+				case 0xEF: _r.A = Set(_r.A, 5); break; // SET 5,A
+
+				case 0xF0: _r.B = Set(_r.B, 6); break; // SET 6,B
+				case 0xF1: _r.C = Set(_r.C, 6); break; // SET 6,C
+				case 0xF2: _r.D = Set(_r.D, 6); break; // SET 6,D
+				case 0xF3: _r.E = Set(_r.E, 6); break; // SET 6,E
+				case 0xF4: _r.H = Set(_r.H, 6); break; // SET 6,H
+				case 0xF5: _r.L = Set(_r.L, 6); break; // SET 6,L
+				case 0xF6: WriteByte(_r.HL, Set(ReadByte(_r.HL), 6)); break; // SET 6,(HL)
+				case 0xF7: _r.A = Set(_r.A, 6); break; // SET 6,A
+
+				case 0xF8: _r.B = Set(_r.B, 7); break; // SET 7,B
+				case 0xF9: _r.C = Set(_r.C, 7); break; // SET 7,C
+				case 0xFA: _r.D = Set(_r.D, 7); break; // SET 7,D
+				case 0xFB: _r.E = Set(_r.E, 7); break; // SET 7,E
+				case 0xFC: _r.H = Set(_r.H, 7); break; // SET 7,H
+				case 0xFD: _r.L = Set(_r.L, 7); break; // SET 7,L
+				case 0xFE: WriteByte(_r.HL, Set(ReadByte(_r.HL), 7)); break; // SET 7,(HL)
+				case 0xFF: _r.A = Set(_r.A, 7); break; // SET 7,A
+
+				case 0x80: _r.B = Res(_r.B, 0); break; // RES 0,B
+				case 0x81: _r.C = Res(_r.C, 0); break; // RES 0,C
+				case 0x82: _r.D = Res(_r.D, 0); break; // RES 0,D
+				case 0x83: _r.E = Res(_r.E, 0); break; // RES 0,E
+				case 0x84: _r.H = Res(_r.H, 0); break; // RES 0,H
+				case 0x85: _r.L = Res(_r.L, 0); break; // RES 0,L
+				case 0x86: WriteByte(_r.HL, Res(ReadByte(_r.HL), 0)); break; // RES 0,(HL)
 				case 0x87: _r.A = Res(_r.A, 0); break; // RES 0,A
 
+				case 0x88: _r.B = Res(_r.B, 1); break; // RES 1,B
+				case 0x89: _r.C = Res(_r.C, 1); break; // RES 1,C
+				case 0x8A: _r.D = Res(_r.D, 1); break; // RES 1,D
+				case 0x8B: _r.E = Res(_r.E, 1); break; // RES 1,E
+				case 0x8C: _r.H = Res(_r.H, 1); break; // RES 1,H
+				case 0x8D: _r.L = Res(_r.L, 1); break; // RES 1,L
+				case 0x8E: WriteByte(_r.HL, Res(ReadByte(_r.HL), 1)); break; // RES 1,(HL)
+				case 0x8F: _r.A = Res(_r.A, 1); break; // RES 1,A
+
+				case 0x90: _r.B = Res(_r.B, 2); break; // RES 2,B
+				case 0x91: _r.C = Res(_r.C, 2); break; // RES 2,C
+				case 0x92: _r.D = Res(_r.D, 2); break; // RES 2,D
+				case 0x93: _r.E = Res(_r.E, 2); break; // RES 2,E
+				case 0x94: _r.H = Res(_r.H, 2); break; // RES 2,H
+				case 0x95: _r.L = Res(_r.L, 2); break; // RES 2,L
+				case 0x96: WriteByte(_r.HL, Res(ReadByte(_r.HL), 2)); break; // RES 2,(HL)
+				case 0x97: _r.A = Res(_r.A, 2); break; // RES 2,A
+
+				case 0x98: _r.B = Res(_r.B, 3); break; // RES 3,B
+				case 0x99: _r.C = Res(_r.C, 3); break; // RES 3,C
+				case 0x9A: _r.D = Res(_r.D, 3); break; // RES 3,D
+				case 0x9B: _r.E = Res(_r.E, 3); break; // RES 3,E
+				case 0x9C: _r.H = Res(_r.H, 3); break; // RES 3,H
+				case 0x9D: _r.L = Res(_r.L, 3); break; // RES 3,L
+				case 0x9E: WriteByte(_r.HL, Res(ReadByte(_r.HL), 3)); break; // RES 3,(HL)
+				case 0x9F: _r.A = Res(_r.A, 3); break; // RES 3,A
+
+				case 0xA0: _r.B = Res(_r.B, 4); break; // RES 4,B
+				case 0xA1: _r.C = Res(_r.C, 4); break; // RES 4,C
+				case 0xA2: _r.D = Res(_r.D, 4); break; // RES 4,D
+				case 0xA3: _r.E = Res(_r.E, 4); break; // RES 4,E
+				case 0xA4: _r.H = Res(_r.H, 4); break; // RES 4,H
+				case 0xA5: _r.L = Res(_r.L, 4); break; // RES 4,L
+				case 0xA6: WriteByte(_r.HL, Res(ReadByte(_r.HL), 4)); break; // RES 4,(HL)
+				case 0xA7: _r.A = Res(_r.A, 4); break; // RES 4,A
+
+				case 0xA8: _r.B = Res(_r.B, 5); break; // RES 5,B
+				case 0xA9: _r.C = Res(_r.C, 5); break; // RES 5,C
+				case 0xAA: _r.D = Res(_r.D, 5); break; // RES 5,D
+				case 0xAB: _r.E = Res(_r.E, 5); break; // RES 5,E
+				case 0xAC: _r.H = Res(_r.H, 5); break; // RES 5,H
+				case 0xAD: _r.L = Res(_r.L, 5); break; // RES 5,L
+				case 0xAE: WriteByte(_r.HL, Res(ReadByte(_r.HL), 5)); break; // RES 5,(HL)
+				case 0xAF: _r.A = Res(_r.A, 5); break; // RES 5,A
+
+				case 0xB0: _r.B = Res(_r.B, 6); break; // RES 6,B
+				case 0xB1: _r.C = Res(_r.C, 6); break; // RES 6,C
+				case 0xB2: _r.D = Res(_r.D, 6); break; // RES 6,D
+				case 0xB3: _r.E = Res(_r.E, 6); break; // RES 6,E
+				case 0xB4: _r.H = Res(_r.H, 6); break; // RES 6,H
+				case 0xB5: _r.L = Res(_r.L, 6); break; // RES 6,L
+				case 0xB6: WriteByte(_r.HL, Res(ReadByte(_r.HL), 6)); break; // RES 6,(HL)
+				case 0xB7: _r.A = Res(_r.A, 6); break; // RES 6,A
+
+				case 0xB8: _r.B = Res(_r.B, 7); break; // RES 7,B
+				case 0xB9: _r.C = Res(_r.C, 7); break; // RES 7,C
+				case 0xBA: _r.D = Res(_r.D, 7); break; // RES 7,D
+				case 0xBB: _r.E = Res(_r.E, 7); break; // RES 7,E
+				case 0xBC: _r.H = Res(_r.H, 7); break; // RES 7,H
+				case 0xBD: _r.L = Res(_r.L, 7); break; // RES 7,L
+				case 0xBE: WriteByte(_r.HL, Res(ReadByte(_r.HL), 7)); break; // RES 7,(HL)
+				case 0xBF: _r.A = Res(_r.A, 7); break; // RES 7,A
+
+				#endregion
+					
 				default:
 					throw new NotImplementedException(string.Format("Invalid extended opcode 0x{0:X4} at 0x{1:X4}", 0xCB00 | opcode, _r.PC - 2));
 			}
@@ -897,7 +1113,7 @@ namespace elbgb.gameboy.CPU
 
 		#endregion
 
-		#region bit instruction handlers
+		#region bit operation instruction handlers
 
 		// test if bit bit is set in byte reg
 		private void Bit(byte reg, int bit)
@@ -915,9 +1131,14 @@ namespace elbgb.gameboy.CPU
 			}
 		}
 
+		private byte Set(byte reg, int bit)
+		{
+			return (byte)(reg | (1 << bit));
+		}
+
 		private byte Res(byte reg, int bit)
 		{
-			return (byte)(reg &= (byte)~(1 << bit));
+			return (byte)(reg & ~(1 << bit));
 		}
 
 		#endregion
