@@ -17,7 +17,12 @@ namespace elbgb.gameboy.Memory.Mappers
 
 		public override byte ReadByte(ushort address)
 		{
-			return _romData[address];
+			if (address < 0x8000)
+			{
+				return _romData[address];
+			}
+			else
+				return 0x00;
 		}
 
 		public override void WriteByte(ushort address, byte value)
