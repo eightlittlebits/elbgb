@@ -12,60 +12,51 @@ namespace elbgb.gameboy
 {
 	public class GameBoy
 	{
-		private SystemClock _clock;
-		private LR35902 _cpu;
-		private MMU _mmu;
-		private Timer _timer;
-		private PPU _ppu;
-		private PSG _psg;
+		public SystemClock Clock;
+		public LR35902 CPU;
+		public MMU MMU;
+		public Timer Timer;
+		public PPU PPU;
+		public PSG PSG;
 
-		private Cartridge _romCartridge;
-
-		internal SystemClock Clock { get { return _clock; } }
-		internal LR35902 CPU { get { return _cpu; } }
-		internal MMU MMU { get { return _mmu; } }
-		internal Timer Timer { get { return _timer; } }
-		internal PPU PPU { get { return _ppu; } }
-		internal PSG PSG { get { return _psg; } }
-
-		internal Cartridge Cartridge { get { return _romCartridge; } }
+		public Cartridge Cartridge;
 
 		public GameBoy()
 		{
-			_clock = new SystemClock();
+			Clock = new SystemClock();
 
-			_cpu = new LR35902(this);
-			_mmu = new MMU(this);
-			_timer = new Timer(this);
-			_ppu = new PPU(this);
-			_psg = new PSG(this);
+			CPU = new LR35902(this);
+			MMU = new MMU(this);
+			Timer = new Timer(this);
+			PPU = new PPU(this);
+			PSG = new PSG(this);
 
-			_romCartridge = Cartridge.LoadRom(null);
+			Cartridge = Cartridge.LoadRom(null);
 		}
 
 		public void LoadRom(byte[] romData)
 		{
-			_romCartridge = Cartridge.LoadRom(romData);
+			Cartridge = Cartridge.LoadRom(romData);
 		}
 
 		public void RunInstruction()
 		{
-			_cpu.ProcessInterrupts();
-			_cpu.ExecuteSingleInstruction();
+			CPU.ProcessInterrupts();
+			CPU.ExecuteSingleInstruction();
 
 			// synchronise hardware components with system clock after instruction
-			_timer.SynchroniseWithSystemClock();
-			_ppu.SynchroniseWithSystemClock();
-			_psg.SynchroniseWithSystemClock();
+			Timer.SynchroniseWithSystemClock();
+			PPU.SynchroniseWithSystemClock();
+			PSG.SynchroniseWithSystemClock();
 		}
 
 		internal void RequestInterrupt(Interrupt interrupt)
 		{
-			byte interruptRequest = _mmu.ReadByte(MMU.Registers.IF);
+			byte interruptRequest = MMU.ReadByte(MMU.Registers.IF);
 
 			interruptRequest |= (byte)interrupt;
 
-			_mmu.WriteByte(MMU.Registers.IF, interruptRequest);
+			MMU.WriteByte(MMU.Registers.IF, interruptRequest);
 		}
 	}
 }

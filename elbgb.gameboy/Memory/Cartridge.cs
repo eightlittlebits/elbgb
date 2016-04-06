@@ -7,7 +7,7 @@ using elbgb.gameboy.Memory.Mappers;
 
 namespace elbgb.gameboy.Memory
 {
-	abstract class Cartridge
+	public abstract class Cartridge
 	{
 		public CartridgeHeader Header { get; set; }
 

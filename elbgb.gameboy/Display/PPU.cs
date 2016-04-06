@@ -5,7 +5,7 @@ using System.Text;
 
 namespace elbgb.gameboy.Display
 {
-	class PPU : ClockedComponent
+	public class PPU : ClockedComponent
 	{
 		public static class Registers
 		{

@@ -6,17 +6,15 @@ using System.Threading.Tasks;
 
 namespace elbgb.gameboy
 {
-	class SystemClock
+	public class SystemClock
 	{
-		private ulong _clockCycles;
-
 		public const uint ClockFrequency = 4194304;
 
-		public ulong Timestamp { get { return _clockCycles; } }
+		public ulong Timestamp;
 
 		public void AddMachineCycles(uint machineCycleCount)
 		{
-			_clockCycles += machineCycleCount * 4;
+			Timestamp += machineCycleCount * 4;
 		}
 	}
 }

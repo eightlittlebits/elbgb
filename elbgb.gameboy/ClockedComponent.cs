@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace elbgb.gameboy
 {
-	abstract class ClockedComponent
+	public abstract class ClockedComponent
 	{
 		protected GameBoy _gb;
 		protected ulong _lastUpdate;

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace elbgb.gameboy
 {
-	class Timer : ClockedComponent
+	public class Timer : ClockedComponent
 	{
 		public static class Registers
 		{

@@ -7,7 +7,7 @@ using elbgb.gameboy.Memory;
 
 namespace elbgb.gameboy.CPU
 {
-	class LR35902
+	public class LR35902
 	{
 		private GameBoy _gb;
 		private Registers _r;

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace elbgb.gameboy.Sound
 {
-	class PSG : ClockedComponent
+	public class PSG : ClockedComponent
 	{
 		public static class Registers
 		{

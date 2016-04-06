@@ -7,7 +7,7 @@ using elbgb.gameboy.Display;
 
 namespace elbgb.gameboy.Memory
 {
-	class MMU
+	public class MMU
 	{
 		public static class Registers
 		{
