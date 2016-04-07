@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using elbgb.gameboy.Memory.Mappers;
+using elbgb.gbcore.Memory.Mappers;
 
-namespace elbgb.gameboy.Memory
+namespace elbgb.gbcore.Memory
 {
 	public abstract class Cartridge
 	{

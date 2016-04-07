@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace elbgb.gameboy
+namespace elbgb.gbcore
 {
 	[Flags]
 	enum Interrupt : byte

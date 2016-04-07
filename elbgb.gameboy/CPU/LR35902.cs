@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using elbgb.gameboy.Memory;
+using elbgb.gbcore.Memory;
 
-namespace elbgb.gameboy.CPU
+namespace elbgb.gbcore.CPU
 {
 	public class LR35902
 	{

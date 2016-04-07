@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace elbgb.gameboy.Memory.Mappers
+namespace elbgb.gbcore.Memory.Mappers
 {
 	class RomOnly : Cartridge
 	{

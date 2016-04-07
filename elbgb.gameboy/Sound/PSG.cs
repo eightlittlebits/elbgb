@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace elbgb.gameboy.Sound
+namespace elbgb.gbcore.Sound
 {
 	public class PSG : ClockedComponent
 	{

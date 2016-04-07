@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using elbgb.gameboy.CPU;
-using elbgb.gameboy.Memory;
-using elbgb.gameboy.Display;
-using elbgb.gameboy.Sound;
+using elbgb.gbcore.CPU;
+using elbgb.gbcore.Memory;
+using elbgb.gbcore.Display;
+using elbgb.gbcore.Sound;
 
-namespace elbgb.gameboy
+namespace elbgb.gbcore
 {
 	public class GameBoy
 	{

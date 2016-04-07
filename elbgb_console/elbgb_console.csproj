@@ -51,9 +51,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\elbgb.gameboy\elbgb.gameboy.csproj">
+    <ProjectReference Include="..\elbgb.gameboy\elbgb.gbcore.csproj">
       <Project>{75da2bb4-4743-4f09-a8a3-b17d23534386}</Project>
-      <Name>elbgb.gameboy</Name>
+      <Name>elbgb.gbcore</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

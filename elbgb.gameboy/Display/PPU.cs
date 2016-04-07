@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace elbgb.gameboy.Display
+namespace elbgb.gbcore.Display
 {
 	public class PPU : ClockedComponent
 	{

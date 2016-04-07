@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using elbgb.gameboy.Display;
+using elbgb.gbcore.Display;
 
-namespace elbgb.gameboy.Memory
+namespace elbgb.gbcore.Memory
 {
 	public class MMU
 	{

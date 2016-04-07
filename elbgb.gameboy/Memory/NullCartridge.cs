@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace elbgb.gameboy.Memory
+namespace elbgb.gbcore.Memory
 {
 	class NullCartridge : Cartridge
 	{
