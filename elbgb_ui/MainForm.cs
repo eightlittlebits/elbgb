@@ -132,6 +132,7 @@ namespace elbgb_ui
 
 		private void InitialiseDisplayBuffer(int width, int height)
 		{
+			// TODO(david): Investigate performance, PixelFormat.Format32bppPArgb seems to be recommended
 			_displayBuffer = new Bitmap(width, height, PixelFormat.Format8bppIndexed);
 
 			ApplyPaletteToImage(_displayBuffer, "default");
