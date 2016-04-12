@@ -28,28 +28,24 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-			this.menuStrip1 = new System.Windows.Forms.MenuStrip();
+			this.mainFormMenuStrip = new System.Windows.Forms.MenuStrip();
 			this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.regenerateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
 			this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.displayPanel = new System.Windows.Forms.Panel();
-			this.imageTypeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.bppIndexedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.bppARGBToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.menuStrip1.SuspendLayout();
+			this.mainFormMenuStrip.SuspendLayout();
 			this.SuspendLayout();
 			// 
-			// menuStrip1
+			// mainFormMenuStrip
 			// 
-			this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.fileToolStripMenuItem,
-            this.imageTypeToolStripMenuItem});
-			this.menuStrip1.Location = new System.Drawing.Point(0, 0);
-			this.menuStrip1.Name = "menuStrip1";
-			this.menuStrip1.Size = new System.Drawing.Size(172, 24);
-			this.menuStrip1.TabIndex = 0;
-			this.menuStrip1.Text = "menuStrip1";
+			this.mainFormMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.fileToolStripMenuItem});
+			this.mainFormMenuStrip.Location = new System.Drawing.Point(0, 0);
+			this.mainFormMenuStrip.Name = "mainFormMenuStrip";
+			this.mainFormMenuStrip.Size = new System.Drawing.Size(172, 24);
+			this.mainFormMenuStrip.TabIndex = 0;
+			this.mainFormMenuStrip.Text = "menuStrip1";
 			// 
 			// fileToolStripMenuItem
 			// 
@@ -78,6 +74,7 @@
 			this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
 			this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
 			this.exitToolStripMenuItem.Text = "E&xit";
+			this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
 			// 
 			// displayPanel
 			// 
@@ -86,30 +83,8 @@
 			this.displayPanel.Name = "displayPanel";
 			this.displayPanel.Size = new System.Drawing.Size(172, 168);
 			this.displayPanel.TabIndex = 2;
+			this.displayPanel.Click += new System.EventHandler(this.displayPanel_Click);
 			this.displayPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.displayPanel_Paint);
-			// 
-			// imageTypeToolStripMenuItem
-			// 
-			this.imageTypeToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.bppIndexedToolStripMenuItem,
-            this.bppARGBToolStripMenuItem});
-			this.imageTypeToolStripMenuItem.Name = "imageTypeToolStripMenuItem";
-			this.imageTypeToolStripMenuItem.Size = new System.Drawing.Size(78, 20);
-			this.imageTypeToolStripMenuItem.Text = "ImageType";
-			// 
-			// bppIndexedToolStripMenuItem
-			// 
-			this.bppIndexedToolStripMenuItem.Name = "bppIndexedToolStripMenuItem";
-			this.bppIndexedToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-			this.bppIndexedToolStripMenuItem.Text = "4bpp Indexed";
-			this.bppIndexedToolStripMenuItem.Click += new System.EventHandler(this.bppIndexedToolStripMenuItem_Click);
-			// 
-			// bppARGBToolStripMenuItem
-			// 
-			this.bppARGBToolStripMenuItem.Name = "bppARGBToolStripMenuItem";
-			this.bppARGBToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-			this.bppARGBToolStripMenuItem.Text = "32bpp ARGB";
-			this.bppARGBToolStripMenuItem.Click += new System.EventHandler(this.bppARGBToolStripMenuItem_Click);
 			// 
 			// MainForm
 			// 
@@ -117,13 +92,16 @@
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(172, 192);
 			this.Controls.Add(this.displayPanel);
-			this.Controls.Add(this.menuStrip1);
-			this.MainMenuStrip = this.menuStrip1;
+			this.Controls.Add(this.mainFormMenuStrip);
+			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+			this.MainMenuStrip = this.mainFormMenuStrip;
+			this.MaximizeBox = false;
+			this.MinimizeBox = false;
 			this.Name = "MainForm";
-			this.Text = "Form1";
+			this.Text = "elbgb";
 			this.Load += new System.EventHandler(this.Form1_Load);
-			this.menuStrip1.ResumeLayout(false);
-			this.menuStrip1.PerformLayout();
+			this.mainFormMenuStrip.ResumeLayout(false);
+			this.mainFormMenuStrip.PerformLayout();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -131,15 +109,12 @@
 
 		#endregion
 
-		private System.Windows.Forms.MenuStrip menuStrip1;
+		private System.Windows.Forms.MenuStrip mainFormMenuStrip;
 		private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
 		private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
 		private System.Windows.Forms.Panel displayPanel;
 		private System.Windows.Forms.ToolStripMenuItem regenerateToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem imageTypeToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem bppIndexedToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem bppARGBToolStripMenuItem;
 	}
 }
 

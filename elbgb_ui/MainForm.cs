@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -13,9 +14,13 @@ namespace elbgb_ui
 {
 	public partial class MainForm : Form
 	{
-		private Func<Bitmap> _imageGenerateMethod;
+		private const int ScreenWidth = 160;
+		private const int ScreenHeight = 144;
 
+		private Dictionary<string, int[]> _palettes;
 		private Bitmap _displayBuffer;
+
+		private byte[] _debugScreenData;
 
 		public MainForm()
 		{
@@ -24,96 +29,144 @@ namespace elbgb_ui
 
 		private void Form1_Load(object sender, EventArgs e)
 		{
-			int width = 160 * 2;
-			int height = 144 * 2 + menuStrip1.Height;
+			int width = ScreenWidth * 2;
+			int height = ScreenHeight * 2 + mainFormMenuStrip.Height;
 
 			this.ClientSize = new Size(width, height);
 
-			_imageGenerateMethod = Generate4bppIndexedImage;
-			bppIndexedToolStripMenuItem.Checked = true;
+			InitialisePalettes();
+			BuildPaletteMenu();
 
-			_displayBuffer = _imageGenerateMethod();
+			InitialiseDisplayBuffer(160, 144);
+
+			_debugScreenData = GenerateDebugScreenData();
+			RenderScreenDataToDisplayBuffer(_debugScreenData);
 		}
 
-		private Bitmap Generate4bppIndexedImage()
+		private void BuildPaletteMenu()
 		{
-			var rand = new Random();
+			var rootPaletteMenuItem = new ToolStripMenuItem("&Palette");
 
-			Bitmap image = new Bitmap(160, 144, PixelFormat.Format4bppIndexed);
+			mainFormMenuStrip.Items.Add(rootPaletteMenuItem);
 
-			// set up our 2 bit palette
+			foreach(var paletteName in _palettes.Keys)
+			{
+				var paletteMenuItem = new ToolStripRadioButtonMenuItem(paletteName,
+					null,
+					(sender, e) =>
+					{
+						ApplyPaletteToImage(_displayBuffer, paletteName);
+						RenderScreenDataToDisplayBuffer(_debugScreenData);
+						displayPanel.Invalidate();
+					});
+
+				if (paletteName == "default")
+				{
+					paletteMenuItem.Checked = true;
+				}
+
+				rootPaletteMenuItem.DropDownItems.Add(paletteMenuItem);
+			}
+		}
+
+		private byte[] GenerateDebugScreenData()
+		{
+			Random r = new Random();
+
+			byte[] screenData = new byte[ScreenWidth * ScreenHeight];
+
+			for (int i = 0; i < screenData.Length; i++)
+			{
+				screenData[i] = (byte)r.Next(4);
+			}
+
+			return screenData;
+		}
+
+		private void InitialisePalettes()
+		{
+			_palettes = new Dictionary<string, int[]>
+			{
+				{"default", new int[] {0xFFFFFF, 0xB7B7B7, 0x686868, 0x000000} },
+
+				// the following palettes from http://www.hardcoregaming101.net/gbdebate/gbcolours.htm
+				{"dark yellow",	new int[] {0xFFF77B, 0xB5AE4A, 0x6B6931, 0x212010} },
+				{"light yellow", new int[] {0xFFFF94, 0xD0D066, 0x949440, 0x666625} },
+				{"green", new int[] {0xB7DC11, 0x88A808, 0x306030, 0x083808} },
+				{"greyscale", new int[] {0xEFEFEF, 0xB2B2B2, 0x757575, 0x383838} },
+				{"stark b/w", new int[] {0xFFFFFF, 0xB2B2B2, 0x757575, 0x000000} },
+				{"gb pocket", new int[] {0xE3E6C9, 0xC3C4A5, 0x8E8B61, 0x6C6C4E} },
+			};
+		}
+
+		private void ApplyPaletteToImage(Bitmap image, string paletteName)
+		{
+			#region parameter validation
+
+			if (image == null)
+				throw new ArgumentNullException("image");
+
+			if ((image.PixelFormat & PixelFormat.Indexed) != PixelFormat.Indexed)
+				throw new ArgumentException("Image must have an indexed pixel format", "image");
+
+			if (paletteName == null)
+				throw new ArgumentNullException("paletteName");
+
+			if (!_palettes.ContainsKey(paletteName))
+				throw new ArgumentException(string.Format("{0} is not a valid palette name.", paletteName), "paletteName");
+
+			if (image.Palette.Entries.Length < _palettes[paletteName].Length)
+				throw new ArgumentException(string.Format("Image bit depth too low to apply palette {0}", paletteName));
+
+			#endregion
+
 			var palette = image.Palette;
 
-			palette.Entries[0] = Color.FromArgb(255, 255, 255, 255);
-			palette.Entries[1] = Color.FromArgb(255, 183, 183, 183);
-			palette.Entries[2] = Color.FromArgb(255, 104, 104, 104);
-			palette.Entries[3] = Color.FromArgb(255, 0, 0, 0);
+			for (int i = 0; i < _palettes[paletteName].Length; i++)
+			{
+				palette.Entries[i] = Color.FromArgb(_palettes[paletteName][i]);
+			}
 
 			image.Palette = palette;
-
-			// fill bitmap with random palette entries 0-3
-			var imageData = image.LockBits(new Rectangle(0, 0, image.Width, image.Height),
-												ImageLockMode.WriteOnly,
-												image.PixelFormat);
-
-			unsafe
-			{
-
-				for (int y = 0; y < imageData.Height; y++)
-				{
-					byte* row = (byte*)imageData.Scan0 + (y * imageData.Stride);
-
-					for (int x = 0; x < imageData.Width / 2; x++)
-					{
-						int pixelA = rand.Next(4);
-						int pixelB = rand.Next(4);
-
-						byte indexedPixel = (byte)((pixelA << 4) | pixelB);
-
-						row[x] = indexedPixel;
-					}
-				}
-			}
-
-			image.UnlockBits(imageData);
-
-			return image;
 		}
 
-		private Bitmap Generate32bppArgbImage()
+		private void InitialiseDisplayBuffer(int width, int height)
 		{
-			var rand = new Random();
+			_displayBuffer = new Bitmap(width, height, PixelFormat.Format8bppIndexed);
 
-			Bitmap image = new Bitmap(160, 144, PixelFormat.Format32bppArgb);
+			ApplyPaletteToImage(_displayBuffer, "default");
+		}
 
-			// fill bitmap with random colours
-			var imageData = image.LockBits(new Rectangle(0, 0, image.Width, image.Height),
-												ImageLockMode.WriteOnly,
-												image.PixelFormat);
-
-			var pixelFormatSize = Image.GetPixelFormatSize(image.PixelFormat) / 8;
-
-			unsafe
+		private void RenderScreenDataToDisplayBuffer(byte[] screenData)
+		{
+			// get a pinned GC handle to our screen data array so we can pass it as a 
+			// user input buffer to LockBits
+			GCHandle screenDataGCHandle = GCHandle.Alloc(screenData, GCHandleType.Pinned);
+			try
 			{
-				for (int y = 0; y < imageData.Height; y++)
+				BitmapData bitmapData = new BitmapData
 				{
-					byte* row = (byte*)imageData.Scan0 + (y * imageData.Stride);
+					Width = ScreenWidth,
+					Height = ScreenHeight,
+					Stride = ScreenWidth,
+					PixelFormat = PixelFormat.Format8bppIndexed,
+					Scan0 = screenDataGCHandle.AddrOfPinnedObject()
+				};
 
-					for (int x = 0; x < imageData.Width; x++)
-					{
-						byte* pixel = row + (x * pixelFormatSize);
+				// pass our data to the bitmap
+				_displayBuffer.LockBits(new Rectangle(0, 0, _displayBuffer.Width, _displayBuffer.Height),
+												ImageLockMode.WriteOnly | ImageLockMode.UserInputBuffer,
+												_displayBuffer.PixelFormat,
+												bitmapData);
 
-						pixel[0] = (byte)rand.Next(256); // B
-						pixel[1] = (byte)rand.Next(256); // G
-						pixel[2] = (byte)rand.Next(256); // R
-						pixel[3] = (byte)rand.Next(256); // A
-					}
-				}
+				// commit the changes and unlock the bitmap
+				_displayBuffer.UnlockBits(bitmapData);
 			}
-
-			image.UnlockBits(imageData);
-
-			return image;
+			finally
+			{
+				if (screenDataGCHandle.IsAllocated)
+					screenDataGCHandle.Free();
+			}
 		}
 
 		private void displayPanel_Paint(object sender, PaintEventArgs e)
@@ -125,28 +178,23 @@ namespace elbgb_ui
 
 		private void regenerateToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			_displayBuffer = _imageGenerateMethod();
+			_debugScreenData = GenerateDebugScreenData();
+			RenderScreenDataToDisplayBuffer(_debugScreenData);
+
 			displayPanel.Invalidate();
 		}
 
-		private void bppIndexedToolStripMenuItem_Click(object sender, EventArgs e)
+		private void displayPanel_Click(object sender, EventArgs e)
 		{
-			_imageGenerateMethod = Generate4bppIndexedImage;
-			bppIndexedToolStripMenuItem.Checked = true;
-			bppARGBToolStripMenuItem.Checked = false;
+			_debugScreenData = GenerateDebugScreenData();
+			RenderScreenDataToDisplayBuffer(_debugScreenData);
 
-			_displayBuffer = _imageGenerateMethod();
 			displayPanel.Invalidate();
 		}
 
-		private void bppARGBToolStripMenuItem_Click(object sender, EventArgs e)
+		private void exitToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			_imageGenerateMethod = Generate32bppArgbImage;
-			bppIndexedToolStripMenuItem.Checked = false;
-			bppARGBToolStripMenuItem.Checked = true;
-
-			_displayBuffer = _imageGenerateMethod();
-			displayPanel.Invalidate();
+			this.Close();
 		}
 	}
 }
