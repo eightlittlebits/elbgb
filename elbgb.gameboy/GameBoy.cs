@@ -15,6 +15,8 @@ namespace elbgb.gbcore
 		// 70224 cycles per frame (456 cycles per scanline * 154 scanlines)
 		private const int CyclesPerFrame = 70224;
 
+		public GBCoreInterface Interface;
+
 		public SystemClock Clock;
 		public LR35902 CPU;
 		public MMU MMU;
@@ -26,6 +28,13 @@ namespace elbgb.gbcore
 
 		public GameBoy()
 		{
+			// default to an null interface, implementation by front ends is optional
+			Interface = new GBCoreInterface
+				{
+					PresentScreenData = (byte[] screenData) => { },
+					//PollInput = () => { return default(GBCoreInput); }
+				};
+
 			Clock = new SystemClock();
 
 			CPU = new LR35902(this);

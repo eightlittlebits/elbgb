@@ -30,6 +30,8 @@ namespace elbgb.gbcore.Display
 			public const ushort WX   = 0xFF4B; // window x
 		}
 
+		private byte[] _screenData;
+
 		private byte[] _vram;
 		private byte[] _oam;
 
@@ -64,6 +66,8 @@ namespace elbgb.gbcore.Display
 		public PPU(GameBoy gameBoy)
 			: base(gameBoy)
 		{
+			_screenData = new byte[160 * 144];
+
 			_vram = new byte[0x2000];
 			_oam = new byte[0xA0];
 
@@ -270,6 +274,10 @@ namespace elbgb.gbcore.Display
 					if (_currentScanline == 144)
 					{
 						_gb.RequestInterrupt(Interrupt.VBlank);
+
+						// we've just entered vblank so the rendering for the frame is finished
+						// present the screen data
+						_gb.Interface.PresentScreenData(_screenData);
 					}
 
 					if (_currentScanline > 153)

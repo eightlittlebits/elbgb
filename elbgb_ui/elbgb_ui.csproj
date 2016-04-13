@@ -85,6 +85,12 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\elbgb.gameboy\elbgb.gbcore.csproj">
+      <Project>{75da2bb4-4743-4f09-a8a3-b17d23534386}</Project>
+      <Name>elbgb.gbcore</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

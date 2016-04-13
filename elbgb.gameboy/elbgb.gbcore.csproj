@@ -47,6 +47,8 @@
     <Compile Include="CPU\Registers.cs" />
     <Compile Include="CPU\StatusFlags.cs" />
     <Compile Include="GameBoy.cs" />
+    <Compile Include="GBCoreInput.cs" />
+    <Compile Include="GBCoreInterface.cs" />
     <Compile Include="IMemoryMappedComponent.cs" />
     <Compile Include="Interrupt.cs" />
     <Compile Include="Memory\Cartridge.cs" />

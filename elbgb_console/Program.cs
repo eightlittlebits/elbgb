@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -19,11 +20,24 @@ namespace elbgb_console
 
 			gb.LoadRom(rom);
 
+			int frameCounter = 0;
+			Stopwatch stopwatch = new Stopwatch();
+
 			try
 			{
 				while (true)
 				{
-					gb.RunInstruction();
+					stopwatch.Restart();
+
+					gb.RunFrame();
+
+					stopwatch.Stop();
+
+					frameCounter++;
+
+					double elapsedMicroseconds = stopwatch.ElapsedTicks / (double)(Stopwatch.Frequency / 1000);
+
+					Console.WriteLine("Frame {0} ran in {1}ms {2}", frameCounter, elapsedMicroseconds, stopwatch.ElapsedMilliseconds);
 				}
 			}
 			catch (Exception ex)

@@ -9,19 +9,22 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using elbgb.gbcore;
 
 namespace elbgb_ui
 {
 	public partial class MainForm : Form
 	{
+		private GameBoy _gameBoy;
+
 		private const int ScreenWidth = 160;
 		private const int ScreenHeight = 144;
 
+		private byte[] _screenData;
+
 		private Dictionary<string, int[]> _palettes;
 		private Bitmap _displayBuffer;
-
-		private byte[] _debugScreenData;
-
+		
 		public MainForm()
 		{
 			InitializeComponent();
@@ -29,6 +32,10 @@ namespace elbgb_ui
 
 		private void Form1_Load(object sender, EventArgs e)
 		{
+			_gameBoy = new GameBoy();
+
+			_gameBoy.Interface.PresentScreenData = PresentScreenData;
+
 			int width = ScreenWidth * 2;
 			int height = ScreenHeight * 2 + mainFormMenuStrip.Height;
 
@@ -37,10 +44,11 @@ namespace elbgb_ui
 			InitialisePalettes();
 			BuildPaletteMenu();
 
-			InitialiseDisplayBuffer(160, 144);
+			_displayBuffer = CreateDisplayBuffer(160, 144);
 
-			_debugScreenData = GenerateDebugScreenData();
-			RenderScreenDataToDisplayBuffer(_debugScreenData);
+			_screenData = GenerateDebugScreenData();
+
+			RenderScreenDataToBitmap(_displayBuffer, _screenData);
 		}
 
 		private void BuildPaletteMenu()
@@ -56,7 +64,7 @@ namespace elbgb_ui
 					(sender, e) =>
 					{
 						ApplyPaletteToImage(_displayBuffer, paletteName);
-						RenderScreenDataToDisplayBuffer(_debugScreenData);
+						RenderScreenDataToBitmap(_displayBuffer, _screenData);
 						displayPanel.Invalidate();
 					});
 
@@ -130,15 +138,22 @@ namespace elbgb_ui
 			image.Palette = palette;
 		}
 
-		private void InitialiseDisplayBuffer(int width, int height)
+		private Bitmap CreateDisplayBuffer(int width, int height)
 		{
 			// TODO(david): Investigate performance, PixelFormat.Format32bppPArgb seems to be recommended
-			_displayBuffer = new Bitmap(width, height, PixelFormat.Format8bppIndexed);
+			var displayBuffer = new Bitmap(width, height, PixelFormat.Format8bppIndexed);
 
-			ApplyPaletteToImage(_displayBuffer, "default");
+			ApplyPaletteToImage(displayBuffer, "default");
+
+			return displayBuffer;
 		}
 
-		private void RenderScreenDataToDisplayBuffer(byte[] screenData)
+		public void PresentScreenData(byte[] screenData)
+		{
+			RenderScreenDataToBitmap(_displayBuffer, screenData);
+		}
+
+		private static void RenderScreenDataToBitmap(Bitmap bitmap, byte[] screenData)
 		{
 			// get a pinned GC handle to our screen data array so we can pass it as a 
 			// user input buffer to LockBits
@@ -155,13 +170,13 @@ namespace elbgb_ui
 				};
 
 				// pass our data to the bitmap
-				_displayBuffer.LockBits(new Rectangle(0, 0, _displayBuffer.Width, _displayBuffer.Height),
+				bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height),
 												ImageLockMode.WriteOnly | ImageLockMode.UserInputBuffer,
-												_displayBuffer.PixelFormat,
+												bitmap.PixelFormat,
 												bitmapData);
 
 				// commit the changes and unlock the bitmap
-				_displayBuffer.UnlockBits(bitmapData);
+				bitmap.UnlockBits(bitmapData);
 			}
 			finally
 			{
@@ -179,16 +194,16 @@ namespace elbgb_ui
 
 		private void regenerateToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			_debugScreenData = GenerateDebugScreenData();
-			RenderScreenDataToDisplayBuffer(_debugScreenData);
+			_screenData = GenerateDebugScreenData();
+			RenderScreenDataToBitmap(_displayBuffer, _screenData);
 
 			displayPanel.Invalidate();
 		}
 
 		private void displayPanel_Click(object sender, EventArgs e)
 		{
-			_debugScreenData = GenerateDebugScreenData();
-			RenderScreenDataToDisplayBuffer(_debugScreenData);
+			_screenData = GenerateDebugScreenData();
+			RenderScreenDataToBitmap(_displayBuffer, _screenData);
 
 			displayPanel.Invalidate();
 		}
