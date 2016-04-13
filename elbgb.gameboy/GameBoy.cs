@@ -12,6 +12,9 @@ namespace elbgb.gbcore
 {
 	public class GameBoy
 	{
+		// 70224 cycles per frame (456 cycles per scanline * 154 scanlines)
+		private const int CyclesPerFrame = 70224;
+
 		public SystemClock Clock;
 		public LR35902 CPU;
 		public MMU MMU;
@@ -37,6 +40,18 @@ namespace elbgb.gbcore
 		public void LoadRom(byte[] romData)
 		{
 			Cartridge = Cartridge.LoadRom(romData);
+		}
+
+		public void RunFrame()
+		{
+			// add one frames cycles onto current system clock timestamp to get 
+			// a target and run until reached
+			ulong targetFrameTimestamp = Clock.Timestamp + CyclesPerFrame;
+
+			while (Clock.Timestamp < targetFrameTimestamp)
+			{
+				RunInstruction();
+			}
 		}
 
 		public void RunInstruction()
