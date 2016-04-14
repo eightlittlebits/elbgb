@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace elbgb.gbcore
 {
-	//public struct GBCoreInput
-	//{
+	public struct GBCoreInput
+	{
 	//	bool Up;
 	//	bool Down;
 	//	bool Left;
@@ -18,5 +18,5 @@ namespace elbgb.gbcore
 
 	//	bool Start;
 	//	bool Select;
-	//}
+	}
 }

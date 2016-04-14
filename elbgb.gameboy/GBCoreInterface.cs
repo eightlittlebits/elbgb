@@ -9,6 +9,6 @@ namespace elbgb.gbcore
 	public struct GBCoreInterface
 	{
 		public Action<byte[]> PresentScreenData;
-		//public Func<GBCoreInput> PollInput;
+		public Func<GBCoreInput> PollInput;
 	}
 }
