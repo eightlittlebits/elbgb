@@ -23,6 +23,7 @@ namespace elbgb.gbcore
 		public Timer Timer;
 		public PPU PPU;
 		public PSG PSG;
+		public SerialIO SerialIO;
 
 		public Cartridge Cartridge;
 
@@ -42,6 +43,7 @@ namespace elbgb.gbcore
 			Timer = new Timer(this);
 			PPU = new PPU(this);
 			PSG = new PSG(this);
+			SerialIO = new SerialIO(this);
 
 			Cartridge = Cartridge.LoadRom(null);
 		}
@@ -72,6 +74,7 @@ namespace elbgb.gbcore
 			Timer.SynchroniseWithSystemClock();
 			PPU.SynchroniseWithSystemClock();
 			PSG.SynchroniseWithSystemClock();
+			SerialIO.SynchroniseWithSystemClock();
 		}
 
 		internal void RequestInterrupt(Interrupt interrupt)
