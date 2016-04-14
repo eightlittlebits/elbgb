@@ -44,7 +44,6 @@ namespace elbgb.gbcore.Memory
 		private byte[] _hram;
 
 		private byte _interruptFlag;
-		private byte _interruptEnable;
 
 		public MMU(GameBoy gameBoy)
 		{
@@ -53,7 +52,7 @@ namespace elbgb.gbcore.Memory
 			_bootRomLocked = false;
 
 			_wram = new byte[0x2000];
-			_hram = new byte[0x7F];
+			_hram = new byte[0x80];
 		}
 
 		public byte ReadByte(ushort address)
@@ -137,14 +136,9 @@ namespace elbgb.gbcore.Memory
 						return _gb.PPU.ReadByte(address);
 					}
 					// 0xFF80 - 0xFFFE - hi ram
-					else if (address >= 0xFF80 && address <= 0xFFFE)
+					else if (address >= 0xFF80 && address <= 0xFFFF)
 					{
 						return _hram[address & 0x7F];
-					}
-					// 0xFFFF - interrupt enable
-					else if (address == Registers.IE)
-					{
-						return _interruptEnable;
 					}
 					else
 						throw new NotImplementedException();
@@ -205,6 +199,10 @@ namespace elbgb.gbcore.Memory
 							{
 								_gb.PPU.WriteByte(address, value);
 							}
+							else
+							{
+								// Ignore writes to 0xFEA0 - 0xFEFF
+							}
 							break;
 
 						case 0xF00:
@@ -240,8 +238,6 @@ namespace elbgb.gbcore.Memory
 								// 0xFF10 - 0xFF26 - NR xx sound registers
 								case 0x10:
 								case 0x20:
-									_gb.PSG.WriteByte(address, value); break;
-
 								// 0xFF30 - 0xFF3F - waveform ram
 								case 0x30:
 									_gb.PSG.WriteByte(address, value); break;
@@ -262,26 +258,8 @@ namespace elbgb.gbcore.Memory
 								
 								// 0xFF80 - 0xFFFE - hi ram
 								case 0x80: case 0x90: case 0xA0: case 0xB0:
-								case 0xC0: case 0xD0: case 0xE0:
-									_hram[address & 0x7F] = value; 
-									break;
-
-								case 0xF0:
-									switch (address & 0x000F)
-									{
-										// 0xFF80 - 0xFFFE - hi ram
-										case 0x0: case 0x1: case 0x2: case 0x3: 
-										case 0x4: case 0x5: case 0x6: case 0x7: 
-										case 0x8: case 0x9: case 0xA: case 0xB: 
-										case 0xC: case 0xD: case 0xE: 
-											_hram[address & 0x7F] = value;
-											break;
-
-										// 0xFFFF - interrupt enable
-										case 0xF: // IE
-											_interruptEnable = (byte)(value & 0x1F);
-											break;
-									}
+								case 0xC0: case 0xD0: case 0xE0: case 0xF0:
+									_hram[address & 0x7F] = value;
 									break;
 							}
 							break;
