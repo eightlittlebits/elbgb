@@ -3,32 +3,43 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace elbgb.gbcore.Display
+namespace elbgb.gbcore
 {
-	public class PPU : ClockedComponent
+	public class LCDController : ClockedComponent
 	{
 		public static class Registers
 		{
 			// LCD display registers
 			public const ushort LCDC = 0xFF40; // LCD control
 			public const ushort STAT = 0xFF41; // LCD status
-			public const ushort SCY	 = 0xFF42; // scroll y
-			public const ushort SCX	 = 0xFF43; // scroll x
-			public const ushort LY   = 0xFF44; // LCD y co-ord
-			public const ushort LYC	 = 0xFF45; // LCD y compare
+			public const ushort SCY = 0xFF42; // scroll y
+			public const ushort SCX = 0xFF43; // scroll x
+			public const ushort LY = 0xFF44; // LCD y co-ord
+			public const ushort LYC = 0xFF45; // LCD y compare
 
 			// DMA register
-			public const ushort DMA	 = 0xFF46; 
-			
+			public const ushort DMA = 0xFF46;
+
 			// palette data
-			public const ushort BGP	 = 0xFF47; // background palette
+			public const ushort BGP = 0xFF47; // background palette
 			public const ushort OBP0 = 0xFF48; // object (sprite) palette 0
 			public const ushort OBP1 = 0xFF49; // object (sprite) palette 1
 
 			// LCD display registers
-			public const ushort WY	 = 0xFF4A; // window y
-			public const ushort WX   = 0xFF4B; // window x
+			public const ushort WY = 0xFF4A; // window y
+			public const ushort WX = 0xFF4B; // window x
 		}
+
+		public enum LcdMode : byte
+		{
+			HBlank = 0x00,
+			VBlank = 0x01,
+			OAMRead = 0x02,
+			VRAMRead = 0x03,
+		}
+
+		private const int ScreenWidth = 160;
+		private const int ScreenHeight = 144;
 
 		private byte[] _screenData;
 
@@ -46,6 +57,7 @@ namespace elbgb.gbcore.Display
 		private bool _backgroundEnabled;			// LCDC bit 0 - 0: Off / 1: On
 
 		private byte _lcdStatus;					// STAT value store
+		private LcdMode _lcdMode;					// STAT bit 0 - 1: LCD mode flag
 
 		private byte _scrollY, _scrollX;			// SCY, SCX
 
@@ -61,12 +73,13 @@ namespace elbgb.gbcore.Display
 
 		private byte _windowY, _windowX;			// WY, WX
 
-		private uint _scanlineClocks; // counter of clock cycles elapsed in the current scanline
+		private uint _frameClocks;					// counter of clock cycles elapsed in the current frame
+		private uint _scanlineClocks;				// counter of clock cycles elapsed in the current scanline
 
-		public PPU(GameBoy gameBoy)
+		public LCDController(GameBoy gameBoy)
 			: base(gameBoy)
 		{
-			_screenData = new byte[160 * 144];
+			_screenData = new byte[ScreenWidth * ScreenHeight];
 
 			_vram = new byte[0x2000];
 			_oam = new byte[0xA0];
@@ -88,7 +101,7 @@ namespace elbgb.gbcore.Display
 					return _lcdControl;
 
 				case Registers.STAT:
-					return _lcdStatus;
+					return (byte)((_lcdStatus & ~0x03) | (byte)_lcdMode);
 
 				case Registers.SCY:
 					return _scrollY;
@@ -142,11 +155,19 @@ namespace elbgb.gbcore.Display
 
 						_displayEnabled = (_lcdControl & 0x80) == 0x80;
 
+						// lcd starts in mode 2 when enabled
+						if (_displayEnabled)
+						{
+							_lcdMode = LcdMode.OAMRead;
+						}
 						// reset LY when display is disabled
-						if (!_displayEnabled)
+						else
 						{
 							_currentScanline = 0;
 							CompareScanlineValue();
+
+							_scanlineClocks = 0;
+							_frameClocks = 0;
 						}
 
 						_windowTileBaseAddress = (ushort)((_lcdControl & 0x40) == 0x40 ? 0x9C00 : 0x9800);
@@ -161,9 +182,11 @@ namespace elbgb.gbcore.Display
 
 					case Registers.STAT:
 						// capture lcd interrupt selection from value
+						// interrupt selection stored in bits 6-3, preserve bits 0-2
+						// and mask bits 6-3 from value passed in
 						_lcdStatus = (byte)((_lcdStatus & 0x07) | (value & 0x78));
 
-						// a write to the LY = LYC match flag clears the flag
+						// a write to the LY = LYC match flag (bit 2) clears the flag
 						if ((value & 0x04) == 0x04)
 						{
 							unchecked { _lcdStatus &= (byte)~0x04; }
@@ -258,34 +281,62 @@ namespace elbgb.gbcore.Display
 			}
 		}
 
-		public override void Update(ulong cycleCount)
+		public override void Update(uint cycleCount)
 		{
-			// only run PPU update if display is enabled
+			// only run lcd controller update if display is enabled
 			if (_displayEnabled)
 			{
-				_scanlineClocks += (uint)cycleCount;
+				_frameClocks += cycleCount;
+				_scanlineClocks += cycleCount;
 
-				// 456 clocks a scanline
-				if (_scanlineClocks >= 456)
+				// LCD runs for 70224 cpu cycles a frame, 456 cycles a scanline and 154 total scanlines
+				// 10 of the scanlines are VBlank and the rest are the active portion of the cycle
+				// mode 2, 3 and 0 occur in he first 65664 cycles of a frame (70224 - 4560)
+				if (_frameClocks < 65664)
 				{
-					_scanlineClocks -= 456;
-					_currentScanline++;
-
-					if (_currentScanline == 144)
+					if (_scanlineClocks >= 456)
 					{
+						_scanlineClocks -= 456;
+						_currentScanline++;
+
+						CompareScanlineValue();
+					}
+				}
+				// otherwise we're in vblank
+				else
+				{
+					// are we entering vblank from another mode?
+					if (_lcdMode != LcdMode.VBlank)
+					{
+						_lcdMode = LcdMode.VBlank;
+
+						_scanlineClocks -= 456;
+						_currentScanline++;
+						CompareScanlineValue();
+
 						_gb.RequestInterrupt(Interrupt.VBlank);
 
 						// we've just entered vblank so the rendering for the frame is finished
 						// present the screen data
 						_gb.Interface.PresentScreenData(_screenData);
 					}
-
-					if (_currentScanline > 153)
+					// processing vblank 
+					else
 					{
-						_currentScanline = 0;
-					}
+						if (_scanlineClocks >= 456)
+						{
+							_scanlineClocks -= 456;
+							_currentScanline++;
 
-					CompareScanlineValue();
+							if (_currentScanline > 153)
+							{
+								_frameClocks -= 70224;
+								_currentScanline = 0;
+							}
+
+							CompareScanlineValue();
+						}
+					}
 				}
 			}
 		}

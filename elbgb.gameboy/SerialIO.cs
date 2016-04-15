@@ -14,7 +14,7 @@ namespace elbgb.gbcore
 
 		}
 
-		public override void Update(ulong cycleCount)
+		public override void Update(uint cycleCount)
 		{
 			return;
 		}

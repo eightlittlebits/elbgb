@@ -55,7 +55,7 @@
     <Compile Include="Memory\CartridgeHeader.cs" />
     <Compile Include="Memory\Mappers\RomOnly.cs" />
     <Compile Include="Memory\MMU.cs" />
-    <Compile Include="Display\PPU.cs" />
+    <Compile Include="LCDController.cs" />
     <Compile Include="Memory\NullCartridge.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SerialIO.cs" />

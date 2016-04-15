@@ -106,22 +106,22 @@ namespace elbgb.gbcore
 			}
 		}
 
-		public override void Update(ulong cycleCount)
+		public override void Update(uint cycleCount)
 		{
 			UpdateDivider(cycleCount);
 			UpdateTimer(cycleCount);
 		}
 
-		private void UpdateDivider(ulong cycleCount)
+		private void UpdateDivider(uint cycleCount)
 		{
 			_divider += (ushort)cycleCount;
 		}
 
-		private void UpdateTimer(ulong cycleCount)
+		private void UpdateTimer(uint cycleCount)
 		{
 			if (_timerEnabled)
 			{
-				_timerCounter += (uint)cycleCount;
+				_timerCounter += cycleCount;
 
 				while (_timerCounter >= _timerInterval)
 				{

@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using elbgb.gbcore.CPU;
 using elbgb.gbcore.Memory;
-using elbgb.gbcore.Display;
 using elbgb.gbcore.Sound;
 
 namespace elbgb.gbcore
@@ -21,7 +20,7 @@ namespace elbgb.gbcore
 		public LR35902 CPU;
 		public MMU MMU;
 		public Timer Timer;
-		public PPU PPU;
+		public LCDController PPU;
 		public PSG PSG;
 		public SerialIO SerialIO;
 
@@ -41,7 +40,7 @@ namespace elbgb.gbcore
 			CPU = new LR35902(this);
 			MMU = new MMU(this);
 			Timer = new Timer(this);
-			PPU = new PPU(this);
+			PPU = new LCDController(this);
 			PSG = new PSG(this);
 			SerialIO = new SerialIO(this);
 

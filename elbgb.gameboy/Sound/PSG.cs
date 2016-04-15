@@ -55,7 +55,7 @@ namespace elbgb.gbcore.Sound
 			SynchroniseWithSystemClock();
 		}
 
-		public override void Update(ulong cycleCount)
+		public override void Update(uint cycleCount)
 		{
 
 		}

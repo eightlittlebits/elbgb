@@ -19,14 +19,15 @@ namespace elbgb.gbcore
 		// Synchronise this component with the current system clock 
 		public void SynchroniseWithSystemClock()
 		{
-			ulong cyclesToUpdate = _gb.Clock.Timestamp - _lastUpdate;
+			ulong timestamp = _gb.Clock.Timestamp;
+			uint cyclesToUpdate = (uint)(timestamp - _lastUpdate);
 
-			_lastUpdate = _gb.Clock.Timestamp;
-
+			_lastUpdate = timestamp;
+			
 			Update(cyclesToUpdate);
 		}
 
 		// Run this component for the required number of cycles
-		public abstract void Update(ulong cycleCount);
+		public abstract void Update(uint cycleCount);
 	}
 }
