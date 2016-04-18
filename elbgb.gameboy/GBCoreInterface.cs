@@ -8,7 +8,9 @@ namespace elbgb.gbcore
 {
 	public struct GBCoreInterface
 	{
+		public Action<byte> SerialTransferComplete;
 		public Action<byte[]> PresentScreenData;
+		
 		public Func<GBCoreInput> PollInput;
 	}
 }

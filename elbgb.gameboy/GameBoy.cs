@@ -22,7 +22,7 @@ namespace elbgb.gbcore
 		public Timer Timer;
 		public LCDController PPU;
 		public PSG PSG;
-		public SerialIO SerialIO;
+		public SerialCommunicationController SerialIO;
 
 		public Cartridge Cartridge;
 
@@ -32,6 +32,7 @@ namespace elbgb.gbcore
 			Interface = new GBCoreInterface
 				{
 					PresentScreenData = (byte[] screenData) => { },
+					SerialTransferComplete  = (byte serialData) => { },
 					//PollInput = () => { return default(GBCoreInput); }
 				};
 
@@ -42,7 +43,7 @@ namespace elbgb.gbcore
 			Timer = new Timer(this);
 			PPU = new LCDController(this);
 			PSG = new PSG(this);
-			SerialIO = new SerialIO(this);
+			SerialIO = new SerialCommunicationController(this);
 
 			Cartridge = Cartridge.LoadRom(null);
 		}

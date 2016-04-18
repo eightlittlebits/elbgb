@@ -93,13 +93,8 @@ namespace elbgb.gbcore.Memory
 					return _wram[address & 0x1FFF];
 
 				case 0xF000:
-					// TODO(david): Actually implement Input
-					if (address == 0xFF00)
-					{
-						return 0xFF;
-					}
 					// 0xE000 - 0xFDFF mirrors working ram
-					else if (address <= 0xFDFF)
+					if (address <= 0xFDFF)
 					{
 						return _wram[address & 0x1FFF];
 					}
@@ -112,6 +107,16 @@ namespace elbgb.gbcore.Memory
 					else if (address >= 0xFEA0 && address <= 0xFEFF)
 					{
 						return 0;
+					}
+					// TODO(david): Actually implement Input
+					else if (address == 0xFF00)
+					{
+						return 0xFF;
+					}
+					// 0xFF01 - 0xFF02 - serial I/O
+					else if (address >= 0xFF01 && address <= 0xFF02)
+					{
+						return _gb.SerialIO.ReadByte(address);
 					}
 					// 0xFF04 - 0xFF07 - timer registers
 					else if (address >= 0xFF04 && address <= 0xFF07)
@@ -217,6 +222,7 @@ namespace elbgb.gbcore.Memory
 										// 0xFF01 - 0xFF02 - serial I/O
 										case 0x1: // SB
 										case 0x2: // SC
+											_gb.SerialIO.WriteByte(address, value);
 										break;
 										
 										// 0xFF04 - 0xFF07 - timer registers
