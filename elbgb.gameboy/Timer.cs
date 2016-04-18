@@ -88,16 +88,16 @@ namespace elbgb.gbcore
 					switch (value & 0x03)
 					{
 						// 00 - f/2^10 (4.096 KHz)
-						case 0x00: _timerInterval = SystemClock.ClockFrequency / 1024; break;
+						case 0x00: _timerInterval = SystemClock.ClockFrequency / 4096; break;
 
 						// 01 - f/2^4 (262.144 KHz)
-						case 0x01: _timerInterval = SystemClock.ClockFrequency / 16; break;
+						case 0x01: _timerInterval = SystemClock.ClockFrequency / 262144; break;
 
 						// 10 - f/2^6 (65.436 KHz)
-						case 0x10: _timerInterval = SystemClock.ClockFrequency / 64; break;
+						case 0x10: _timerInterval = SystemClock.ClockFrequency / 65436; break;
 
 						// 11 - f/2^8 (16.384 KHz)
-						case 0x11: _timerInterval = SystemClock.ClockFrequency / 256; break;
+						case 0x11: _timerInterval = SystemClock.ClockFrequency / 16384; break;
 					}
 					break;
 

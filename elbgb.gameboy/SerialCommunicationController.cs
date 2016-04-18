@@ -31,7 +31,7 @@ namespace elbgb.gbcore
 			: base(gameBoy)
 		{
 			// internal shift clock is 8192Hz 
-			_internalShiftClockInterval = SystemClock.ClockFrequency / 512;
+			_internalShiftClockInterval = SystemClock.ClockFrequency / 8192;
 
 			_internalClock = true;
 		}
