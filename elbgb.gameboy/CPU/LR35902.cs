@@ -455,6 +455,9 @@ namespace elbgb.gbcore.CPU
 				case 0x07: _r.A = RotateLeft(_r.A); _r.F &= ~StatusFlags.Z; break; // RLCA
 				case 0x17: _r.A = RotateLeftThroughCarry(_r.A); _r.F &= ~StatusFlags.Z; break; // RLA
 
+				case 0x0F: _r.A = RotateRight(_r.A); _r.F &= ~StatusFlags.Z; break; // RRCA
+				case 0x1F: _r.A = RotateRightThroughCarry(_r.A); _r.F &= ~StatusFlags.Z; break; // RRA
+
 				// extended opcodes are prefixed with OxCB, read next byte and run opcode 
 				case 0xCB: ExecuteExtendedOpcode(ReadByte(_r.PC++)); break;
 
@@ -570,6 +573,15 @@ namespace elbgb.gbcore.CPU
 				case 0x15: _r.L = RotateLeftThroughCarry(_r.L); break; // RL L
 				case 0x16: WriteByte(_r.HL, RotateLeftThroughCarry(ReadByte(_r.HL))); break; // RL (HL)
 				case 0x17: _r.A = RotateLeftThroughCarry(_r.A); break; // RL A
+
+				case 0x18: _r.B = RotateRightThroughCarry(_r.B); break; // RR B
+				case 0x19: _r.C = RotateRightThroughCarry(_r.C); break; // RR C
+				case 0x1A: _r.D = RotateRightThroughCarry(_r.D); break; // RR D
+				case 0x1B: _r.E = RotateRightThroughCarry(_r.E); break; // RR E
+				case 0x1C: _r.H = RotateRightThroughCarry(_r.H); break; // RR H
+				case 0x1D: _r.L = RotateRightThroughCarry(_r.L); break; // RR L
+				case 0x1E: WriteByte(_r.HL, RotateRightThroughCarry(ReadByte(_r.HL))); break; // RR (HL)
+				case 0x1F: _r.A = RotateRightThroughCarry(_r.A); break;	// RR A
 
 				case 0x20: _r.B = ShiftLeftArithmetic(_r.B); break; // SLA B
 				case 0x21: _r.C = ShiftLeftArithmetic(_r.C); break; // SLA C
@@ -1157,6 +1169,51 @@ namespace elbgb.gbcore.CPU
 			return result;
 		}
 
+		private byte RotateRight(byte b)
+		{
+			// clear flags
+			_r.F = StatusFlags.Clear;
+
+			// grab bit 0
+			bool bit0 = ((b & 0x01) == 0x01);
+
+			// set carry flag if old bit 0 was set
+			if (bit0)
+			{
+				_r.F |= StatusFlags.C;
+			}
+
+			// shift right and place old bit 0 in MSB
+			byte result = (byte)((b >> 1) | (bit0 ? 0x80 : 0));
+
+			// zero
+			if (result == 0)
+				_r.F |= StatusFlags.Z;
+
+			return result;
+		}
+
+		private byte RotateRightThroughCarry(byte b)
+		{
+			bool oldCarry = _r.F.FlagSet(StatusFlags.C);
+
+			// clear flags
+			_r.F = StatusFlags.Clear;
+
+			// set carry if bottom bit is set
+			if ((b & 0x01) == 0x01)
+				_r.F |= StatusFlags.C;
+
+			// shift left and place old carry in MSB
+			byte result = (byte)((b >> 1) | (oldCarry ? 0x80 : 0));
+
+			// zero
+			if (result == 0)
+				_r.F |= StatusFlags.Z;
+
+			return result;
+		}
+
 		private byte ShiftLeftArithmetic(byte b)
 		{
 			// clear flags
@@ -1181,11 +1238,11 @@ namespace elbgb.gbcore.CPU
 			// clear flags
 			_r.F = StatusFlags.Clear;
 
-			// grab bit 1
-			bool bit1 = ((b & 0x01) == 0x01);
+			// grab bit 0
+			bool bit0 = ((b & 0x01) == 0x01);
 
-			// set carry flag if old bit 7 was set
-			if (bit1)
+			// set carry flag if old bit 0 was set
+			if (bit0)
 			{
 				_r.F |= StatusFlags.C;
 			}
