@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using elbgb.gbcore.Memory.Mappers;
 
 namespace elbgb.gbcore.Memory
 {
@@ -25,9 +24,11 @@ namespace elbgb.gbcore.Memory
 			switch (header.CartridgeType)
 			{
 				case CartridgeType.RomOnly:
-					return new RomOnly(header, romData);
+					return new Mappers.RomOnly(header, romData);
 
 				case CartridgeType.Mbc1:
+					return new Mappers.Mbc1(header, romData);
+
 				case CartridgeType.Mbc1Ram:
 				case CartridgeType.Mbc1RamBattery:
 				case CartridgeType.Mbc2:
@@ -56,7 +57,7 @@ namespace elbgb.gbcore.Memory
 				case CartridgeType.HudsonHuC3:
 				case CartridgeType.HudsonHuC1:
 				default:
-					string message = string.Format("Mapper {0} ({0:X2}) not implemented.", header.CartridgeType);
+					string message = string.Format("Mapper {0} ({0:X}) not implemented.", header.CartridgeType);
 					throw new NotImplementedException(message);
 			}
 		}
