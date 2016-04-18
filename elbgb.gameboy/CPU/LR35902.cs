@@ -848,6 +848,11 @@ namespace elbgb.gbcore.CPU
 				_r.PC = address;
 				_gb.Clock.AddMachineCycles(1);
 			}
+			else
+			{
+				// jump not taken, skip address
+				_r.PC += 2;
+			}
 		}
 
 		private void JumpRelative(bool condition = true)
