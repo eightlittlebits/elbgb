@@ -918,10 +918,10 @@ namespace elbgb.gbcore.CPU
 
 			if (condition)
 			{
-				PushWord(_r.PC);
-				_r.PC = address;
-
 				_gb.Clock.AddMachineCycles(1);
+
+				PushWord(_r.PC);
+				_r.PC = address;				
 			}
 		}
 
@@ -944,11 +944,11 @@ namespace elbgb.gbcore.CPU
 
 		private void Reset(byte resetAddress)
 		{
+			_gb.Clock.AddMachineCycles(1);
+
 			PushWord(_r.PC);
 
 			_r.PC = resetAddress;
-
-			_gb.Clock.AddMachineCycles(1);
 		}
 
 		#endregion
