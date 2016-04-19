@@ -302,10 +302,10 @@ namespace elbgb.gbcore.CPU
 						_r.F = StatusFlags.Clear;
 
 						if (((_r.SP & 0xFF) + (e & 0xFF)) > 0xFF)
-							_r.F = StatusFlags.C;
+							_r.F |= StatusFlags.C;
 
 						if (((_r.SP & 0x0F) + (e & 0x0F)) > 0x0F)
-							_r.F = StatusFlags.H;
+							_r.F |= StatusFlags.H;
 
 						_r.HL = (ushort)(_r.SP + e);
 
@@ -441,10 +441,10 @@ namespace elbgb.gbcore.CPU
 						_r.F = StatusFlags.Clear;
 
 						if (((_r.SP & 0xFF) + (e & 0xFF)) > 0xFF)
-							_r.F = StatusFlags.C;
+							_r.F |= StatusFlags.C;
 
 						if (((_r.SP & 0x0F) + (e & 0x0F)) > 0x0F)
-							_r.F = StatusFlags.H;
+							_r.F |= StatusFlags.H;
 
 						_r.SP = (ushort)(_r.SP + e);
 
