@@ -579,6 +579,15 @@ namespace elbgb.gbcore.CPU
 			{
 				#region rotate shift instruction handlers
 
+				case 0x00: _r.B = RotateLeft(_r.B); break; // RLC B
+				case 0x01: _r.C = RotateLeft(_r.C); break; // RLC C
+				case 0x02: _r.D = RotateLeft(_r.D); break; // RLC D
+				case 0x03: _r.E = RotateLeft(_r.E); break; // RLC E
+				case 0x04: _r.H = RotateLeft(_r.H); break; // RLC H
+				case 0x05: _r.L = RotateLeft(_r.L); break; // RLC L
+				case 0x06: WriteByte(_r.HL, RotateLeft(ReadByte(_r.HL))); break; // RLC (HL)
+				case 0x07: _r.A = RotateLeft(_r.A); break; // RLC A
+
 				case 0x10: _r.B = RotateLeftThroughCarry(_r.B); break; // RL B
 				case 0x11: _r.C = RotateLeftThroughCarry(_r.C); break; // RL C
 				case 0x12: _r.D = RotateLeftThroughCarry(_r.D); break; // RL D
@@ -587,6 +596,15 @@ namespace elbgb.gbcore.CPU
 				case 0x15: _r.L = RotateLeftThroughCarry(_r.L); break; // RL L
 				case 0x16: WriteByte(_r.HL, RotateLeftThroughCarry(ReadByte(_r.HL))); break; // RL (HL)
 				case 0x17: _r.A = RotateLeftThroughCarry(_r.A); break; // RL A
+
+				case 0x08: _r.B = RotateRight(_r.B); break; // RRC B
+				case 0x09: _r.C = RotateRight(_r.C); break; // RRC C
+				case 0x0A: _r.D = RotateRight(_r.D); break; // RRC D
+				case 0x0B: _r.E = RotateRight(_r.E); break; // RRC E
+				case 0x0C: _r.H = RotateRight(_r.H); break; // RRC H
+				case 0x0D: _r.L = RotateRight(_r.L); break; // RRC L
+				case 0x0E: WriteByte(_r.HL, RotateRight(ReadByte(_r.HL))); break; // RRC (HL)
+				case 0x0F: _r.A = RotateRight(_r.A); break;	// RRC A
 
 				case 0x18: _r.B = RotateRightThroughCarry(_r.B); break; // RR B
 				case 0x19: _r.C = RotateRightThroughCarry(_r.C); break; // RR C
@@ -605,7 +623,16 @@ namespace elbgb.gbcore.CPU
 				case 0x25: _r.L = ShiftLeftArithmetic(_r.L); break; // SLA L
 				case 0x26: WriteByte(_r.HL, ShiftLeftArithmetic(ReadByte(_r.HL))); break; // SLA (HL)
 				case 0x27: _r.A = ShiftLeftArithmetic(_r.A); break; // SLA A
-					
+
+				case 0x28: _r.B = ShiftRightArithmetic(_r.B); break; // SRA B
+				case 0x29: _r.C = ShiftRightArithmetic(_r.C); break; // SRA C
+				case 0x2A: _r.D = ShiftRightArithmetic(_r.D); break; // SRA D
+				case 0x2B: _r.E = ShiftRightArithmetic(_r.E); break; // SRA E
+				case 0x2C: _r.H = ShiftRightArithmetic(_r.H); break; // SRA H
+				case 0x2D: _r.L = ShiftRightArithmetic(_r.L); break; // SRA L
+				case 0x2E: WriteByte(_r.HL, ShiftRightArithmetic(ReadByte(_r.HL))); break; // SRA (HL)
+				case 0x2F: _r.A = ShiftRightArithmetic(_r.A); break; // SRA A
+
 				case 0x38: _r.B = ShiftRightLogical(_r.B); break; // SRL B
 				case 0x39: _r.C = ShiftRightLogical(_r.C); break; // SRL C
 				case 0x3A: _r.D = ShiftRightLogical(_r.D); break; // SRL D
@@ -1244,6 +1271,33 @@ namespace elbgb.gbcore.CPU
 
 			// shift left
 			byte result = (byte)(b << 1);
+
+			// zero
+			if (result == 0)
+				_r.F |= StatusFlags.Z;
+
+			return result;
+		}
+
+		private byte ShiftRightArithmetic(byte b)
+		{
+			// clear flags
+			_r.F = StatusFlags.Clear;
+
+			// grab bit 0
+			bool bit0 = ((b & 0x01) == 0x01);
+
+			// grab bit 7
+			byte bit7 = (byte)(b & 0x80);
+
+			// set carry flag if old bit 0 was set
+			if (bit0)
+			{
+				_r.F |= StatusFlags.C;
+			}
+
+			// shift right, set bit 7 to previous value (sign extend)
+			byte result = (byte)((b >> 1) | bit7);
 
 			// zero
 			if (result == 0)
