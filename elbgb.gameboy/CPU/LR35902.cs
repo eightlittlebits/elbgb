@@ -1383,8 +1383,9 @@ namespace elbgb.gbcore.CPU
 		private void DecimalAdjustAccumulator()
 		{
 			byte correctionFactor = 0;
+			bool subtraction = _r.F.FlagSet(StatusFlags.N);
 
-			if (_r.A > 0x99 || _r.F.FlagSet(StatusFlags.C))
+			if ((_r.A > 0x99 && !subtraction) || _r.F.FlagSet(StatusFlags.C))
 			{
 				correctionFactor |= 0x60;
 				_r.F |= StatusFlags.C;
@@ -1392,10 +1393,10 @@ namespace elbgb.gbcore.CPU
 			else
 				_r.F &= ~StatusFlags.C;
 
-			if ((_r.A & 0x0F) > 0x09 || _r.F.FlagSet(StatusFlags.H))
+			if (((_r.A & 0x0F) > 0x09 && !subtraction) || _r.F.FlagSet(StatusFlags.H))
 				correctionFactor |= 0x06;
 
-			if (!_r.F.FlagSet(StatusFlags.N))
+			if (!subtraction)
 				_r.A += correctionFactor;
 			else
 				_r.A -= correctionFactor;
@@ -1407,6 +1408,5 @@ namespace elbgb.gbcore.CPU
 		}
 
 		#endregion
-
 	}
 }
