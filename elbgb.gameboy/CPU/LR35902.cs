@@ -434,6 +434,23 @@ namespace elbgb.gbcore.CPU
 				case 0x29: _r.HL = Add16Bit(_r.HL, _r.HL); _gb.Clock.AddMachineCycles(1); break; // ADD HL,HL
 				case 0x39: _r.HL = Add16Bit(_r.HL, _r.SP); _gb.Clock.AddMachineCycles(1); break; // ADD HL,SP
 
+				case 0xE8: // ADD SP,e
+					{
+						sbyte e = (sbyte)ReadByte(_r.PC++);
+
+						_r.F = StatusFlags.Clear;
+
+						if (((_r.SP & 0xFF) + (e & 0xFF)) > 0xFF)
+							_r.F = StatusFlags.C;
+
+						if (((_r.SP & 0x0F) + (e & 0x0F)) > 0x0F)
+							_r.F = StatusFlags.H;
+
+						_r.SP = (ushort)(_r.SP + e);
+
+						_gb.Clock.AddMachineCycles(2);
+					} break;
+
 				case 0x03: _r.BC++; _gb.Clock.AddMachineCycles(1); break; // INC BC
 				case 0x13: _r.DE++; _gb.Clock.AddMachineCycles(1); break; // INC DE
 				case 0x23: _r.HL++; _gb.Clock.AddMachineCycles(1); break; // INC HL
