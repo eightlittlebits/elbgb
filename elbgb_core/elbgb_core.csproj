@@ -7,8 +7,8 @@
     <ProjectGuid>{75DA2BB4-4743-4F09-A8A3-B17D23534386}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>elbgb.gbcore</RootNamespace>
-    <AssemblyName>elbgb.gbcore</AssemblyName>
+    <RootNamespace>elbgb_core</RootNamespace>
+    <AssemblyName>elbgb_core</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

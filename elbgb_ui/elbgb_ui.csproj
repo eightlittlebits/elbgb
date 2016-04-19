@@ -86,9 +86,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\elbgb.gameboy\elbgb.gbcore.csproj">
+    <ProjectReference Include="..\elbgb_core\elbgb_core.csproj">
       <Project>{75da2bb4-4743-4f09-a8a3-b17d23534386}</Project>
-      <Name>elbgb.gbcore</Name>
+      <Name>elbgb_core</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace elbgb.gbcore.Memory
+namespace elbgb_core.Memory
 {
 	public abstract class Cartridge
 	{

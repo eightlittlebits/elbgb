@@ -1,22 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace elbgb.gbcore.Memory
+namespace elbgb_core.Memory.Mappers
 {
-	class NullCartridge : Cartridge
+	class RomOnly : Cartridge
 	{
-		public NullCartridge(CartridgeHeader header, byte[] romData)
+		public RomOnly(CartridgeHeader header, byte[] romData)
 			: base(header, romData)
 		{
-
+			
 		}
 
 		public override byte ReadByte(ushort address)
 		{
-			return 0;
+			if (address < 0x8000)
+			{
+				return _romData[address];
+			}
+			else
+				return 0x00;
 		}
 
 		public override void WriteByte(ushort address, byte value)

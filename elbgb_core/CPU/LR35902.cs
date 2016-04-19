@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using elbgb.gbcore.Memory;
+using elbgb_core.Memory;
 
-namespace elbgb.gbcore.CPU
+namespace elbgb_core.CPU
 {
 	public class LR35902
 	{

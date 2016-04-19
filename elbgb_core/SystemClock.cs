@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace elbgb.gbcore
+namespace elbgb_core
 {
 	public class SystemClock
 	{

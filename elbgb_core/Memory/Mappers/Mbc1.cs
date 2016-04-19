@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace elbgb.gbcore.Memory.Mappers
+namespace elbgb_core.Memory.Mappers
 {
 	class Mbc1 : Cartridge
 	{

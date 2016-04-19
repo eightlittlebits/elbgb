@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace elbgb.gbcore
+namespace elbgb_core
 {
 	public class LCDController : ClockedComponent
 	{

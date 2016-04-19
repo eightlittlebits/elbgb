@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace elbgb.gbcore.CPU
+namespace elbgb_core.CPU
 {
 	[StructLayout(LayoutKind.Explicit)]
 	struct PairedRegister

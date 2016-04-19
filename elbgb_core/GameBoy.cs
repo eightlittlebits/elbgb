@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using elbgb.gbcore.CPU;
-using elbgb.gbcore.Memory;
-using elbgb.gbcore.Sound;
+using elbgb_core.CPU;
+using elbgb_core.Memory;
+using elbgb_core.Sound;
 
-namespace elbgb.gbcore
+namespace elbgb_core
 {
 	public class GameBoy
 	{
