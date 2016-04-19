@@ -20,7 +20,7 @@ namespace elbgb.gbcore
 		public LR35902 CPU;
 		public MMU MMU;
 		public Timer Timer;
-		public LCDController PPU;
+		public LCDController LCD;
 		public PSG PSG;
 		public SerialCommunicationController SerialIO;
 
@@ -41,7 +41,7 @@ namespace elbgb.gbcore
 			CPU = new LR35902(this);
 			MMU = new MMU(this);
 			Timer = new Timer(this);
-			PPU = new LCDController(this);
+			LCD = new LCDController(this);
 			PSG = new PSG(this);
 			SerialIO = new SerialCommunicationController(this);
 
@@ -72,7 +72,7 @@ namespace elbgb.gbcore
 
 			// synchronise hardware components with system clock after instruction
 			Timer.SynchroniseWithSystemClock();
-			PPU.SynchroniseWithSystemClock();
+			LCD.SynchroniseWithSystemClock();
 			PSG.SynchroniseWithSystemClock();
 			SerialIO.SynchroniseWithSystemClock();
 		}

@@ -76,7 +76,7 @@ namespace elbgb.gbcore.Memory
 				// 0x8000 - 0x9FFF - vram
 				case 0x8000:
 				case 0x9000:
-					return _gb.PPU.ReadByte(address);
+					return _gb.LCD.ReadByte(address);
 
 				// 0xA000 - 0xBFFF - external expansion RAM
 				case 0xA000:
@@ -101,7 +101,7 @@ namespace elbgb.gbcore.Memory
 					// 0xFE00 - 0xFE9F - OAM memory
 					else if (address >= 0xFE00 && address <= 0xFE9F)
 					{
-						return _gb.PPU.ReadByte(address);
+						return _gb.LCD.ReadByte(address);
 					}
 					// 0xFEA0 - 0xFEFF - restricted area - return 0
 					else if (address >= 0xFEA0 && address <= 0xFEFF)
@@ -137,7 +137,7 @@ namespace elbgb.gbcore.Memory
 					// 0xFF40 - 0xFF4B - lcd registers
 					else if (address >= 0xFF40 && address <= 0xFF4B)
 					{
-						return _gb.PPU.ReadByte(address);
+						return _gb.LCD.ReadByte(address);
 					}
 					// 0xFF80 - 0xFFFE - hi ram
 					else if (address >= 0xFF80 && address <= 0xFFFF)
@@ -165,7 +165,7 @@ namespace elbgb.gbcore.Memory
 				// 0x8000 - 0x9FFF - vram
 				case 0x8000:
 				case 0x9000:
-					_gb.PPU.WriteByte(address, value);
+					_gb.LCD.WriteByte(address, value);
 					return;
 
 				// 0xA000 - 0xBFFF - external expansion RAM
@@ -201,7 +201,7 @@ namespace elbgb.gbcore.Memory
 						case 0xE00:
 							if (address <= 0xFE9F)
 							{
-								_gb.PPU.WriteByte(address, value);
+								_gb.LCD.WriteByte(address, value);
 							}
 							else
 							{
@@ -249,7 +249,7 @@ namespace elbgb.gbcore.Memory
 
 								// 0xFF40 - 0xFF4B - lcd registers
 								case 0x40:
-									_gb.PPU.WriteByte(address, value); break;
+									_gb.LCD.WriteByte(address, value); break;
 
 								case 0x50: 
 									switch (address & 0x000F)
