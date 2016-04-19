@@ -872,9 +872,6 @@ namespace elbgb.gbcore.CPU
 				case 0xBF: _r.A = ResetBit(_r.A, 7); break; // RES 7,A
 
 				#endregion
-					
-				default:
-					throw new NotImplementedException(string.Format("Invalid extended opcode 0x{0:X4} at 0x{1:X4}", 0xCB00 | opcode, _r.PC - 2));
 			}
 		}
 		
