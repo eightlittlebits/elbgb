@@ -1266,7 +1266,7 @@ namespace elbgb.gbcore.CPU
 
 			// swap high and low nibble
 
-			var result = ((b & 0xF0) >> 4) | ((b & 0x0F) >> 4);
+			var result = ((b & 0xF0) >> 4) | ((b & 0x0F) << 4);
 
 			// zero
 			if (result == 0)
