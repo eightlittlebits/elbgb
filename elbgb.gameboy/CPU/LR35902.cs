@@ -83,10 +83,10 @@ namespace elbgb.gbcore.CPU
 
 			// bitwise and of the enable flag and the interrupt flag will only leave any bits set
 			// if the interrupt has been requested and the interrupt is enabled
-			int interrupt = interruptFlag & interruptEnable;
+			int pendingInterrupt = interruptFlag & interruptEnable;
 
 			// pending interrupt to service?
-			if (interrupt != 0)
+			if (pendingInterrupt != 0)
 			{
 				// clear the halt flag on interrupt
 				_halted = false;
@@ -94,27 +94,26 @@ namespace elbgb.gbcore.CPU
 				// interrupts enabled?
 				if (_r.IME)
 				{
-					// check each bit in the interrupt to find out which needs to be processed
+					// check each bit in the pending interrupt to find out which needs to be processed
 					for (int i = 0; i < 5; i++)
 					{
-						if ((interrupt & (1 << i)) == (1 << i))
+						int interrupt = 1 << i;
+
+						if ((pendingInterrupt & interrupt) == interrupt)
 						{
-							// according to pandocs the ISR should take 5 cycles:
-							// 2 wait cycles
-							// push high and low of PC to stack
-							// set low byte of pc to interrupt address
-							// http://gbdev.gg8.se/wiki/articles/Interrupts
+							// timing information from
+							// https://github.com/Gekkio/mooneye-gb/blob/master/docs/accuracy.markdown
+							// the above has been tested on a real DMG, 3 wait cycles followed by
+							// the push of the PC
 
-							// TODO(david): try and confirm the timings
-
-							// 2 wait cycles
-							_gb.Clock.AddMachineCycles(2);
+							// 3 wait cycles
+							_gb.Clock.AddMachineCycles(3);
 
 							// disable interrupts
 							_r.IME = false;
 
 							// clear the interrupt flag
-							_gb.MMU.WriteByte(MMU.Registers.IF, (byte)(interruptFlag & ~(1 << i)));
+							_gb.MMU.WriteByte(MMU.Registers.IF, (byte)(interruptFlag & ~interrupt));
 
 							// push current PC to stack - 2 cycles
 							PushWord(_r.PC);
@@ -128,8 +127,6 @@ namespace elbgb.gbcore.CPU
 								case 3: _r.PC = 0x0058; break; // Serial Transfer Complete
 								case 4: _r.PC = 0x0060; break; // User Input
 							}
-
-							_gb.Clock.AddMachineCycles(1);
 
 							// interrupt processed, break from loop
 							break;
