@@ -59,7 +59,7 @@ namespace elbgb_ui
 
 			foreach(var paletteName in _palettes.Keys)
 			{
-				var paletteMenuItem = new ToolStripRadioButtonMenuItem(paletteName,
+				var paletteMenuItem = new Components.ToolStripRadioButtonMenuItem(paletteName,
 					null,
 					(sender, e) =>
 					{

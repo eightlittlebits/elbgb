@@ -46,7 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DoubleBufferedPanel.cs">
+    <Compile Include="Components\DoubleBufferedPanel.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="MainForm.cs">
@@ -57,7 +57,7 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ToolStripRadioButtonMenuItem.cs">
+    <Compile Include="Components\ToolStripRadioButtonMenuItem.cs">
       <SubType>Component</SubType>
     </Compile>
     <EmbeddedResource Include="MainForm.resx">

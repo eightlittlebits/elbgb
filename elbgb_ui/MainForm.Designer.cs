@@ -33,7 +33,7 @@
 			this.regenerateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
 			this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.displayPanel = new DoubleBufferedPanel();
+			this.displayPanel = new Components.DoubleBufferedPanel();
 			this.mainFormMenuStrip.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -113,7 +113,7 @@
 		private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
 		private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
-		private DoubleBufferedPanel displayPanel;
+		private Components.DoubleBufferedPanel displayPanel;
 		private System.Windows.Forms.ToolStripMenuItem regenerateToolStripMenuItem;
 	}
 }

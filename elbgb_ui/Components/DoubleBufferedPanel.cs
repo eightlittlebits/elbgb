@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace elbgb_ui
+namespace elbgb_ui.Components
 {
 	class DoubleBufferedPanel : Panel
 	{

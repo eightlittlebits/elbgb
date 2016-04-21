@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
 
-namespace elbgb_ui
+namespace elbgb_ui.Components
 {
 	// ToolStripRadioButtonMenuItem from:
 	// How to: Display Option Buttons in a MenuStrip (Windows Forms)
