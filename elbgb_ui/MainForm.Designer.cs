@@ -30,10 +30,9 @@
 		{
 			this.mainFormMenuStrip = new System.Windows.Forms.MenuStrip();
 			this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.regenerateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
 			this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.displayPanel = new Components.DoubleBufferedPanel();
+			this.displayPanel = new elbgb_ui.Components.DoubleBufferedPanel();
 			this.mainFormMenuStrip.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -50,19 +49,11 @@
 			// fileToolStripMenuItem
 			// 
 			this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.regenerateToolStripMenuItem,
             this.toolStripMenuItem1,
             this.exitToolStripMenuItem});
 			this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
 			this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
 			this.fileToolStripMenuItem.Text = "&File";
-			// 
-			// regenerateToolStripMenuItem
-			// 
-			this.regenerateToolStripMenuItem.Name = "regenerateToolStripMenuItem";
-			this.regenerateToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-			this.regenerateToolStripMenuItem.Text = "Regenerate";
-			this.regenerateToolStripMenuItem.Click += new System.EventHandler(this.regenerateToolStripMenuItem_Click);
 			// 
 			// toolStripMenuItem1
 			// 
@@ -83,8 +74,6 @@
 			this.displayPanel.Name = "displayPanel";
 			this.displayPanel.Size = new System.Drawing.Size(172, 168);
 			this.displayPanel.TabIndex = 2;
-			this.displayPanel.Click += new System.EventHandler(this.displayPanel_Click);
-			this.displayPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.displayPanel_Paint);
 			// 
 			// MainForm
 			// 
@@ -114,7 +103,6 @@
 		private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
 		private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
 		private Components.DoubleBufferedPanel displayPanel;
-		private System.Windows.Forms.ToolStripMenuItem regenerateToolStripMenuItem;
 	}
 }
 

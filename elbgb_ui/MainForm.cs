@@ -46,9 +46,42 @@ namespace elbgb_ui
 
 			_displayBuffer = CreateDisplayBuffer(160, 144);
 
-			_screenData = GenerateDebugScreenData();
+			Application.Idle += OnApplicationIdle;
+		}
 
-			RenderScreenDataToBitmap(_displayBuffer, _screenData);
+		private bool AppStillIdle
+		{
+			get
+			{
+				NativeMethods.Message msg;
+				return !NativeMethods.PeekMessage(out msg, IntPtr.Zero, 0, 0, 0);
+			}
+		}
+
+		private void OnApplicationIdle(object sender, EventArgs e)
+		{
+			while (AppStillIdle)
+			{
+				Frame();
+			}
+		}
+
+		private void Frame()
+		{
+			_gameBoy.RunFrame();
+			
+			PresentDisplayBuffer();
+		}
+
+		private void PresentDisplayBuffer()
+		{
+			using (Graphics g = displayPanel.CreateGraphics())
+			{
+				g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
+				g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+
+				g.DrawImage(_displayBuffer, 0, 0, displayPanel.Width, displayPanel.Height);
+			}
 		}
 
 		private void BuildPaletteMenu()
@@ -64,8 +97,6 @@ namespace elbgb_ui
 					(sender, e) =>
 					{
 						ApplyPaletteToImage(_displayBuffer, paletteName);
-						RenderScreenDataToBitmap(_displayBuffer, _screenData);
-						displayPanel.Invalidate();
 					});
 
 				if (paletteName == "default")
@@ -75,20 +106,6 @@ namespace elbgb_ui
 
 				rootPaletteMenuItem.DropDownItems.Add(paletteMenuItem);
 			}
-		}
-
-		private byte[] GenerateDebugScreenData()
-		{
-			Random r = new Random();
-
-			byte[] screenData = new byte[ScreenWidth * ScreenHeight];
-
-			for (int i = 0; i < screenData.Length; i++)
-			{
-				screenData[i] = (byte)r.Next(4);
-			}
-
-			return screenData;
 		}
 
 		private void InitialisePalettes()
@@ -183,29 +200,6 @@ namespace elbgb_ui
 				if (screenDataGCHandle.IsAllocated)
 					screenDataGCHandle.Free();
 			}
-		}
-
-		private void displayPanel_Paint(object sender, PaintEventArgs e)
-		{
-			e.Graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
-			e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
-			e.Graphics.DrawImage(_displayBuffer, 0, 0, displayPanel.Width, displayPanel.Height);
-		}
-
-		private void regenerateToolStripMenuItem_Click(object sender, EventArgs e)
-		{
-			_screenData = GenerateDebugScreenData();
-			RenderScreenDataToBitmap(_displayBuffer, _screenData);
-
-			displayPanel.Invalidate();
-		}
-
-		private void displayPanel_Click(object sender, EventArgs e)
-		{
-			_screenData = GenerateDebugScreenData();
-			RenderScreenDataToBitmap(_displayBuffer, _screenData);
-
-			displayPanel.Invalidate();
 		}
 
 		private void exitToolStripMenuItem_Click(object sender, EventArgs e)
