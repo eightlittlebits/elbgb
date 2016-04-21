@@ -24,7 +24,7 @@ namespace elbgb_ui
 
 		private Dictionary<string, int[]> _palettes;
 		private Bitmap _displayBuffer;
-		
+
 		public MainForm()
 		{
 			InitializeComponent();
@@ -34,7 +34,7 @@ namespace elbgb_ui
 		{
 			_gameBoy = new GameBoy();
 
-			_gameBoy.Interface.PresentScreenData = PresentScreenData;
+			_gameBoy.Interface.VideoRefresh = RenderScreenDataDisplayBuffer;
 
 			int width = ScreenWidth * 2;
 			int height = ScreenHeight * 2 + mainFormMenuStrip.Height;
@@ -69,7 +69,7 @@ namespace elbgb_ui
 		private void Frame()
 		{
 			_gameBoy.RunFrame();
-			
+
 			PresentDisplayBuffer();
 		}
 
@@ -90,7 +90,7 @@ namespace elbgb_ui
 
 			mainFormMenuStrip.Items.Add(rootPaletteMenuItem);
 
-			foreach(var paletteName in _palettes.Keys)
+			foreach (var paletteName in _palettes.Keys)
 			{
 				var paletteMenuItem = new Components.ToolStripRadioButtonMenuItem(paletteName,
 					null,
@@ -165,12 +165,7 @@ namespace elbgb_ui
 			return displayBuffer;
 		}
 
-		public void PresentScreenData(byte[] screenData)
-		{
-			RenderScreenDataToBitmap(_displayBuffer, screenData);
-		}
-
-		private static void RenderScreenDataToBitmap(Bitmap bitmap, byte[] screenData)
+		private void RenderScreenDataDisplayBuffer(byte[] screenData)
 		{
 			// get a pinned GC handle to our screen data array so we can pass it as a 
 			// user input buffer to LockBits
@@ -187,13 +182,13 @@ namespace elbgb_ui
 				};
 
 				// pass our data to the bitmap
-				bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height),
+				_displayBuffer.LockBits(new Rectangle(0, 0, _displayBuffer.Width, _displayBuffer.Height),
 												ImageLockMode.WriteOnly | ImageLockMode.UserInputBuffer,
-												bitmap.PixelFormat,
+												_displayBuffer.PixelFormat,
 												bitmapData);
 
 				// commit the changes and unlock the bitmap
-				bitmap.UnlockBits(bitmapData);
+				_displayBuffer.UnlockBits(bitmapData);
 			}
 			finally
 			{

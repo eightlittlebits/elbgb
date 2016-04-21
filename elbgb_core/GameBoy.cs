@@ -31,7 +31,7 @@ namespace elbgb_core
 			// default to an null interface, implementation by front ends is optional
 			Interface = new GBCoreInterface
 				{
-					PresentScreenData = (byte[] screenData) => { },
+					VideoRefresh = (byte[] screenData) => { },
 					SerialTransferComplete  = (byte serialData) => { },
 					//PollInput = () => { return default(GBCoreInput); }
 				};

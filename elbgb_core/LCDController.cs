@@ -318,7 +318,7 @@ namespace elbgb_core
 
 						// we've just entered vblank so the rendering for the frame is finished
 						// present the screen data
-						_gb.Interface.PresentScreenData(_screenData);
+						_gb.Interface.VideoRefresh(_screenData);
 					}
 					// processing vblank 
 					else
