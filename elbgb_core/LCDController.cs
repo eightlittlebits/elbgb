@@ -73,8 +73,8 @@ namespace elbgb_core
 
 		private byte _windowY, _windowX;			// WY, WX
 
-		private uint _frameClocks;					// counter of clock cycles elapsed in the current frame
-		private uint _scanlineClocks;				// counter of clock cycles elapsed in the current scanline
+		private uint _frameClock;					// counter of clock cycles elapsed in the current frame
+		private uint _vblankClock;					// counter of clock cycles elapsed in current scanline in vblank
 
 		public LCDController(GameBoy gameBoy)
 			: base(gameBoy)
@@ -166,8 +166,7 @@ namespace elbgb_core
 							_currentScanline = 0;
 							CompareScanlineValue();
 
-							_scanlineClocks = 0;
-							_frameClocks = 0;
+							_frameClock = 0;
 						}
 
 						_windowTileBaseAddress = (ushort)((_lcdControl & 0x40) == 0x40 ? 0x9C00 : 0x9800);
@@ -250,7 +249,7 @@ namespace elbgb_core
 			}
 		}
 
-		private byte[] ExtractPaletteData(byte value, int startingindex)
+		private static byte[] ExtractPaletteData(byte value, int startingindex)
 		{
 			byte[] palette = new byte[4];
 
@@ -284,61 +283,103 @@ namespace elbgb_core
 		public override void Update(uint cycleCount)
 		{
 			// only run lcd controller update if display is enabled
-			if (_displayEnabled)
+			if (!_displayEnabled)
+				return;
+
+			_frameClock += cycleCount;
+			
+			// LCD runs for 70224 cpu cycles a frame, 456 cycles a scanline and 154 total scanlines
+			// 10 of the scanlines are VBlank and the rest are the active portion of the cycle
+			// mode 2, 3 and 0 occur in he first 65664 cycles of a frame (70224 - 4560)
+			if (_frameClock < 65664)
 			{
-				_frameClocks += cycleCount;
-				_scanlineClocks += cycleCount;
-
-				// LCD runs for 70224 cpu cycles a frame, 456 cycles a scanline and 154 total scanlines
-				// 10 of the scanlines are VBlank and the rest are the active portion of the cycle
-				// mode 2, 3 and 0 occur in he first 65664 cycles of a frame (70224 - 4560)
-				if (_frameClocks < 65664)
+				// Mode 2 - OAM read, 77-83 cycles of frame
+				if ((_frameClock % 456) < 80)
 				{
-					if (_scanlineClocks >= 456)
+					if (_lcdMode != LcdMode.OAMRead)
 					{
-						_scanlineClocks -= 456;
+						// We've just entered OAM read so we're at the beginning of the line,
+						// increment the current scanline
 						_currentScanline++;
-
 						CompareScanlineValue();
+
+						_lcdMode = LcdMode.OAMRead;
+
+						// raise OAM stat interrupt if requested
+						if ((_lcdStatus & 0x20) == 0x20) _gb.RequestInterrupt(Interrupt.LCDCStatus);
 					}
 				}
-				// otherwise we're in vblank
+				// Mode 3 - OAM and VRAM read, 162-175 cycles of frame
+				else if ((_frameClock % 456) < 252)
+				{
+					if (_lcdMode != LcdMode.VRAMRead)
+					{
+						_lcdMode = LcdMode.VRAMRead;
+					}
+				}
+				// Mode 0 - HBlank, 201-207 cycles of frame
 				else
 				{
-					// are we entering vblank from another mode?
-					if (_lcdMode != LcdMode.VBlank)
+					if (_lcdMode != LcdMode.HBlank)
 					{
-						_lcdMode = LcdMode.VBlank;
+						_lcdMode = LcdMode.HBlank;
 
-						_scanlineClocks -= 456;
-						_currentScanline++;
-						CompareScanlineValue();
+						// raise hblank stat interrupt if requested
+						if ((_lcdStatus & 0x08) == 0x08) _gb.RequestInterrupt(Interrupt.LCDCStatus);
 
-						_gb.RequestInterrupt(Interrupt.VBlank);
-
-						// we've just entered vblank so the rendering for the frame is finished
-						// present the screen data
-						_gb.Interface.VideoRefresh(_screenData);
-					}
-					// processing vblank 
-					else
-					{
-						if (_scanlineClocks >= 456)
-						{
-							_scanlineClocks -= 456;
-							_currentScanline++;
-
-							if (_currentScanline > 153)
-							{
-								_frameClocks -= 70224;
-								_currentScanline = 0;
-							}
-
-							CompareScanlineValue();
-						}
+						RenderScanline();
 					}
 				}
 			}
+			// Mode 1 - VBlank
+			else
+			{
+				// are we entering vblank from another mode?
+				if (_lcdMode != LcdMode.VBlank)
+				{
+					_lcdMode = LcdMode.VBlank;
+
+					_currentScanline++;
+					CompareScanlineValue();
+
+					// count 10 scanlines in vblank, include any already pushing into vblank timing
+					_vblankClock = _frameClock - 65664;
+
+					// raise vblank stat interrupt if requested
+					if ((_lcdStatus & 0x10) == 0x10) _gb.RequestInterrupt(Interrupt.LCDCStatus);
+
+					// raise vblank interrupt
+					_gb.RequestInterrupt(Interrupt.VBlank);
+
+					// we've just entered vblank so the rendering for the frame is finished
+					// present the screen data
+					_gb.Interface.VideoRefresh(_screenData);
+				}
+				// processing vblank 
+				else
+				{
+					_vblankClock += cycleCount;
+
+					if (_vblankClock >= 456)
+					{
+						_vblankClock -= 456;
+						_currentScanline++;
+
+						if (_currentScanline > 153)
+						{
+							_frameClock -= 70224;
+							_currentScanline = 0;
+						}
+
+						CompareScanlineValue();
+					}
+				}
+			}
+		}
+
+		private void RenderScanline()
+		{
+			//throw new NotImplementedException();
 		}
 	}
 }
