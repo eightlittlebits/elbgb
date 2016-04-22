@@ -44,7 +44,8 @@ namespace elbgb_ui
 			InitialisePalettes();
 			BuildPaletteMenu();
 
-			_displayBuffer = CreateDisplayBuffer(160, 144);
+			_screenData = new byte[ScreenWidth * ScreenHeight];
+			_displayBuffer = CreateDisplayBuffer(ScreenWidth, ScreenHeight);
 
 			Application.Idle += OnApplicationIdle;
 		}
@@ -167,9 +168,13 @@ namespace elbgb_ui
 
 		private void RenderScreenDataDisplayBuffer(byte[] screenData)
 		{
+			// grab a local copy of the screen data in case GDI does something weird with it
+			// as a userbuffer below.
+			Buffer.BlockCopy(screenData, 0, _screenData, 0, ScreenWidth * ScreenHeight);
+
 			// get a pinned GC handle to our screen data array so we can pass it as a 
 			// user input buffer to LockBits
-			GCHandle screenDataGCHandle = GCHandle.Alloc(screenData, GCHandleType.Pinned);
+			GCHandle screenDataGCHandle = GCHandle.Alloc(_screenData, GCHandleType.Pinned);
 			try
 			{
 				BitmapData bitmapData = new BitmapData
