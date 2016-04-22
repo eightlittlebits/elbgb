@@ -53,7 +53,7 @@
     <Compile Include="Interrupt.cs" />
     <Compile Include="Memory\Cartridge.cs" />
     <Compile Include="Memory\CartridgeHeader.cs" />
-    <Compile Include="Memory\Mappers\Mbc1.cs" />
+    <Compile Include="Memory\Mappers\MBC1.cs" />
     <Compile Include="Memory\Mappers\RomOnly.cs" />
     <Compile Include="Memory\MMU.cs" />
     <Compile Include="LCDController.cs" />
