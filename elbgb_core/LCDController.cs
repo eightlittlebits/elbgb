@@ -48,13 +48,15 @@ namespace elbgb_core
 
 		private byte _lcdControl;					// LCDC value store
 		private bool _displayEnabled;				// LCDC bit 7 - 0: Off / 1: On
-		private ushort _windowTileBaseAddress;		// LCDC bit 6 - 0: 0x9800 - 0x9Bff / 1 : 0x9C00 = 0x9FFF
+		private ushort _windowTileBaseAddress;		// LCDC bit 6 - 0: 0x9800 - 0x9BFF / 1 : 0x9C00 = 0x9FFF
 		private bool _windowEnabled;				// LCDC bit 5 - 0: Off / 1: On
-		private ushort _backgroundCharBaseAddress;	// LCDC bit 4 - 0: 0x8800 - 0x97ff / 1 : 0x8000 = 0x8FFF
-		private ushort _backgroundTileBaseAddress;	// LCDC bit 3 - 0: 0x9800 - 0x9Bff / 1 : 0x9C00 = 0x9FFF
+		private ushort _backgroundCharBaseAddress;	// LCDC bit 4 - 0: 0x8800 - 0x97FF / 1 : 0x8000 = 0x8FFF
+		private ushort _backgroundTileBaseAddress;	// LCDC bit 3 - 0: 0x9800 - 0x9BFF / 1 : 0x9C00 = 0x9FFF
 		private int _spriteHeight;					// LCDC bit 2 - 0: 8x8 / 1: 8x16 (w*h)
 		private bool _spritesEnabled;				// LCDC bit 1 - 0: Off / 1: On
 		private bool _backgroundEnabled;			// LCDC bit 0 - 0: Off / 1: On
+
+		private bool _signedTileIdentifier;			// if the background char data is in the range 0x8800 - 0x97FF then tile identifiers are signed
 
 		private byte _lcdStatus;					// STAT value store
 		private LcdMode _lcdMode;					// STAT bit 0 - 1: LCD mode flag
@@ -172,6 +174,10 @@ namespace elbgb_core
 						_windowTileBaseAddress = (ushort)((_lcdControl & 0x40) == 0x40 ? 0x9C00 : 0x9800);
 						_windowEnabled = (_lcdControl & 0x20) == 0x20;
 						_backgroundCharBaseAddress = (ushort)((_lcdControl & 0x10) == 0x10 ? 0x8000 : 0x8800);
+
+						// if the background char data is in the range 0x8800 - 0x97FF then tile identifiers are signed
+						_signedTileIdentifier = _backgroundCharBaseAddress == 0x8800;
+
 						_backgroundTileBaseAddress = (ushort)((_lcdControl & 0x08) == 0x08 ? 0x9C00 : 0x9800);
 						_spriteHeight = (_lcdControl & 0x04) == 0x04 ? 16 : 8;
 						_spritesEnabled = (_lcdControl & 0x02) == 0x02;
@@ -299,9 +305,13 @@ namespace elbgb_core
 					if (_lcdMode != LcdMode.OAMRead)
 					{
 						// We've just entered OAM read so we're at the beginning of the line,
-						// increment the current scanline
-						_currentScanline++;
-						CompareScanlineValue();
+						// increment the current scanline unless we're coming from VBlank, then 
+						// don't inrecement because we've just set it to 0
+						if (_lcdMode != LcdMode.VBlank)
+						{
+							_currentScanline++;
+							CompareScanlineValue(); 
+						}
 
 						_lcdMode = LcdMode.OAMRead;
 
@@ -351,6 +361,8 @@ namespace elbgb_core
 					// raise vblank interrupt
 					_gb.RequestInterrupt(Interrupt.VBlank);
 
+					//DEBUG_DumpVramTiles();
+
 					// we've just entered vblank so the rendering for the frame is finished
 					// present the screen data
 					_gb.Interface.VideoRefresh(_screenData);
@@ -377,9 +389,87 @@ namespace elbgb_core
 			}
 		}
 
+		//private void DEBUG_DumpVramTiles()
+		//{
+		//	for (int i = 0; i < (144 / 8) * (160 / 8); i++)
+		//	{
+		//		for (int y = 0; y < 8; y++)
+		//		{
+		//			byte line1 = _vram[(0x10 * i) + (y * 2)];
+		//			byte line2 = _vram[(0x10 * i) + (y * 2) + 1];
+
+		//			for (int x = 0; x < 8; x++)
+		//			{
+		//				int pixelOffset = 7 - x;
+
+		//				var pixel = ((line2 >> pixelOffset) & 0x01) << 1 | (line1 >> pixelOffset) & 0x01;
+
+		//				//_screenData[(y * 160) + ((i * 8) % 160) + x] = _backgroundPalette[pixel];
+
+		//				_screenData[(i * 8 % 160) + x + (y + i * 8 / 160 * 8) * 160] = _backgroundPalette[pixel];
+		//			}
+		//		} 
+		//	}
+		//}
+
 		private void RenderScanline()
 		{
-			//throw new NotImplementedException();
+			if (_backgroundEnabled)
+				RenderBackgroundScanline();
+		}
+
+		private void RenderBackgroundScanline()
+		{
+			int renderedScanline = _currentScanline + _scrollY;
+
+			// from which tile row are we rendering?
+			int tileRow = (renderedScanline  / 8) * 32;
+
+			// draw 160 pixel scanline
+			for (int x = 0 + _scrollX; x < 160 + _scrollX; x++)
+			{
+				// which tile column are we rendering
+				int tileColumn = x / 8;
+
+				int tileAddress = _backgroundTileBaseAddress + tileRow + tileColumn;
+
+				// retrieve tile identifier, promote to short as byte can be signed or unsigned
+				short tileIdentifier = 0;
+
+				if (_signedTileIdentifier)
+				{
+					tileIdentifier = (sbyte)_vram[tileAddress & 0x1FFF];
+				}
+				else
+				{
+					tileIdentifier = _vram[tileAddress & 0x1FFF];
+				}
+
+				int tileCharBaseAddress = 0;;
+
+				if (_signedTileIdentifier)
+				{
+					tileCharBaseAddress = (ushort)(_backgroundCharBaseAddress + ((tileIdentifier+128) * 16));
+				}
+				else
+				{
+					// char data is 16 bytes per tile
+					tileCharBaseAddress = (ushort)(_backgroundCharBaseAddress + (tileIdentifier * 16));
+				}
+
+				// which line in the tile?
+				int line = (renderedScanline % 8) * 2;
+
+				// read pixel data
+				byte data1 = _vram[(tileCharBaseAddress + line) & 0x1FFF];
+				byte data2 = _vram[(tileCharBaseAddress + line + 1) & 0x1FFF];
+
+				int pixelOffset = 7 - (x % 8);
+
+				var pixel = ((data2 >> pixelOffset) & 0x01) << 1 | (data1 >> pixelOffset) & 0x01;
+
+				_screenData[(_currentScanline * 160) + x] = _backgroundPalette[pixel];
+			}
 		}
 	}
 }

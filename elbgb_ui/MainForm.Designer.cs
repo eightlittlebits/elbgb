@@ -58,12 +58,12 @@
 			// toolStripMenuItem1
 			// 
 			this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-			this.toolStripMenuItem1.Size = new System.Drawing.Size(149, 6);
+			this.toolStripMenuItem1.Size = new System.Drawing.Size(89, 6);
 			// 
 			// exitToolStripMenuItem
 			// 
 			this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-			this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.exitToolStripMenuItem.Size = new System.Drawing.Size(92, 22);
 			this.exitToolStripMenuItem.Text = "E&xit";
 			this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
 			// 
@@ -72,6 +72,7 @@
 			this.displayPanel.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.displayPanel.Location = new System.Drawing.Point(0, 24);
 			this.displayPanel.Name = "displayPanel";
+			this.displayPanel.RealTimeUpdate = false;
 			this.displayPanel.Size = new System.Drawing.Size(172, 168);
 			this.displayPanel.TabIndex = 2;
 			// 
