@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using elbgb_core.Memory;
+using System.Runtime.CompilerServices;
 
 namespace elbgb_core.CPU
 {
@@ -20,6 +21,7 @@ namespace elbgb_core.CPU
 		}
 
 		// Wrap the MMU ReadByte to handle the timing updates
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private byte ReadByte(ushort address)
 		{
 			byte value = _gb.MMU.ReadByte(address);
