@@ -56,7 +56,7 @@ namespace elbgb_core
 		private bool _spritesEnabled;				// LCDC bit 1 - 0: Off / 1: On
 		private bool _backgroundEnabled;			// LCDC bit 0 - 0: Off / 1: On
 
-		private bool _signedTileIdentifier;			// if the background char data is in the range 0x8800 - 0x97FF then tile identifiers are signed
+		private bool _signedCharIdentifier;			// if the background char data is in the range 0x8800 - 0x97FF then tile identifiers are signed
 
 		private byte _lcdStatus;					// STAT value store
 		private LcdMode _lcdMode;					// STAT bit 0 - 1: LCD mode flag
@@ -176,7 +176,7 @@ namespace elbgb_core
 						_backgroundCharBaseAddress = (ushort)((_lcdControl & 0x10) == 0x10 ? 0x8000 : 0x8800);
 
 						// if the background char data is in the range 0x8800 - 0x97FF then tile identifiers are signed
-						_signedTileIdentifier = _backgroundCharBaseAddress == 0x8800;
+						_signedCharIdentifier = _backgroundCharBaseAddress == 0x8800;
 
 						_backgroundTileBaseAddress = (ushort)((_lcdControl & 0x08) == 0x08 ? 0x9C00 : 0x9800);
 						_spriteHeight = (_lcdControl & 0x04) == 0x04 ? 16 : 8;
@@ -408,7 +408,7 @@ namespace elbgb_core
 
 		//				_screenData[(i * 8 % 160) + x + (y + i * 8 / 160 * 8) * 160] = _backgroundPalette[pixel];
 		//			}
-		//		} 
+		//		}
 		//	}
 		//}
 
@@ -420,53 +420,51 @@ namespace elbgb_core
 
 		private void RenderBackgroundScanline()
 		{
-			int renderedScanline = _currentScanline + _scrollY;
+			int renderedScanline = _currentScanline +_scrollY;
 
 			// from which tile row are we rendering?
-			int tileRow = (renderedScanline  / 8) * 32;
+			int tileRow = (renderedScanline / 8) * 32;
 
 			// draw 160 pixel scanline
-			for (int x = 0 + _scrollX; x < 160 + _scrollX; x++)
+			for (int x = 0; x < 160; x++)
 			{
 				// which tile column are we rendering
-				int tileColumn = x / 8;
+				int tileColumn = (x + _scrollX) / 8;
 
 				int tileAddress = _backgroundTileBaseAddress + tileRow + tileColumn;
 
-				// retrieve tile identifier, promote to short as byte can be signed or unsigned
-				short tileIdentifier = 0;
+				byte charIdentifier = 0;
 
-				if (_signedTileIdentifier)
+				if (_signedCharIdentifier)
 				{
-					tileIdentifier = (sbyte)_vram[tileAddress & 0x1FFF];
+					// move the zero point of the tile identifier as these are signed
+					// adding 128 so -128 becomes tile 0x00 and 127 becomes 0xFF
+					// this simplifies the address decoding as we can just add onto 
+					// the char ram base address
+					charIdentifier = (byte)((sbyte)_vram[tileAddress & 0x1FFF] + 128);
 				}
 				else
 				{
-					tileIdentifier = _vram[tileAddress & 0x1FFF];
+					charIdentifier = _vram[tileAddress & 0x1FFF];
 				}
 
-				int tileCharBaseAddress = 0;;
-
-				if (_signedTileIdentifier)
-				{
-					tileCharBaseAddress = (ushort)(_backgroundCharBaseAddress + ((tileIdentifier+128) * 16));
-				}
-				else
-				{
-					// char data is 16 bytes per tile
-					tileCharBaseAddress = (ushort)(_backgroundCharBaseAddress + (tileIdentifier * 16));
-				}
+				int charDataAddress = 0;
 
 				// which line in the tile?
-				int line = (renderedScanline % 8) * 2;
+				int line = (renderedScanline % 8);
+				
+				// generate address of the appropriate line in the tile
+				// 16 bytes per character, 2 bytes per line
+				// char ram base address + charIdentifier * 16 + line * 2
+				charDataAddress = _backgroundCharBaseAddress + (charIdentifier << 4) + (line << 1);
 
-				// read pixel data
-				byte data1 = _vram[(tileCharBaseAddress + line) & 0x1FFF];
-				byte data2 = _vram[(tileCharBaseAddress + line + 1) & 0x1FFF];
+				// decode character pixel data
+				byte charData1 = _vram[(charDataAddress) & 0x1FFF];
+				byte charData2 = _vram[(charDataAddress + 1) & 0x1FFF];
 
-				int pixelOffset = 7 - (x % 8);
+				int pixelOffset = 7 - ((x + _scrollX) % 8);
 
-				var pixel = ((data2 >> pixelOffset) & 0x01) << 1 | (data1 >> pixelOffset) & 0x01;
+				var pixel = ((charData2 >> pixelOffset) & 0x01) << 1 | (charData1 >> pixelOffset) & 0x01;
 
 				_screenData[(_currentScanline * 160) + x] = _backgroundPalette[pixel];
 			}
