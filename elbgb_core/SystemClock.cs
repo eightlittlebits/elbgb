@@ -14,6 +14,12 @@ namespace elbgb_core
 		public ulong Timestamp;
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void AddMachineCycle()
+		{
+			Timestamp += 4;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void AddMachineCycles(uint machineCycleCount)
 		{
 			Timestamp += machineCycleCount * 4;
