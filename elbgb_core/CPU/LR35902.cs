@@ -879,7 +879,15 @@ namespace elbgb_core.CPU
 		
 		#region jump instruction handlers
 
-		private void JumpImmediate(bool condition = true)
+		private void JumpImmediate()
+		{
+			ushort address = ReadWord(_r.PC);
+			
+			_r.PC = address;
+			_gb.Clock.AddMachineCycle();
+		}
+
+		private void JumpImmediate(bool condition)
 		{
 			ushort address = ReadWord(_r.PC);
 
@@ -895,7 +903,15 @@ namespace elbgb_core.CPU
 			}
 		}
 
-		private void JumpRelative(bool condition = true)
+		private void JumpRelative()
+		{
+			sbyte offset = (sbyte)ReadByte(_r.PC++);
+
+			_r.PC += (ushort)offset;
+			_gb.Clock.AddMachineCycle();
+		}
+
+		private void JumpRelative(bool condition)
 		{
 			sbyte offset = (sbyte)ReadByte(_r.PC++);
 
@@ -910,7 +926,18 @@ namespace elbgb_core.CPU
 
 		#region call instruction handlers
 
-		private void CallImmediate(bool condition = true)
+		private void CallImmediate()
+		{
+			ushort address = ReadWord(_r.PC);
+			_r.PC += 2;
+
+			_gb.Clock.AddMachineCycle();
+
+			PushWord(_r.PC);
+			_r.PC = address;
+		}
+
+		private void CallImmediate(bool condition)
 		{
 			ushort address = ReadWord(_r.PC);
 			_r.PC += 2;
