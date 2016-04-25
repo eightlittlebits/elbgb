@@ -25,7 +25,7 @@ namespace elbgb_ui
 		private Dictionary<string, uint[]> _palettes;
 		private uint[] _activePalette;
 
-		private Bitmap _displayBuffer;
+		private DirectBitmap _displayBuffer;
 
 		public MainForm()
 		{
@@ -36,11 +36,11 @@ namespace elbgb_ui
 		{
 			_gameBoy = new GameBoy();
 
-			_gameBoy.LoadRom(File.ReadAllBytes(@"roms\Super Mario Land (W) (V1.1) [!].gb"));
+			_gameBoy.LoadRom(File.ReadAllBytes(@"roms\tetris.gb"));
 
 			//_gameBoy.LoadRom(File.ReadAllBytes(@"D:\GameboyTests\instr_timing\instr_timing.gb"));
 
-			_gameBoy.Interface.VideoRefresh = RenderScreenDataDisplayBuffer;
+			_gameBoy.Interface.VideoRefresh = RenderScreenDataToDisplayBuffer;
 
 			int width = ScreenWidth * 2;
 			int height = ScreenHeight * 2 + mainFormMenuStrip.Height;
@@ -49,6 +49,7 @@ namespace elbgb_ui
 
 			InitialisePalettes();
 			_activePalette = _palettes["default"];
+
 			BuildPaletteMenu();
 
 			_displayBuffer = CreateDisplayBuffer(ScreenWidth * 2, ScreenHeight * 2);
@@ -86,18 +87,16 @@ namespace elbgb_ui
 			stopwatch.Stop();
 
 			double elapsedMilliseconds = stopwatch.ElapsedTicks / (double)(Stopwatch.Frequency / 1000);
+			double framesPerSecond = Stopwatch.Frequency / (double)stopwatch.ElapsedTicks;
 
-			this.Text = string.Format("elbgb - {0:.###}", elapsedMilliseconds);
+			this.Text = string.Format("elbgb - {0:.###}ms {1:.###}fps", elapsedMilliseconds, framesPerSecond);
 		}
 
 		private void PresentDisplayBuffer()
 		{
 			using (Graphics g = displayPanel.CreateGraphics())
 			{
-				g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
-				g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
-
-				g.DrawImage(_displayBuffer, 0, 0, displayPanel.Width, displayPanel.Height);
+				g.DrawImageUnscaled(_displayBuffer.Bitmap, 0, 0, displayPanel.Width, displayPanel.Height);
 			}
 		}
 
@@ -141,42 +140,25 @@ namespace elbgb_ui
 			};
 		}
 
-		private Bitmap CreateDisplayBuffer(int width, int height)
+		private DirectBitmap CreateDisplayBuffer(int width, int height)
 		{
-			return new Bitmap(width, height, PixelFormat.Format32bppPArgb);
+			return new DirectBitmap(width, height);
 		}
 
-		private void RenderScreenDataDisplayBuffer(byte[] screenData)
+		private unsafe void RenderScreenDataToDisplayBuffer(byte[] screenData)
 		{
-			BitmapData bitmapData = _displayBuffer.LockBits(new Rectangle(0, 0, _displayBuffer.Width, _displayBuffer.Height),
-												ImageLockMode.WriteOnly,
-												_displayBuffer.PixelFormat);
+			uint* ptr = (uint*)_displayBuffer.BitmapData;
 
-			try
+			for (int y = 0; y < 144 * 2; y++)
 			{
-				unsafe
+				int screenY = y / 2;
+
+				for (int x = 0; x < 160 * 2; x++)
 				{
-					uint* ptr = (uint*)bitmapData.Scan0;
+					int screenX = x / 2;
 
-					for (int y = 0; y < 144 * 2; y++)
-					{
-						int screenY = y / 2;
-
-						for (int x = 0; x < 160 * 2; x++)
-						{
-							int screenX = x / 2;
-
-							*ptr++ = _activePalette[screenData[(screenY * ScreenWidth) + screenX]] | 0xFF000000;
-						}
-
-						// move to next line in bitmap
-						ptr += bitmapData.Stride - bitmapData.Width * 4;
-					}
+					*ptr++ = _activePalette[screenData[(screenY * ScreenWidth) + screenX]] | 0xFF000000;
 				}
-			}
-			finally
-			{
-				_displayBuffer.UnlockBits(bitmapData);
 			}
 		}
 
