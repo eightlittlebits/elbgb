@@ -97,40 +97,51 @@ namespace elbgb_core
 		{
 			SynchroniseWithSystemClock();
 
-			switch (address)
+			if (address >= 0x8000 && address <= 0x9fff)
 			{
-				case Registers.LCDC:
-					return _lcdControl;
+				return _vram[address & 0x1FFF];
+			}
+			else if (address >= 0xFE00 && address <= 0xFE9F)
+			{
+				return _oam[address & 0xFF];
+			}
+			else
+			{
+				switch (address)
+				{
+					case Registers.LCDC:
+						return _lcdControl;
 
-				case Registers.STAT:
-					return (byte)((_lcdStatus & ~0x03) | (byte)_lcdMode);
+					case Registers.STAT:
+						return (byte)((_lcdStatus & ~0x03) | (byte)_lcdMode);
 
-				case Registers.SCY:
-					return _scrollY;
+					case Registers.SCY:
+						return _scrollY;
 
-				case Registers.SCX:
-					return _scrollX;
+					case Registers.SCX:
+						return _scrollX;
 
-				case Registers.LY:
-					return _currentScanline;
+					case Registers.LY:
+						return _currentScanline;
 
-				case Registers.LYC:
-					return _scanlineCompare;
+					case Registers.LYC:
+						return _scanlineCompare;
 
-				case Registers.BGP:
-					return _bgp;
+					case Registers.BGP:
+						return _bgp;
 
-				case Registers.OBP0:
-					return _obp0;
+					case Registers.OBP0:
+						return _obp0;
 
-				case Registers.OBP1:
-					return _obp1;
+					case Registers.OBP1:
+						return _obp1;
 
-				case Registers.WY:
-					return _windowY;
+					case Registers.WY:
+						return _windowY;
 
-				case Registers.WX:
-					return _windowX;
+					case Registers.WX:
+						return _windowX;
+				}
 			}
 
 			throw new ArgumentOutOfRangeException("address");
