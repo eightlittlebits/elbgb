@@ -431,16 +431,16 @@ namespace elbgb_core
 
 		private void RenderBackgroundScanline()
 		{
-			int renderedScanline = _currentScanline +_scrollY;
+			int renderedScanline = _currentScanline + _scrollY;
 
 			// from which tile row are we rendering?
-			int tileRow = (renderedScanline / 8) * 32;
+			int tileRow = (renderedScanline >> 3) * 32;
 
 			// draw 160 pixel scanline
 			for (int x = 0; x < 160; x++)
 			{
 				// which tile column are we rendering
-				int tileColumn = (x + _scrollX) / 8;
+				int tileColumn = ((x + _scrollX) & 0xFF) >> 3;
 
 				int tileAddress = _backgroundTileBaseAddress + tileRow + tileColumn;
 
@@ -459,21 +459,19 @@ namespace elbgb_core
 					charIdentifier = _vram[tileAddress & 0x1FFF];
 				}
 
-				int charDataAddress = 0;
-
 				// which line in the tile?
-				int line = (renderedScanline % 8);
+				int line = (renderedScanline & 7);
 				
 				// generate address of the appropriate line in the tile
 				// 16 bytes per character, 2 bytes per line
 				// char ram base address + charIdentifier * 16 + line * 2
-				charDataAddress = _backgroundCharBaseAddress + (charIdentifier << 4) + (line << 1);
+				int charDataAddress = _backgroundCharBaseAddress + (charIdentifier << 4) + (line << 1);
 
 				// decode character pixel data
 				byte charData1 = _vram[(charDataAddress) & 0x1FFF];
 				byte charData2 = _vram[(charDataAddress + 1) & 0x1FFF];
 
-				int pixelOffset = 7 - ((x + _scrollX) % 8);
+				int pixelOffset = 7 - ((x + _scrollX) & 7);
 
 				var pixel = ((charData2 >> pixelOffset) & 0x01) << 1 | (charData1 >> pixelOffset) & 0x01;
 
