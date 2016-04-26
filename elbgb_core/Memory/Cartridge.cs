@@ -27,9 +27,9 @@ namespace elbgb_core.Memory
 					return new Mappers.RomOnly(header, romData);
 
 				case CartridgeType.Mbc1:
+				case CartridgeType.Mbc1Ram:
 					return new Mappers.MBC1(header, romData);
 
-				case CartridgeType.Mbc1Ram:
 				case CartridgeType.Mbc1RamBattery:
 				case CartridgeType.Mbc2:
 				case CartridgeType.Mbc2Battery:
