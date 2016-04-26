@@ -181,17 +181,25 @@ namespace elbgb_ui
 
 		private unsafe void RenderScreenDataToDisplayBuffer(byte[] screenData)
 		{
+			int screenY, screenX;
+
 			uint* ptr = (uint*)_displayBuffer.BitmapData;
 
-			for (int y = 0; y < 144 * 2; y++)
+			fixed (byte* screen = screenData)
 			{
-				int screenY = y / 2;
+				byte* row;
 
-				for (int x = 0; x < 160 * 2; x++)
+				for (int y = 0; y < 144 * 2; y++)
 				{
-					int screenX = x / 2;
+					screenY = (y >> 1) * ScreenWidth;
+					row = screen + screenY;
 
-					*ptr++ = _activePalette[screenData[(screenY * ScreenWidth) + screenX]] | 0xFF000000;
+					for (int x = 0; x < 160 * 2; x++)
+					{
+						screenX = x >> 1;
+
+						*ptr++ = _activePalette[*(row + screenX)];
+					}
 				}
 			}
 		}
