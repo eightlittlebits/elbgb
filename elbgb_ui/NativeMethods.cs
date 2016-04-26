@@ -25,5 +25,24 @@ namespace elbgb_ui
 		[DllImport("User32.dll", CharSet = CharSet.Auto)]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool PeekMessage(out Message msg, IntPtr hWnd, uint messageFilterMin, uint messageFilterMax, uint flags);
+
+		[System.Security.SuppressUnmanagedCodeSecurity]
+		[DllImport("gdi32.dll", EntryPoint = "SelectObject")]
+		public static extern System.IntPtr SelectObject(
+			[In] System.IntPtr hdc,
+			[In] System.IntPtr hgdiobj);
+
+		[System.Security.SuppressUnmanagedCodeSecurity]
+		[DllImport("gdi32.dll", EntryPoint = "DeleteObject")]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool DeleteObject(
+			[In] System.IntPtr hObject);
+
+		[System.Security.SuppressUnmanagedCodeSecurity]
+		[DllImport("gdi32.dll", EntryPoint = "BitBlt")]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool BitBlt(
+			[In] System.IntPtr hdc, int x, int y, int cx, int cy,
+			[In] System.IntPtr hdcSrc, int x1, int y1, uint rop);
 	}
 }

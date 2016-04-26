@@ -92,11 +92,45 @@ namespace elbgb_ui
 			this.Text = string.Format("elbgb - {0:.###}ms {1:.###}fps", elapsedMilliseconds, framesPerSecond);
 		}
 
+		//private void PresentDisplayBuffer()
+		//{
+		//	using (Graphics g = displayPanel.CreateGraphics())
+		//	{
+		//		g.DrawImageUnscaled(_displayBuffer.Bitmap, 0, 0, displayPanel.Width, displayPanel.Height);
+		//	}
+		//}
+
 		private void PresentDisplayBuffer()
 		{
-			using (Graphics g = displayPanel.CreateGraphics())
+			using (Graphics grDest = Graphics.FromHwnd(displayPanel.Handle))
+			using (Graphics grSrc = Graphics.FromImage(_displayBuffer.Bitmap))
 			{
-				g.DrawImageUnscaled(_displayBuffer.Bitmap, 0, 0, displayPanel.Width, displayPanel.Height);
+				IntPtr hdcDest = IntPtr.Zero;
+				IntPtr hdcSrc = IntPtr.Zero;
+				IntPtr hBitmap = IntPtr.Zero;
+				IntPtr hOldObject = IntPtr.Zero;
+
+				try
+				{
+					hdcDest = grDest.GetHdc();
+					hdcSrc = grSrc.GetHdc();
+					hBitmap = _displayBuffer.Bitmap.GetHbitmap();
+
+					hOldObject = NativeMethods.SelectObject(hdcSrc, hBitmap);
+					if (hOldObject == IntPtr.Zero)
+						throw new Win32Exception();
+
+					if (!NativeMethods.BitBlt(hdcDest, 0, 0, displayPanel.Width, displayPanel.Height,
+						hdcSrc, 0, 0, 0x00CC0020U))
+						throw new Win32Exception();
+				}
+				finally
+				{
+					if (hOldObject != IntPtr.Zero) NativeMethods.SelectObject(hdcSrc, hOldObject);
+					if (hBitmap != IntPtr.Zero) NativeMethods.DeleteObject(hBitmap);
+					if (hdcDest != IntPtr.Zero) grDest.ReleaseHdc(hdcDest);
+					if (hdcSrc != IntPtr.Zero) grSrc.ReleaseHdc(hdcSrc);
+				}
 			}
 		}
 
