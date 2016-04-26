@@ -48,9 +48,9 @@ namespace elbgb_ui
 			this.ClientSize = new Size(width, height);
 
 			InitialisePalettes();
-			_activePalette = _palettes["default"];
+			_activePalette = _palettes["greyscale"];
 
-			BuildPaletteMenu();
+			BuildPaletteMenu("greyscale");
 
 			_displayBuffer = CreateDisplayBuffer(ScreenWidth * 2, ScreenHeight * 2);
 
@@ -134,7 +134,7 @@ namespace elbgb_ui
 			}
 		}
 
-		private void BuildPaletteMenu()
+		private void BuildPaletteMenu(string defaultPalette)
 		{
 			var rootPaletteMenuItem = new ToolStripMenuItem("&Palette");
 
@@ -149,7 +149,7 @@ namespace elbgb_ui
 						_activePalette = _palettes[paletteName];
 					});
 
-				if (paletteName == "default")
+				if (paletteName == defaultPalette)
 				{
 					paletteMenuItem.Checked = true;
 				}
@@ -168,7 +168,7 @@ namespace elbgb_ui
 				{"dark yellow",	new uint[] {0xFFF77B, 0xB5AE4A, 0x6B6931, 0x212010} },
 				{"light yellow", new uint[] {0xFFFF94, 0xD0D066, 0x949440, 0x666625} },
 				{"green", new uint[] {0xB7DC11, 0x88A808, 0x306030, 0x083808} },
-				{"greyscale", new uint[] {0xEFEFEF, 0xB2B2B2, 0x757575, 0x383838} },
+				{"greyscale", new uint[] {0xFFEFEFEF, 0xFFB2B2B2, 0xFF757575, 0xFF383838} },
 				{"stark b/w", new uint[] {0xFFFFFF, 0xB2B2B2, 0x757575, 0x000000} },
 				{"gb pocket", new uint[] {0xE3E6C9, 0xC3C4A5, 0x8E8B61, 0x6C6C4E} },
 			};
