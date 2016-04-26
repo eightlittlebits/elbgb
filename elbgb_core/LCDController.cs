@@ -180,6 +180,7 @@ namespace elbgb_core
 							CompareScanlineValue();
 
 							_frameClock = 0;
+							_lcdMode = 0;
 						}
 
 						_windowTileBaseAddress = (ushort)((_lcdControl & 0x40) == 0x40 ? 0x9C00 : 0x9800);
