@@ -427,6 +427,9 @@ namespace elbgb_core
 		{
 			if (_backgroundEnabled)
 				RenderBackgroundScanline();
+
+			if (_windowEnabled)
+				RenderWindowScanline();
 		}
 
 		private void RenderBackgroundScanline()
@@ -462,6 +465,67 @@ namespace elbgb_core
 				// which line in the tile?
 				int line = (renderedScanline & 7);
 				
+				// generate address of the appropriate line in the tile
+				// 16 bytes per character, 2 bytes per line
+				// char ram base address + charIdentifier * 16 + line * 2
+				int charDataAddress = _backgroundCharBaseAddress + (charIdentifier << 4) + (line << 1);
+
+				// decode character pixel data
+				byte charData1 = _vram[(charDataAddress) & 0x1FFF];
+				byte charData2 = _vram[(charDataAddress + 1) & 0x1FFF];
+
+				int pixelOffset = 7 - ((x + _scrollX) & 7);
+
+				var pixel = ((charData2 >> pixelOffset) & 0x01) << 1 | (charData1 >> pixelOffset) & 0x01;
+
+				_screenData[(_currentScanline * 160) + x] = _backgroundPalette[pixel];
+			}
+		}
+
+		private void RenderWindowScanline()
+		{
+			// are we in the window and is the window on screen?
+			if (_currentScanline < _windowY || _windowX >= 167)
+			{
+				return;
+			}
+
+			int renderedScanline = _currentScanline - _windowY;
+
+			// from which tile row are we rendering?
+			int tileRow = (renderedScanline >> 3) * 32;
+
+			// draw 160 pixel scanline
+			for (int x = 0; x < 160; x++)
+			{
+				// if this is earlier in the scanline than the window x position
+				// skip window rendering
+				if (x < _windowX - 7)
+					continue;
+
+				// which tile column are we rendering
+				int tileColumn = (x -_windowX - 7) >> 3;
+
+				int tileAddress = _windowTileBaseAddress + tileRow + tileColumn;
+
+				byte charIdentifier = 0;
+
+				if (_signedCharIdentifier)
+				{
+					// move the zero point of the tile identifier as these are signed
+					// adding 128 so -128 becomes tile 0x00 and 127 becomes 0xFF
+					// this simplifies the address decoding as we can just add onto 
+					// the char ram base address
+					charIdentifier = (byte)((sbyte)_vram[tileAddress & 0x1FFF] + 128);
+				}
+				else
+				{
+					charIdentifier = _vram[tileAddress & 0x1FFF];
+				}
+
+				// which line in the tile?
+				int line = (renderedScanline & 7);
+
 				// generate address of the appropriate line in the tile
 				// 16 bytes per character, 2 bytes per line
 				// char ram base address + charIdentifier * 16 + line * 2
