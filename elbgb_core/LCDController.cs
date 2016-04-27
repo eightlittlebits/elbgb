@@ -38,6 +38,8 @@ namespace elbgb_core
 			VramRead = 0x03,
 		}
 
+		private const byte UndefinedRead = 0xFF;
+
 		private const int ScreenWidth = 160;
 		private const int ScreenHeight = 144;
 
@@ -100,11 +102,23 @@ namespace elbgb_core
 			// 0x8000 - 0x9FFF - vram
 			if (address >= 0x8000 && address <= 0x9fff)
 			{
+				// cannot access vram in mode 3
+				if (_lcdMode == LcdMode.VramRead)
+				{
+					return UndefinedRead;
+				}
+
 				return _vram[address & 0x1FFF];
 			}
 			// 0xFE00 - 0xFE9F - OAM memory
 			else if (address >= 0xFE00 && address <= 0xFE9F)
 			{
+				// cannot access oam in mode 2 or 3
+				if (_lcdMode == LcdMode.OamRead || _lcdMode == LcdMode.VramRead)
+				{
+					return UndefinedRead;
+				}
+
 				return _oam[address & 0xFF];
 			}
 			else
@@ -156,11 +170,23 @@ namespace elbgb_core
 			// 0x8000 - 0x9FFF - vram
 			if (address >= 0x8000 && address <= 0x9fff)
 			{
+				// cannot access vram in mode 3
+				if (_lcdMode == LcdMode.VramRead)
+				{
+					return;
+				}
+
 				_vram[address & 0x1FFF] = value;
 			}
 			// 0xFE00 - 0xFE9F - OAM memory
 			else if (address >= 0xFE00 && address <= 0xFE9F)
 			{
+				// cannot access oam in mode 2 or 3
+				if (_lcdMode == LcdMode.OamRead || _lcdMode == LcdMode.VramRead)
+				{
+					return;
+				}
+
 				_oam[address & 0xFF] = value;
 			}
 			else
