@@ -34,8 +34,8 @@ namespace elbgb_core
 		{
 			HBlank = 0x00,
 			VBlank = 0x01,
-			OAMRead = 0x02,
-			VRAMRead = 0x03,
+			OamRead = 0x02,
+			VramRead = 0x03,
 		}
 
 		private const int ScreenWidth = 160;
@@ -97,10 +97,12 @@ namespace elbgb_core
 		{
 			SynchroniseWithSystemClock();
 
+			// 0x8000 - 0x9FFF - vram
 			if (address >= 0x8000 && address <= 0x9fff)
 			{
 				return _vram[address & 0x1FFF];
 			}
+			// 0xFE00 - 0xFE9F - OAM memory
 			else if (address >= 0xFE00 && address <= 0xFE9F)
 			{
 				return _oam[address & 0xFF];
@@ -151,10 +153,12 @@ namespace elbgb_core
 		{
 			SynchroniseWithSystemClock();
 
+			// 0x8000 - 0x9FFF - vram
 			if (address >= 0x8000 && address <= 0x9fff)
 			{
 				_vram[address & 0x1FFF] = value;
 			}
+			// 0xFE00 - 0xFE9F - OAM memory
 			else if (address >= 0xFE00 && address <= 0xFE9F)
 			{
 				_oam[address & 0xFF] = value;
@@ -171,7 +175,7 @@ namespace elbgb_core
 						// lcd starts in mode 2 when enabled
 						if (_displayEnabled)
 						{
-							_lcdMode = LcdMode.OAMRead;
+							_lcdMode = LcdMode.OamRead;
 						}
 						// reset LY when display is disabled
 						else
@@ -314,7 +318,7 @@ namespace elbgb_core
 				// Mode 2 - OAM read, 77-83 cycles of frame
 				if ((_frameClock % 456) < 80)
 				{
-					if (_lcdMode != LcdMode.OAMRead)
+					if (_lcdMode != LcdMode.OamRead)
 					{
 						// We've just entered OAM read so we're at the beginning of the line,
 						// increment the current scanline unless we're coming from VBlank, then 
@@ -325,7 +329,7 @@ namespace elbgb_core
 							CompareScanlineValue(); 
 						}
 
-						_lcdMode = LcdMode.OAMRead;
+						_lcdMode = LcdMode.OamRead;
 
 						// raise OAM stat interrupt if requested
 						if ((_lcdStatus & 0x20) == 0x20) _gb.RequestInterrupt(Interrupt.LCDCStatus);
@@ -334,9 +338,9 @@ namespace elbgb_core
 				// Mode 3 - OAM and VRAM read, 162-175 cycles of frame
 				else if ((_frameClock % 456) < 252)
 				{
-					if (_lcdMode != LcdMode.VRAMRead)
+					if (_lcdMode != LcdMode.VramRead)
 					{
-						_lcdMode = LcdMode.VRAMRead;
+						_lcdMode = LcdMode.VramRead;
 					}
 				}
 				// Mode 0 - HBlank, 201-207 cycles of frame
@@ -379,7 +383,7 @@ namespace elbgb_core
 					// present the screen data
 					_gb.Interface.VideoRefresh(_screenData);
 				}
-				// processing vblank 
+				// processing vblank
 				else
 				{
 					_vblankClock += cycleCount;
