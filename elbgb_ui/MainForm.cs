@@ -162,15 +162,15 @@ namespace elbgb_ui
 		{
 			_palettes = new Dictionary<string, uint[]>
 			{
-				{"default", new uint[] {0xFFFFFF, 0xB7B7B7, 0x686868, 0x000000} },
+				{"default",			new uint[] {0xFFFFFFFF, 0xFFB7B7B7, 0xFF686868, 0xFF000000} },
 
 				// the following palettes from http://www.hardcoregaming101.net/gbdebate/gbcolours.htm
-				{"dark yellow",	new uint[] {0xFFF77B, 0xB5AE4A, 0x6B6931, 0x212010} },
-				{"light yellow", new uint[] {0xFFFF94, 0xD0D066, 0x949440, 0x666625} },
-				{"green", new uint[] {0xB7DC11, 0x88A808, 0x306030, 0x083808} },
-				{"greyscale", new uint[] {0xFFEFEFEF, 0xFFB2B2B2, 0xFF757575, 0xFF383838} },
-				{"stark b/w", new uint[] {0xFFFFFF, 0xB2B2B2, 0x757575, 0x000000} },
-				{"gb pocket", new uint[] {0xE3E6C9, 0xC3C4A5, 0x8E8B61, 0x6C6C4E} },
+				{"dark yellow",		new uint[] {0xFFFFF77B, 0xFFB5AE4A, 0xFF6B6931, 0xFF212010} },
+				{"light yellow",	new uint[] {0xFFFFFF94, 0xFFD0D066, 0xFF949440, 0xFF666625} },
+				{"green",			new uint[] {0xFFB7DC11, 0xFF88A808, 0xFF306030, 0xFF083808} },
+				{"greyscale",		new uint[] {0xFFEFEFEF, 0xFFB2B2B2, 0xFF757575, 0xFF383838} },
+				{"stark b/w",		new uint[] {0xFFFFFFFF, 0xFFB2B2B2, 0xFF757575, 0xFF000000} },
+				{"gb pocket",		new uint[] {0xFFE3E6C9, 0xFFC3C4A5, 0xFF8E8B61, 0xFF6C6C4E} },
 			};
 		}
 
