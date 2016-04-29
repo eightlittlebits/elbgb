@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace elbgb_core
@@ -30,6 +31,24 @@ namespace elbgb_core
 			public const ushort WX = 0xFF4B; // window x
 		}
 
+		[Flags]
+		private enum SpriteAttributes : byte
+		{
+			SpritePalette = 0x10,
+			HorizontalFlip = 0x20,
+			VerticalFlip = 0x40,
+			BackgroundPriority = 0x80
+		}
+
+		[StructLayout(LayoutKind.Sequential, Pack = 1)]
+		private struct Sprite
+		{
+			public byte Y;
+			public byte X;
+			public byte CharIdentifier;
+			public SpriteAttributes Attributes;
+		}
+
 		public enum LcdMode : byte
 		{
 			HBlank = 0x00,
@@ -46,6 +65,7 @@ namespace elbgb_core
 		private byte[] _screenData;
 
 		private byte[] _vram;
+
 		private byte[] _oam;
 
 		private byte _lcdControl;					// LCDC value store
@@ -86,6 +106,7 @@ namespace elbgb_core
 			_screenData = new byte[ScreenWidth * ScreenHeight];
 
 			_vram = new byte[0x2000];
+
 			_oam = new byte[0xA0];
 
 			_backgroundPalette = new byte[4];
@@ -335,7 +356,7 @@ namespace elbgb_core
 				return;
 
 			_frameClock += cycleCount;
-			
+
 			// LCD runs for 70224 cpu cycles a frame, 456 cycles a scanline and 154 total scanlines
 			// 10 of the scanlines are VBlank and the rest are the active portion of the cycle
 			// mode 2, 3 and 0 occur in he first 65664 cycles of a frame (70224 - 4560)
@@ -352,7 +373,7 @@ namespace elbgb_core
 						if (_lcdMode != LcdMode.VBlank)
 						{
 							_currentScanline++;
-							CompareScanlineValue(); 
+							CompareScanlineValue();
 						}
 
 						_lcdMode = LcdMode.OamRead;
@@ -461,6 +482,9 @@ namespace elbgb_core
 
 			if (_windowEnabled)
 				RenderWindowScanline();
+
+			if (_spritesEnabled)
+				RenderSpriteScanline();
 		}
 
 		private void RenderBackgroundScanline()
@@ -495,7 +519,7 @@ namespace elbgb_core
 
 				// which line in the tile?
 				int line = (renderedScanline & 7);
-				
+
 				// generate address of the appropriate line in the tile
 				// 16 bytes per character, 2 bytes per line
 				// char ram base address + charIdentifier * 16 + line * 2
@@ -535,7 +559,7 @@ namespace elbgb_core
 					continue;
 
 				// which tile column are we rendering
-				int tileColumn = (x -_windowX - 7) >> 3;
+				int tileColumn = (x - _windowX - 7) >> 3;
 
 				int tileAddress = _windowTileBaseAddress + tileRow + tileColumn;
 
@@ -571,6 +595,145 @@ namespace elbgb_core
 				var pixel = ((charData2 >> pixelOffset) & 0x01) << 1 | (charData1 >> pixelOffset) & 0x01;
 
 				_screenData[(_currentScanline * 160) + x] = _backgroundPalette[pixel];
+			}
+		}
+
+		private void RenderSpriteScanline()
+		{
+
+			Sprite[] renderList = new Sprite[10];
+
+			int renderListCount = 0;
+
+			unsafe
+			{
+				fixed (byte* oamPtr = _oam)
+				{
+					// access oam as sprite records
+					Sprite* sprites = (Sprite*)oamPtr;
+
+					// loop through all 40 sprites and find the first 10 that are on 
+					// the current scanline
+					for (int i = 0; i < 40; i++)
+					{
+						// x coord of 0x08 is displayed at left edge of screen
+						// y coord of 0x10 is displayed at the top edge of the screen
+						byte spriteX = (byte)(sprites[i].X - 0x08);
+						byte spriteY = (byte)(sprites[i].Y - 0x10);
+
+						if (((_currentScanline - spriteY) & 0xFF) < _spriteHeight)
+						{
+							renderList[renderListCount] = sprites[i];
+
+							// set the x and y coords to be corrected screen space coords
+							renderList[renderListCount].Y = spriteY;
+							renderList[renderListCount].X = spriteX;
+
+							// if we've found 10 sprites then break from the loop
+							if (++renderListCount == 10)
+								break;
+						}
+					}
+				}
+			}
+
+			// if we've no sprites on the current scanline there's nothing to render
+			if (renderListCount == 0)
+				return;
+
+			// sort render list by x coords, lowest x has priority, if x is 
+			// the same then leave in OAM order
+			SortRenderList(renderList, renderListCount);
+
+			// run through each of the sprites, in reverse order to maintain priority
+			// higher priority sprites (earlier in list) will overdraw existing data
+			for (int i = renderListCount - 1; i >= 0; i--)
+			{
+				Sprite sprite = renderList[i];
+
+				// extract flip and priority flags from attributes
+				bool flipY = (sprite.Attributes & SpriteAttributes.VerticalFlip) == SpriteAttributes.VerticalFlip;
+				bool flipX = (sprite.Attributes & SpriteAttributes.HorizontalFlip) == SpriteAttributes.HorizontalFlip;
+				bool backgroundPriority = (sprite.Attributes & SpriteAttributes.BackgroundPriority) == SpriteAttributes.BackgroundPriority;
+
+				// get the correct palette based on the sprite attributes
+				byte[] palette = (sprite.Attributes & SpriteAttributes.SpritePalette) == SpriteAttributes.SpritePalette ? _spritePalette[1] : _spritePalette[0];
+
+				// which line in the final tile are we rendering?
+				int line;
+
+				if (flipY)
+				{
+					line = (_spriteHeight - ((_currentScanline - sprite.Y) & 0xFF) - 1) & 0xFF;
+				}
+				else
+				{
+					line = (_currentScanline - sprite.Y) & 0x0F;
+				}
+
+				// generate address of the appropriate line in the tile
+				// 16 bytes per character, 2 bytes per line
+				// char ram base address + charIdentifier * 16 + line * 2
+				int charDataAddress = 0x8000 + (sprite.CharIdentifier << 4) + (line << 1);
+
+				// decode character pixel data
+				byte charData1 = _vram[(charDataAddress) & 0x1FFF];
+				byte charData2 = _vram[(charDataAddress + 1) & 0x1FFF];
+
+				for (int p = 7; p >= 0; p--)
+				{
+					int pixelBit;
+
+					if (flipX)
+					{
+						pixelBit = 7 - p;
+					}
+					else
+					{
+						pixelBit = p;
+					}
+
+					int pixel = ((charData2 >> pixelBit) & 0x01) << 1 | (charData1 >> pixelBit) & 0x01;
+
+					// a pixel value of 0 is transparent for sprites, skip pixel
+					if (pixel == 0)
+					{
+						continue;
+					}
+
+					int targetX = sprite.X + (7 - p);
+
+					// if the background has priority and is non zero then skip this pixel
+					if (backgroundPriority && _screenData[(_currentScanline * 160) + targetX] != 0)
+					{
+						continue;
+					}
+
+					if (targetX < ScreenWidth)
+					{
+						_screenData[(_currentScanline * 160) + targetX] = palette[pixel];
+					}
+				}
+			}
+		}
+
+		private static void SortRenderList(Sprite[] renderList, int renderListCount)
+		{
+			// the render list will only ever be at most 10 elements so use an insertion sort
+			// https://en.wikipedia.org/wiki/Insertion_sort
+
+			for (int i = 1; i < renderListCount; i++)
+			{
+				Sprite s = renderList[i];
+
+				int j = i - 1;
+				while (j >= 0 && renderList[j].X > s.X)
+				{
+					renderList[j + 1] = renderList[j];
+					j--;
+				}
+
+				renderList[j + 1] = s;
 			}
 		}
 	}
