@@ -16,7 +16,7 @@ namespace elbgb_core.Memory
 
 		public override byte ReadByte(ushort address)
 		{
-			return 0;
+			return 0xFF;
 		}
 
 		public override void WriteByte(ushort address, byte value)
