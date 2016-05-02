@@ -489,7 +489,7 @@ namespace elbgb_core
 
 		private void RenderBackgroundScanline()
 		{
-			int renderedScanline = _currentScanline + _scrollY;
+            int renderedScanline = (_currentScanline + _scrollY) & 0xFF;
 
 			// from which tile row are we rendering?
 			int tileRow = (renderedScanline >> 3) * 32;
