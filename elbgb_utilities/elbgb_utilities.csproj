@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{75DA2BB4-4743-4F09-A8A3-B17D23534386}</ProjectGuid>
+    <ProjectGuid>{FCDEF3D9-ACC2-465B-90FB-8FEDB4D8F27D}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>elbgb_core</RootNamespace>
-    <AssemblyName>elbgb_core</AssemblyName>
+    <RootNamespace>elbgb_utilities</RootNamespace>
+    <AssemblyName>elbgb_utilities</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -17,11 +17,9 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;PROFILER</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -30,8 +28,6 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -43,34 +39,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ClockedComponent.cs" />
-    <Compile Include="CPU\LR35902.cs" />
-    <Compile Include="CPU\PairedRegister.cs" />
-    <Compile Include="CPU\Registers.cs" />
-    <Compile Include="CPU\StatusFlags.cs" />
-    <Compile Include="GameBoy.cs" />
-    <Compile Include="GBCoreInput.cs" />
-    <Compile Include="GBCoreInterface.cs" />
-    <Compile Include="IMemoryMappedComponent.cs" />
-    <Compile Include="Interrupt.cs" />
-    <Compile Include="Memory\Cartridge.cs" />
-    <Compile Include="Memory\CartridgeHeader.cs" />
-    <Compile Include="Memory\Mappers\MBC1.cs" />
-    <Compile Include="Memory\Mappers\RomOnly.cs" />
-    <Compile Include="Memory\MMU.cs" />
-    <Compile Include="LCDController.cs" />
-    <Compile Include="Memory\NullCartridge.cs" />
+    <Compile Include="Profiler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SerialCommunicationController.cs" />
-    <Compile Include="Sound\PSG.cs" />
-    <Compile Include="SystemClock.cs" />
-    <Compile Include="Timer.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\elbgb_utilities\elbgb_utilities.csproj">
-      <Project>{fcdef3d9-acc2-465b-90fb-8fedb4d8f27d}</Project>
-      <Name>elbgb_utilities</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

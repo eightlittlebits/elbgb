@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using elbgb_core;
+using elbgb_utilities;
 
 namespace elbgb_ui
 {
@@ -85,74 +86,92 @@ namespace elbgb_ui
 
 		private void Frame()
 		{
-			_gameBoy.RunFrame();
-
-			PresentDisplayBuffer();
-
-			long currentTimeStamp = Stopwatch.GetTimestamp();
-			long elapsedTicks = currentTimeStamp - _lastFrameTimestamp;
-
-			if (elapsedTicks < _targetFrameTicks)
+			using (new Profiler.AutoTimedBlock())
 			{
-				// get ms to sleep for, cast to int to truncate to nearest millisecond
-				int sleepMilliseconds = (int)((_targetFrameTicks - elapsedTicks) * 1000 / Stopwatch.Frequency);
+				_gameBoy.RunFrame();
 
-				Thread.Sleep(sleepMilliseconds);
+				PresentDisplayBuffer();
+
+				long currentTimeStamp = Stopwatch.GetTimestamp();
+				long elapsedTicks = currentTimeStamp - _lastFrameTimestamp;
+
+				if (elapsedTicks < _targetFrameTicks)
+				{
+					// get ms to sleep for, cast to int to truncate to nearest millisecond
+					int sleepMilliseconds = (int)((_targetFrameTicks - elapsedTicks) * 1000 / Stopwatch.Frequency);
+
+					Thread.Sleep(sleepMilliseconds);
+				}
+
+				while ((Stopwatch.GetTimestamp() - _lastFrameTimestamp) < _targetFrameTicks)
+				{
+					// spin for the remaining partial millisecond to hit target frame rate
+				}
+
+				var elapsedAfterSleep = Stopwatch.GetTimestamp() - _lastFrameTimestamp;
+
+				double elapsedMilliseconds = elapsedAfterSleep * 1000 / (double)(Stopwatch.Frequency);
+				double framesPerSecond = Stopwatch.Frequency / (double)elapsedAfterSleep;
+
+				this.Text = string.Format("elbgb - {0:.###}ms {1:.####}fps", elapsedMilliseconds, framesPerSecond);
+
+				_lastFrameTimestamp = Stopwatch.GetTimestamp();
 			}
 
-			while ((Stopwatch.GetTimestamp() - _lastFrameTimestamp) < _targetFrameTicks)
-			{
-				// spin for the remaining partial millisecond to hit target frame rate
-			}
-
-			var elapsedAfterSleep = Stopwatch.GetTimestamp() - _lastFrameTimestamp;
-
-			double elapsedMilliseconds = elapsedAfterSleep * 1000 / (double)(Stopwatch.Frequency);
-			double framesPerSecond = Stopwatch.Frequency / (double)elapsedAfterSleep;
-
-			this.Text = string.Format("elbgb - {0:.###}ms {1:.####}fps", elapsedMilliseconds, framesPerSecond);
-
-			_lastFrameTimestamp = Stopwatch.GetTimestamp();
+			PrintProfileRecords(Profiler.Instance.CollateProfilerData());
+			Profiler.Instance.Reset();
 		}
 
-		//private void PresentDisplayBuffer()
-		//{
-		//	using (Graphics g = displayPanel.CreateGraphics())
-		//	{
-		//		g.DrawImageUnscaled(_displayBuffer.Bitmap, 0, 0, displayPanel.Width, displayPanel.Height);
-		//	}
-		//}
+		private static void PrintProfileRecords(List<Profiler.ProfilerRecord> list, int indent = 0)
+		{
+			foreach (var profilerRecord in list)
+			{
+				double ms = 1000.0 * profilerRecord.ElapsedTicks / Stopwatch.Frequency;
+
+				Debug.WriteLine("{0}{1} - {2:.###}ms - {3} hits - {4:.###}ms avg",
+					"".PadRight(indent * 2),
+					profilerRecord.Identifier,
+					ms,
+					profilerRecord.HitCount,
+					ms / profilerRecord.HitCount);
+
+				PrintProfileRecords(profilerRecord.Children, indent + 1);
+			}
+		}
 
 		private void PresentDisplayBuffer()
 		{
-			using (Graphics grDest = Graphics.FromHwnd(displayPanel.Handle))
-			using (Graphics grSrc = Graphics.FromImage(_displayBuffer.Bitmap))
+			using (new Profiler.AutoTimedBlock())
 			{
-				IntPtr hdcDest = IntPtr.Zero;
-				IntPtr hdcSrc = IntPtr.Zero;
-				IntPtr hBitmap = IntPtr.Zero;
-				IntPtr hOldObject = IntPtr.Zero;
-
-				try
+				using (Graphics grDest = Graphics.FromHwnd(displayPanel.Handle))
+				using (Graphics grSrc = Graphics.FromImage(_displayBuffer.Bitmap))
 				{
-					hdcDest = grDest.GetHdc();
-					hdcSrc = grSrc.GetHdc();
-					hBitmap = _displayBuffer.Bitmap.GetHbitmap();
+					IntPtr hdcDest = IntPtr.Zero;
+					IntPtr hdcSrc = IntPtr.Zero;
+					IntPtr hBitmap = IntPtr.Zero;
+					IntPtr hOldObject = IntPtr.Zero;
 
-					hOldObject = NativeMethods.SelectObject(hdcSrc, hBitmap);
-					if (hOldObject == IntPtr.Zero)
-						throw new Win32Exception();
+					try
+					{
+						hdcDest = grDest.GetHdc();
+						hdcSrc = grSrc.GetHdc();
+						hBitmap = _displayBuffer.Bitmap.GetHbitmap();
 
-					if (!NativeMethods.BitBlt(hdcDest, 0, 0, displayPanel.Width, displayPanel.Height,
-						hdcSrc, 0, 0, 0x00CC0020U))
-						throw new Win32Exception();
-				}
-				finally
-				{
-					if (hOldObject != IntPtr.Zero) NativeMethods.SelectObject(hdcSrc, hOldObject);
-					if (hBitmap != IntPtr.Zero) NativeMethods.DeleteObject(hBitmap);
-					if (hdcDest != IntPtr.Zero) grDest.ReleaseHdc(hdcDest);
-					if (hdcSrc != IntPtr.Zero) grSrc.ReleaseHdc(hdcSrc);
+						hOldObject = NativeMethods.SelectObject(hdcSrc, hBitmap);
+						if (hOldObject == IntPtr.Zero)
+							throw new Win32Exception();
+
+						if (!NativeMethods.BitBlt(hdcDest, 0, 0, displayPanel.Width, displayPanel.Height,
+							hdcSrc, 0, 0, 0x00CC0020U))
+							throw new Win32Exception();
+					}
+					finally
+					{
+						if (hOldObject != IntPtr.Zero) NativeMethods.SelectObject(hdcSrc, hOldObject);
+						if (hBitmap != IntPtr.Zero) NativeMethods.DeleteObject(hBitmap);
+						if (hdcDest != IntPtr.Zero) grDest.ReleaseHdc(hdcDest);
+						if (hdcSrc != IntPtr.Zero) grSrc.ReleaseHdc(hdcSrc);
+					}
 				}
 			}
 		}
@@ -204,26 +223,29 @@ namespace elbgb_ui
 
 		private unsafe void RenderScreenDataToDisplayBuffer(byte[] screenData)
 		{
-			uint* ptr = (uint*)_displayBuffer.BitmapData;
-
-			fixed (uint* palette = _activePalette)
-			fixed (byte* screenPtr = screenData)
+			using (new Profiler.AutoTimedBlock())
 			{
-				byte* rowPtr;
-				int screenY, screenX;
+				uint* ptr = (uint*)_displayBuffer.BitmapData;
 
-				for (int y = 0; y < 144 * 2; y++)
+				fixed (uint* palette = _activePalette)
+				fixed (byte* screenPtr = screenData)
 				{
-					screenY = (y >> 1) * ScreenWidth;
-					rowPtr = screenPtr + screenY;
+					byte* rowPtr;
+					int screenY, screenX;
 
-					for (int x = 0; x < 160 * 2; x++)
+					for (int y = 0; y < 144 * 2; y++)
 					{
-						screenX = x >> 1;
+						screenY = (y >> 1) * ScreenWidth;
+						rowPtr = screenPtr + screenY;
 
-						*ptr++ = *(palette + *(rowPtr + screenX));
+						for (int x = 0; x < 160 * 2; x++)
+						{
+							screenX = x >> 1;
+
+							*ptr++ = *(palette + *(rowPtr + screenX));
+						}
 					}
-				}
+				} 
 			}
 		}
 

@@ -96,6 +96,10 @@
       <Project>{75da2bb4-4743-4f09-a8a3-b17d23534386}</Project>
       <Name>elbgb_core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\elbgb_utilities\elbgb_utilities.csproj">
+      <Project>{fcdef3d9-acc2-465b-90fb-8fedb4d8f27d}</Project>
+      <Name>elbgb_utilities</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

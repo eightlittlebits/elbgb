@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "elbgb_ui", "elbgb_ui\elbgb_
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "elbgb_core", "elbgb_core\elbgb_core.csproj", "{75DA2BB4-4743-4F09-A8A3-B17D23534386}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "elbgb_utilities", "elbgb_utilities\elbgb_utilities.csproj", "{FCDEF3D9-ACC2-465B-90FB-8FEDB4D8F27D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +34,10 @@ Global
 		{75DA2BB4-4743-4F09-A8A3-B17D23534386}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{75DA2BB4-4743-4F09-A8A3-B17D23534386}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{75DA2BB4-4743-4F09-A8A3-B17D23534386}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FCDEF3D9-ACC2-465B-90FB-8FEDB4D8F27D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FCDEF3D9-ACC2-465B-90FB-8FEDB4D8F27D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FCDEF3D9-ACC2-465B-90FB-8FEDB4D8F27D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FCDEF3D9-ACC2-465B-90FB-8FEDB4D8F27D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
