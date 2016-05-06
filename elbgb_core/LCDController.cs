@@ -217,16 +217,20 @@ namespace elbgb_core
 					case Registers.LCDC:
 						_lcdControl = value;
 
-						_displayEnabled = (_lcdControl & 0x80) == 0x80;
+						bool enableDisplay = (_lcdControl & 0x80) == 0x80;
 
-						// lcd starts in mode 2 when enabled
-						if (_displayEnabled)
+						// are we being asked to turn on the display and if so are we currently off?
+						if (enableDisplay && !_displayEnabled)
 						{
+							// lcd starts in mode 2 when enabled
+							_displayEnabled = true;
 							_lcdMode = LcdMode.OamRead;
 						}
 						// reset LY when display is disabled
-						else
+						else if (!enableDisplay && _displayEnabled)
 						{
+							_displayEnabled = false;
+
 							_currentScanline = 0;
 							CompareScanlineValue();
 
