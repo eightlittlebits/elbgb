@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace elbgb_core.Sound
 {
-	public class PSG : ClockedComponent
+	public class SoundController : ClockedComponent
 	{
 		public static class Registers
 		{
@@ -37,7 +37,7 @@ namespace elbgb_core.Sound
 			public const ushort NR52 = 0xFF26;
 		}
 
-		public PSG(GameBoy gameBoy)
+		public SoundController(GameBoy gameBoy)
 			: base(gameBoy)
 		{
 

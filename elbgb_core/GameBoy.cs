@@ -21,7 +21,7 @@ namespace elbgb_core
 		public MMU MMU;
 		public Timer Timer;
 		public LCDController LCD;
-		public PSG PSG;
+		public SoundController PSG;
 		public SerialCommunicationController SerialIO;
 
 		public Cartridge Cartridge;
@@ -32,7 +32,7 @@ namespace elbgb_core
 			Interface = new GBCoreInterface
 				{
 					VideoRefresh = (byte[] screenData) => { },
-					SerialTransferComplete  = (byte serialData) => { },
+					SerialTransferComplete = (byte serialData) => { },
 					//PollInput = () => { return default(GBCoreInput); }
 				};
 
@@ -42,7 +42,7 @@ namespace elbgb_core
 			MMU = new MMU(this);
 			Timer = new Timer(this);
 			LCD = new LCDController(this);
-			PSG = new PSG(this);
+			PSG = new SoundController(this);
 			SerialIO = new SerialCommunicationController(this);
 
 			Cartridge = Cartridge.LoadRom(null);
