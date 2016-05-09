@@ -45,6 +45,11 @@ namespace elbgb_ui
 			[In] System.IntPtr hdc, int x, int y, int cx, int cy,
 			[In] System.IntPtr hdcSrc, int x1, int y1, uint rop);
 
+		public static class RasterOperation
+		{
+			public const uint SRCCOPY = 0x00CC0020;
+		}
+
 		[DllImport("winmm.dll", EntryPoint = "timeBeginPeriod", SetLastError = true)]
 		public static extern uint TimeBeginPeriod(uint uMilliseconds);
 	}

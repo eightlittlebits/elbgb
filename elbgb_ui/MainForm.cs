@@ -171,7 +171,7 @@ namespace elbgb_ui
 						throw new Win32Exception();
 
 					if (!NativeMethods.BitBlt(hdcDest, 0, 0, displayPanel.Width, displayPanel.Height,
-						hdcSrc, 0, 0, 0x00CC0020U))
+						hdcSrc, 0, 0, NativeMethods.RasterOperation.SRCCOPY))
 						throw new Win32Exception();
 				}
 				finally
