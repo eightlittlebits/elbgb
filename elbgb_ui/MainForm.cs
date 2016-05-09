@@ -62,27 +62,10 @@ namespace elbgb_ui
 
 			displayPanel.RealTimeUpdate = true;
 
-			Application.Idle += OnApplicationIdle;
+			MessagePump.Run(Frame);
 
 			_targetFrameTicks = Stopwatch.Frequency / (4194304 / 70224.0);
 			_lastFrameTimestamp = Stopwatch.GetTimestamp();
-		}
-
-		private bool AppStillIdle
-		{
-			get
-			{
-				NativeMethods.Message msg;
-				return !NativeMethods.PeekMessage(out msg, IntPtr.Zero, 0, 0, 0);
-			}
-		}
-
-		private void OnApplicationIdle(object sender, EventArgs e)
-		{
-			while (AppStillIdle)
-			{
-				Frame();
-			}
 		}
 
 		private void Frame()
