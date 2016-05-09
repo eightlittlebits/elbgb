@@ -26,6 +26,7 @@ namespace elbgb_ui
 		private Dictionary<string, uint[]> _palettes;
 		private uint[] _activePalette;
 
+		private byte[] _screenData;
 		private DirectBitmap _displayBuffer;
 
 		private long _lastFrameTimestamp;
@@ -44,7 +45,7 @@ namespace elbgb_ui
 
 			//_gameBoy.LoadRom(File.ReadAllBytes(@"D:\GameboyTests\instr_timing\instr_timing.gb"));
 
-			_gameBoy.Interface.VideoRefresh = RenderScreenDataToDisplayBuffer;
+			_gameBoy.Interface.VideoRefresh = RefreshScreenData;
 
 			int width = ScreenWidth * 2;
 			int height = ScreenHeight * 2 + mainFormMenuStrip.Height;
@@ -56,6 +57,7 @@ namespace elbgb_ui
 
 			BuildPaletteMenu("greyscale");
 
+			_screenData = new byte[ScreenWidth * ScreenHeight];
 			_displayBuffer = CreateDisplayBuffer(ScreenWidth * 2, ScreenHeight * 2);
 
 			displayPanel.RealTimeUpdate = true;
@@ -87,6 +89,7 @@ namespace elbgb_ui
 		{
 			_gameBoy.RunFrame();
 
+			RenderScreenDataToDisplayBuffer();
 			PresentDisplayBuffer();
 
 			long currentTimeStamp = Stopwatch.GetTimestamp();
@@ -105,23 +108,47 @@ namespace elbgb_ui
 				// spin for the remaining partial millisecond to hit target frame rate
 			}
 
-			var elapsedAfterSleep = Stopwatch.GetTimestamp() - _lastFrameTimestamp;
+			long endFrameTimestamp = Stopwatch.GetTimestamp();
+
+			long elapsedAfterSleep = endFrameTimestamp - _lastFrameTimestamp;
+			
+			_lastFrameTimestamp = endFrameTimestamp;
 
 			double elapsedMilliseconds = elapsedAfterSleep * 1000 / (double)(Stopwatch.Frequency);
 			double framesPerSecond = Stopwatch.Frequency / (double)elapsedAfterSleep;
 
-			this.Text = string.Format("elbgb - {0:.###}ms {1:.####}fps", elapsedMilliseconds, framesPerSecond);
-
-			_lastFrameTimestamp = Stopwatch.GetTimestamp();
+			this.Text = string.Format("elbgb - {0:.###}ms {1:.####}fps", elapsedMilliseconds, framesPerSecond);			
 		}
 
-		//private void PresentDisplayBuffer()
-		//{
-		//	using (Graphics g = displayPanel.CreateGraphics())
-		//	{
-		//		g.DrawImageUnscaled(_displayBuffer.Bitmap, 0, 0, displayPanel.Width, displayPanel.Height);
-		//	}
-		//}
+		private void RefreshScreenData(byte[] screenData)
+		{
+			Buffer.BlockCopy(screenData, 0, _screenData, 0, ScreenWidth * ScreenHeight);
+		}
+
+		private unsafe void RenderScreenDataToDisplayBuffer()
+		{
+			uint* ptr = (uint*)_displayBuffer.BitmapData;
+
+			fixed (uint* palette = _activePalette)
+			fixed (byte* screenPtr = _screenData)
+			{
+				byte* rowPtr;
+				int screenY, screenX;
+
+				for (int y = 0; y < 144 * 2; y++)
+				{
+					screenY = (y >> 1) * ScreenWidth;
+					rowPtr = screenPtr + screenY;
+
+					for (int x = 0; x < 160 * 2; x++)
+					{
+						screenX = x >> 1;
+
+						*ptr++ = *(palette + *(rowPtr + screenX));
+					}
+				}
+			}
+		}
 
 		private void PresentDisplayBuffer()
 		{
@@ -200,31 +227,6 @@ namespace elbgb_ui
 		private DirectBitmap CreateDisplayBuffer(int width, int height)
 		{
 			return new DirectBitmap(width, height);
-		}
-
-		private unsafe void RenderScreenDataToDisplayBuffer(byte[] screenData)
-		{
-			uint* ptr = (uint*)_displayBuffer.BitmapData;
-
-			fixed (uint* palette = _activePalette)
-			fixed (byte* screenPtr = screenData)
-			{
-				byte* rowPtr;
-				int screenY, screenX;
-
-				for (int y = 0; y < 144 * 2; y++)
-				{
-					screenY = (y >> 1) * ScreenWidth;
-					rowPtr = screenPtr + screenY;
-
-					for (int x = 0; x < 160 * 2; x++)
-					{
-						screenX = x >> 1;
-
-						*ptr++ = *(palette + *(rowPtr + screenX));
-					}
-				}
-			}
 		}
 
 		private void exitToolStripMenuItem_Click(object sender, EventArgs e)
