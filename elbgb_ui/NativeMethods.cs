@@ -44,5 +44,8 @@ namespace elbgb_ui
 		public static extern bool BitBlt(
 			[In] System.IntPtr hdc, int x, int y, int cx, int cy,
 			[In] System.IntPtr hdcSrc, int x1, int y1, uint rop);
+
+		[DllImport("winmm.dll", EntryPoint = "timeBeginPeriod", SetLastError = true)]
+		public static extern uint TimeBeginPeriod(uint uMilliseconds);
 	}
 }
