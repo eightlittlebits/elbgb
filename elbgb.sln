@@ -1,13 +1,14 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.40629.0
+VisualStudioVersion = 12.0.30110.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "elbgb_console", "elbgb_console\elbgb_console.csproj", "{C0F37923-CAB7-47E3-A8E3-FBF35D0BEBF1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F09E6344-A39E-4B2B-AEB1-84D6F7001002}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
+		todo.md = todo.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "elbgb_ui", "elbgb_ui\elbgb_ui.csproj", "{C63F9A2F-61E5-43B6-A71F-C20DF131E789}"
