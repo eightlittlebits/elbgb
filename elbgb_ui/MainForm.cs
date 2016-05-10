@@ -58,7 +58,7 @@ namespace elbgb_ui
 			BuildPaletteMenu("greyscale");
 
 			_screenData = new byte[ScreenWidth * ScreenHeight];
-			_displayBuffer = CreateDisplayBuffer(ScreenWidth * 2, ScreenHeight * 2);
+			_displayBuffer = new DirectBitmap(ScreenWidth, ScreenHeight);
 
 			displayPanel.RealTimeUpdate = true;
 
@@ -94,13 +94,13 @@ namespace elbgb_ui
 			long endFrameTimestamp = Stopwatch.GetTimestamp();
 
 			long elapsedAfterSleep = endFrameTimestamp - _lastFrameTimestamp;
-			
+
 			_lastFrameTimestamp = endFrameTimestamp;
 
 			double elapsedMilliseconds = elapsedAfterSleep * 1000 / (double)(Stopwatch.Frequency);
 			double framesPerSecond = Stopwatch.Frequency / (double)elapsedAfterSleep;
 
-			this.Text = string.Format("elbgb - {0:.###}ms {1:.####}fps", elapsedMilliseconds, framesPerSecond);			
+			this.Text = string.Format("elbgb - {0:00.###}ms {1:.####}fps", elapsedMilliseconds, framesPerSecond);
 		}
 
 		private void RefreshScreenData(byte[] screenData)
@@ -110,25 +110,16 @@ namespace elbgb_ui
 
 		private unsafe void RenderScreenDataToDisplayBuffer()
 		{
-			uint* ptr = (uint*)_displayBuffer.BitmapData;
+			uint* displayPixel = (uint*)_displayBuffer.BitmapData;
 
 			fixed (uint* palette = _activePalette)
 			fixed (byte* screenPtr = _screenData)
 			{
-				byte* rowPtr;
-				int screenY, screenX;
+				byte* screenPixel = screenPtr;
 
-				for (int y = 0; y < 144 * 2; y++)
+				for (int i = 0; i < _screenData.Length; i++)
 				{
-					screenY = (y >> 1) * ScreenWidth;
-					rowPtr = screenPtr + screenY;
-
-					for (int x = 0; x < 160 * 2; x++)
-					{
-						screenX = x >> 1;
-
-						*ptr++ = *(palette + *(rowPtr + screenX));
-					}
+					*displayPixel++ = palette[*screenPixel++];
 				}
 			}
 		}
@@ -153,8 +144,9 @@ namespace elbgb_ui
 					if (hOldObject == IntPtr.Zero)
 						throw new Win32Exception();
 
-					if (!NativeMethods.BitBlt(hdcDest, 0, 0, displayPanel.Width, displayPanel.Height,
-						hdcSrc, 0, 0, NativeMethods.RasterOperation.SRCCOPY))
+					if (!NativeMethods.StretchBlt(hdcDest, 0, 0, displayPanel.Width, displayPanel.Height,
+													hdcSrc, 0, 0, _displayBuffer.Width, _displayBuffer.Height,
+													NativeMethods.TernaryRasterOperations.SRCCOPY))
 						throw new Win32Exception();
 				}
 				finally
@@ -205,11 +197,6 @@ namespace elbgb_ui
 				{"stark b/w",		new uint[] {0xFFFFFFFF, 0xFFB2B2B2, 0xFF757575, 0xFF000000} },
 				{"gb pocket",		new uint[] {0xFFE3E6C9, 0xFFC3C4A5, 0xFF8E8B61, 0xFF6C6C4E} },
 			};
-		}
-
-		private DirectBitmap CreateDisplayBuffer(int width, int height)
-		{
-			return new DirectBitmap(width, height);
 		}
 
 		private void exitToolStripMenuItem_Click(object sender, EventArgs e)
