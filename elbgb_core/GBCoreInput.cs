@@ -8,15 +8,36 @@ namespace elbgb_core
 {
 	public struct GBCoreInput
 	{
-	//	bool Up;
-	//	bool Down;
-	//	bool Left;
-	//	bool Right;
+		public bool Up;
+		public bool Down;
+		public bool Left;
+		public bool Right;
 
-	//	bool A;
-	//	bool B;
+		public bool A;
+		public bool B;
 
-	//	bool Start;
-	//	bool Select;
+		public bool Start;
+		public bool Select;
+
+		internal bool ButtonPressed(GBCoreInput previous)
+		{
+			// check each button, if any of them were not pressed previously and they are 
+			// now we return true
+			if ((!previous.Up && Up)
+				|| (!previous.Down && Down)
+				|| (!previous.Left && Left)
+				|| (!previous.Right && Right)
+				|| (!previous.A && A)
+				|| (!previous.B && B)
+				|| (!previous.Start && Start)
+				|| (!previous.Select && Select))
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
 	}
 }

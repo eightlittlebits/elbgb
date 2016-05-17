@@ -32,6 +32,8 @@ namespace elbgb_ui
 		private long _lastFrameTimestamp;
 		private readonly double TargetFrameTicks;
 
+		private GBCoreInput _inputState;
+
 		public MainForm()
 		{
 			InitializeComponent();
@@ -67,7 +69,70 @@ namespace elbgb_ui
 			displayPanel.RealTimeUpdate = true;
 
 			MessagePump.Run(Frame);
+		}
 
+		private GBCoreInput ReturnInputState()
+		{
+			return _inputState;
+		}
+
+		protected override void OnKeyDown(KeyEventArgs e)
+		{
+			// returns true if the key was processed, if not pass to 
+			// default handler
+			if (!ProcessKeyboard(e.KeyCode, true))
+			{
+				base.OnKeyDown(e);
+			}
+		}
+
+		protected override void OnKeyUp(KeyEventArgs e)
+		{
+			// returns true if the key was processed, if not pass to 
+			// default handler
+			if (!ProcessKeyboard(e.KeyCode, false))
+			{
+				base.OnKeyUp(e);
+			}
+		}
+
+		private bool ProcessKeyboard(Keys key, bool pressed)
+		{
+			switch (key)
+			{
+				case Keys.Down:
+					_inputState.Down = pressed;
+					break;
+
+				case Keys.Left:
+					_inputState.Left = pressed;
+					break;
+
+				case Keys.Right:
+					_inputState.Right = pressed;
+					break;
+
+				case Keys.Up:
+					_inputState.Up = pressed;
+					break;
+
+				case Keys.Z:
+					_inputState.B = pressed;
+					break;
+
+				case Keys.X:
+					_inputState.A = pressed;
+					break;
+
+				case Keys.Space:
+					_inputState.Start = pressed;
+					break;
+
+				default:
+					return false;
+			}
+
+			return true;
 		}
 
 		private void Frame()

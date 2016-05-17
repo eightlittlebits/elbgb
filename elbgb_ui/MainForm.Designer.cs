@@ -16,9 +16,9 @@
 			if (disposing)
 			{
 				if (components != null)
-			{
-				components.Dispose();
-			}
+				{
+					components.Dispose();
+				}
 
 				if (_displayBuffer != null)
 				{
@@ -92,6 +92,7 @@
 			this.Controls.Add(this.displayPanel);
 			this.Controls.Add(this.mainFormMenuStrip);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+			this.KeyPreview = true;
 			this.MainMenuStrip = this.mainFormMenuStrip;
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;

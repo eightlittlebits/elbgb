@@ -22,6 +22,7 @@ namespace elbgb_core
 		public Timer Timer;
 		public LCDController LCD;
 		public SoundController PSG;
+		public InputController Input;
 		public SerialCommunicationController SerialIO;
 
 		public Cartridge Cartridge;
@@ -31,9 +32,11 @@ namespace elbgb_core
 			// default to an null interface, implementation by front ends is optional
 			Interface = new GBCoreInterface
 				{
+					PollInput = () => { return default(GBCoreInput); },
+
 					VideoRefresh = (byte[] screenData) => { },
+					
 					SerialTransferComplete = (byte serialData) => { },
-					//PollInput = () => { return default(GBCoreInput); }
 				};
 
 			Clock = new SystemClock();
@@ -43,6 +46,7 @@ namespace elbgb_core
 			Timer = new Timer(this);
 			LCD = new LCDController(this);
 			PSG = new SoundController(this);
+			Input = new InputController(this);
 			SerialIO = new SerialCommunicationController(this);
 
 			Cartridge = Cartridge.LoadRom(null);

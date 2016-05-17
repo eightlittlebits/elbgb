@@ -108,10 +108,10 @@ namespace elbgb_core.Memory
 					{
 						return 0;
 					}
-					// TODO(david): Actually implement Input
+					// 0xFF00 - input
 					else if (address == 0xFF00)
 					{
-						return 0xFF;
+						return _gb.Input.ReadByte(address);
 					}
 					// 0xFF01 - 0xFF02 - serial I/O
 					else if (address >= 0xFF01 && address <= 0xFF02)
@@ -217,13 +217,14 @@ namespace elbgb_core.Memory
 									{
 										// 0xFF00 - input
 										case 0x0: // P1
+											_gb.Input.WriteByte(address, value);
 											break;
 
 										// 0xFF01 - 0xFF02 - serial I/O
 										case 0x1: // SB
 										case 0x2: // SC
 											_gb.SerialIO.WriteByte(address, value);
-										break;
+											break;
 										
 										// 0xFF04 - 0xFF07 - timer registers
 										case 0x4: // DIV
