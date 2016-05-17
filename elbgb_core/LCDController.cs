@@ -493,7 +493,7 @@ namespace elbgb_core
 
 		private void RenderBackgroundScanline()
 		{
-            int renderedScanline = (_currentScanline + _scrollY) & 0xFF;
+			int renderedScanline = (_currentScanline + _scrollY) & 0xFF;
 
 			// from which tile row are we rendering?
 			int tileRow = (renderedScanline >> 3) * 32;
@@ -563,7 +563,7 @@ namespace elbgb_core
 					continue;
 
 				// which tile column are we rendering
-				int tileColumn = (x - _windowX - 7) >> 3;
+				int tileColumn = (x - (_windowX - 7)) >> 3;
 
 				int tileAddress = _windowTileBaseAddress + tileRow + tileColumn;
 
@@ -594,7 +594,7 @@ namespace elbgb_core
 				byte charData1 = _vram[(charDataAddress) & 0x1FFF];
 				byte charData2 = _vram[(charDataAddress + 1) & 0x1FFF];
 
-				int pixelOffset = 7 - ((x + _scrollX) & 7);
+				int pixelOffset = 7 - ((x - (_windowX - 7)) & 7);
 
 				var pixel = ((charData2 >> pixelOffset) & 0x01) << 1 | (charData1 >> pixelOffset) & 0x01;
 
@@ -604,7 +604,6 @@ namespace elbgb_core
 
 		private void RenderSpriteScanline()
 		{
-
 			Sprite[] renderList = new Sprite[10];
 
 			int renderListCount = 0;
