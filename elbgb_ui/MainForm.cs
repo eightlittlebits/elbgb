@@ -35,26 +35,29 @@ namespace elbgb_ui
 		public MainForm()
 		{
 			InitializeComponent();
-		}
 
-		private void Form1_Load(object sender, EventArgs e)
-		{
-			_gameBoy = new GameBoy();
-
-			_gameBoy.LoadRom(File.ReadAllBytes(@"roms\tetris.gb"));
+			InitialisePalettes();
+			_activePalette = _palettes["greyscale"];
+			
 			TargetFrameTicks = Stopwatch.Frequency / (4194304 / 70224.0);
 
-			//_gameBoy.LoadRom(File.ReadAllBytes(@"D:\GameboyTests\instr_timing\instr_timing.gb"));
+			_gameBoy = new GameBoy();
 
 			_gameBoy.Interface.VideoRefresh = RefreshScreenData;
+			_gameBoy.Interface.PollInput = ReturnInputState;
+
+			_gameBoy.LoadRom(File.ReadAllBytes(@"roms\Legend of Zelda, The - Link's Awakening (USA, Europe).gb"));
+			//_gameBoy.LoadRom(File.ReadAllBytes(@"roms\tetris.gb"));
+		}
+
+		protected override void OnLoad(EventArgs e)
+		{
+			base.OnLoad(e);
 
 			int width = ScreenWidth * 2;
 			int height = ScreenHeight * 2 + mainFormMenuStrip.Height;
 
 			this.ClientSize = new Size(width, height);
-
-			InitialisePalettes();
-			_activePalette = _palettes["greyscale"];
 
 			BuildPaletteMenu("greyscale");
 

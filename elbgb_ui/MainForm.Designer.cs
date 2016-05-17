@@ -97,7 +97,6 @@
 			this.MinimizeBox = false;
 			this.Name = "MainForm";
 			this.Text = "elbgb";
-			this.Load += new System.EventHandler(this.Form1_Load);
 			this.mainFormMenuStrip.ResumeLayout(false);
 			this.mainFormMenuStrip.PerformLayout();
 			this.ResumeLayout(false);
