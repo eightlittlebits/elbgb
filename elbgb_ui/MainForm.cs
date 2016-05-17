@@ -30,7 +30,7 @@ namespace elbgb_ui
 		private DirectBitmap _displayBuffer;
 
 		private long _lastFrameTimestamp;
-		private double _targetFrameTicks;
+		private readonly double TargetFrameTicks;
 
 		public MainForm()
 		{
@@ -42,6 +42,7 @@ namespace elbgb_ui
 			_gameBoy = new GameBoy();
 
 			_gameBoy.LoadRom(File.ReadAllBytes(@"roms\tetris.gb"));
+			TargetFrameTicks = Stopwatch.Frequency / (4194304 / 70224.0);
 
 			//_gameBoy.LoadRom(File.ReadAllBytes(@"D:\GameboyTests\instr_timing\instr_timing.gb"));
 
@@ -64,8 +65,6 @@ namespace elbgb_ui
 
 			MessagePump.Run(Frame);
 
-			_targetFrameTicks = Stopwatch.Frequency / (4194304 / 70224.0);
-			_lastFrameTimestamp = Stopwatch.GetTimestamp();
 		}
 
 		private void Frame()
@@ -78,27 +77,32 @@ namespace elbgb_ui
 			long currentTimeStamp = Stopwatch.GetTimestamp();
 			long elapsedTicks = currentTimeStamp - _lastFrameTimestamp;
 
-			if (elapsedTicks < _targetFrameTicks)
+			if (elapsedTicks < TargetFrameTicks)
 			{
 				// get ms to sleep for, cast to int to truncate to nearest millisecond
-				int sleepMilliseconds = (int)((_targetFrameTicks - elapsedTicks) * 1000 / Stopwatch.Frequency);
+				// take 1 ms off the sleep time as we don't always hit the sleep exactly, trade
+				// burning extra cpu in the spin loop for accuracy
+				int sleepMilliseconds = (int)((TargetFrameTicks - elapsedTicks) * 1000 / Stopwatch.Frequency) - 1;
 
-				Thread.Sleep(sleepMilliseconds);
+				if (sleepMilliseconds > 0)
+				{
+					Thread.Sleep(sleepMilliseconds);
+				}
+
+				while ((Stopwatch.GetTimestamp() - _lastFrameTimestamp) < TargetFrameTicks)
+				{
+					// spin for the remaining partial millisecond to hit target frame rate
+				}
 			}
-
-			while ((Stopwatch.GetTimestamp() - _lastFrameTimestamp) < _targetFrameTicks)
-			{
-				// spin for the remaining partial millisecond to hit target frame rate
-			}
-
+			
 			long endFrameTimestamp = Stopwatch.GetTimestamp();
 
-			long elapsedAfterSleep = endFrameTimestamp - _lastFrameTimestamp;
+			long totalFrameTicks = endFrameTimestamp - _lastFrameTimestamp;
 
 			_lastFrameTimestamp = endFrameTimestamp;
 
-			double elapsedMilliseconds = elapsedAfterSleep * 1000 / (double)(Stopwatch.Frequency);
-			double framesPerSecond = Stopwatch.Frequency / (double)elapsedAfterSleep;
+			double elapsedMilliseconds = totalFrameTicks * 1000 / (double)(Stopwatch.Frequency);
+			double framesPerSecond = Stopwatch.Frequency / (double)totalFrameTicks;
 
 			this.Text = string.Format("elbgb - {0:00.###}ms {1:.####}fps", elapsedMilliseconds, framesPerSecond);
 		}
