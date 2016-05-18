@@ -704,7 +704,15 @@ namespace elbgb_core
 						continue;
 					}
 
-					int targetX = sprite.X + (7 - p);
+					byte targetX = (byte)(sprite.X + (7 - p));
+
+					// if we're outside the bounds of the frame then skip this pixel
+					// either spriteX + pixelX is out, meaning we're overlapping the 
+					// right edge of the screen or the 
+					if (targetX >= ScreenWidth)
+					{
+						continue;
+					}
 
 					// if the background has priority and is non zero then skip this pixel
 					if (backgroundPriority && _screenData[(_currentScanline * 160) + targetX] != 0)
@@ -712,10 +720,7 @@ namespace elbgb_core
 						continue;
 					}
 
-					if (targetX < ScreenWidth)
-					{
-						_screenData[(_currentScanline * 160) + targetX] = palette[pixel];
-					}
+					_screenData[(_currentScanline * 160) + targetX] = palette[pixel];
 				}
 			}
 		}
