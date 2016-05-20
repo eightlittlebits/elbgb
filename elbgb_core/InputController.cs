@@ -29,7 +29,7 @@ namespace elbgb_core
 				// check to see if a button is pressed in this input state
 				// that was not pressed the previous state, if so, raise the
 				// input interrupt
-				if (newInputState.ButtonPressed(_inputState))
+				if (ButtonPressed(_inputState, newInputState))
 					_gb.RequestInterrupt(Interrupt.Input);
 
 				_inputState = newInputState;
@@ -70,6 +70,27 @@ namespace elbgb_core
 			}
 			else
 				throw new ArgumentException("Invalid memory address passed to InputController.WriteByte", "address");
+		}
+
+		private bool ButtonPressed(GBCoreInput previousInputState, GBCoreInput newInputState)
+		{
+			// check each button, if any of them were not pressed previously and they are 
+			// now we return true
+			if ((!previousInputState.Up && newInputState.Up)
+				|| (!previousInputState.Down && newInputState.Down)
+				|| (!previousInputState.Left && newInputState.Left)
+				|| (!previousInputState.Right && newInputState.Right)
+				|| (!previousInputState.A && newInputState.A)
+				|| (!previousInputState.B && newInputState.B)
+				|| (!previousInputState.Start && newInputState.Start)
+				|| (!previousInputState.Select && newInputState.Select))
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
 		}
 	}
 }
