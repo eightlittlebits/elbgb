@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -106,7 +107,7 @@ namespace elbgb_core.Memory
 					// 0xFEA0 - 0xFEFF - restricted area - return 0
 					else if (address >= 0xFEA0 && address <= 0xFEFF)
 					{
-						return 0;
+						return 0x00;
 					}
 					// 0xFF00 - input
 					else if (address == 0xFF00)
@@ -144,12 +145,12 @@ namespace elbgb_core.Memory
 					{
 						return _hram[address & 0x7F];
 					}
-					else
-						throw new NotImplementedException();
+					break;
 			}
 
-			// return 0 for any unhandled addresses
-			return 0;
+			// return 0xFF for any unhandled addresses
+			Trace.WriteLine(string.Format("Unhandled address read: 0x{0:X}", address), "MMU");
+			return 0xFF;
 		}
 
 		public void WriteByte(ushort address, byte value)
@@ -194,7 +195,7 @@ namespace elbgb_core.Memory
 						case 0x800: case 0x900: case 0xA00: case 0xB00:
 						case 0xC00: case 0xD00:
 							_wram[address & 0x1FFF] = value;
-							break;
+							return;
 
 						// 0xFE00 - 0xFE9F - OAM memory
 						// 0xFEA0 - 0xFEFF - restricted area - ignore any writes  
@@ -207,7 +208,7 @@ namespace elbgb_core.Memory
 							{
 								// Ignore writes to 0xFEA0 - 0xFEFF
 							}
-							break;
+							return;
 
 						case 0xF00:
 							switch (address & 0x00F0)
@@ -218,13 +219,13 @@ namespace elbgb_core.Memory
 										// 0xFF00 - input
 										case 0x0: // P1
 											_gb.Input.WriteByte(address, value);
-											break;
+											return;
 
 										// 0xFF01 - 0xFF02 - serial I/O
 										case 0x1: // SB
 										case 0x2: // SC
 											_gb.SerialIO.WriteByte(address, value);
-											break;
+											return;
 										
 										// 0xFF04 - 0xFF07 - timer registers
 										case 0x4: // DIV
@@ -232,12 +233,12 @@ namespace elbgb_core.Memory
 										case 0x6: // TMA
 										case 0x7: // TAC
 											_gb.Timer.WriteByte(address, value);
-											break;
+											return;
 										
 										// 0xFF0F - interrupt flag
 										case 0xF: // IF
 											_interruptFlag = (byte)(value & 0x1F);
-											break;
+											return;
 									}
 									break;
 
@@ -246,11 +247,11 @@ namespace elbgb_core.Memory
 								case 0x20:
 								// 0xFF30 - 0xFF3F - waveform ram
 								case 0x30:
-									_gb.PSG.WriteByte(address, value); break;
+									_gb.PSG.WriteByte(address, value); return;
 
 								// 0xFF40 - 0xFF4B - lcd registers
 								case 0x40:
-									_gb.LCD.WriteByte(address, value); break;
+									_gb.LCD.WriteByte(address, value); return;
 
 								case 0x50: 
 									switch (address & 0x000F)
@@ -258,7 +259,7 @@ namespace elbgb_core.Memory
 										// 0xFF50 - boot rom lock
 										case 0x0: 
 											_bootRomLocked = true;
-											break;
+											return;
 									}
 									break;
 								
@@ -266,12 +267,14 @@ namespace elbgb_core.Memory
 								case 0x80: case 0x90: case 0xA0: case 0xB0:
 								case 0xC0: case 0xD0: case 0xE0: case 0xF0:
 									_hram[address & 0x7F] = value;
-									break;
+									return;
 							}
 							break;
 					}
 					break;
 			}
+
+			Trace.WriteLine(string.Format("Unhandled address write: 0x{0:X}", address), "MMU");
 		}
 	}
 }
