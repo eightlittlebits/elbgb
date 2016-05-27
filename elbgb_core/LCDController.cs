@@ -606,47 +606,15 @@ namespace elbgb_core
 		{
 			Sprite[] renderList = new Sprite[10];
 
-			int renderListCount = 0;
-
-			unsafe
-			{
-				fixed (byte* oamPtr = _oam)
-				{
-					// access oam as sprite records
-					Sprite* sprites = (Sprite*)oamPtr;
-
-					// loop through all 40 sprites and find the first 10 that are on 
-					// the current scanline
-					for (int i = 0; i < 40; i++)
-					{
-						// x coord of 0x08 is displayed at left edge of screen
-						// y coord of 0x10 is displayed at the top edge of the screen
-						byte spriteX = (byte)(sprites[i].X - 0x08);
-						byte spriteY = (byte)(sprites[i].Y - 0x10);
-
-						if (((_currentScanline - spriteY) & 0xFF) < _spriteHeight)
-						{
-							renderList[renderListCount] = sprites[i];
-
-							// set the x and y coords to be corrected screen space coords
-							renderList[renderListCount].Y = spriteY;
-							renderList[renderListCount].X = spriteX;
-
-							// if we've found 10 sprites then break from the loop
-							if (++renderListCount == 10)
-								break;
-						}
-					}
-				}
-			}
+            int renderListCount = GenerateSpriteRenderList(renderList);
 
 			// if we've no sprites on the current scanline there's nothing to render
 			if (renderListCount == 0)
 				return;
 
-			// sort render list by x coords, lowest x has priority, if x is 
-			// the same then leave in OAM order
-			SortRenderList(renderList, renderListCount);
+            // sort render list by x coords, lowest x has priority, if x is 
+            // the same then leave in OAM order
+            SortRenderList(renderList, renderListCount);
 
 			// run through each of the sprites, in reverse order to maintain priority
 			// higher priority sprites (earlier in list) will overdraw existing data
@@ -721,8 +689,44 @@ namespace elbgb_core
 					}
 
 					_screenData[(_currentScanline * 160) + targetX] = palette[pixel];
-				}
-			}
+                }
+            }
+        }
+
+        private unsafe int GenerateSpriteRenderList(Sprite[] renderList)
+        {
+            int renderListCount = 0;
+
+            fixed (byte* oamPtr = _oam)
+            {
+                // access oam as sprite records
+                Sprite* sprites = (Sprite*)oamPtr;
+
+                // loop through all 40 sprites and find the first 10 that are on 
+                // the current scanline
+                for (int i = 0; i < 40; i++)
+                {
+                    // x coord of 0x08 is displayed at left edge of screen
+                    // y coord of 0x10 is displayed at the top edge of the screen
+                    byte spriteX = (byte)(sprites[i].X - 0x08);
+                    byte spriteY = (byte)(sprites[i].Y - 0x10);
+
+                    if (((_currentScanline - spriteY) & 0xFF) < _spriteHeight)
+                    {
+                        renderList[renderListCount] = sprites[i];
+
+                        // set the x and y coords to be corrected screen space coords
+                        renderList[renderListCount].Y = spriteY;
+                        renderList[renderListCount].X = spriteX;
+
+                        // if we've found 10 sprites then break from the loop
+                        if (++renderListCount == 10)
+                            break;
+                    }
+                }
+            }
+
+            return renderListCount;
 		}
 
 		private static void SortRenderList(Sprite[] renderList, int renderListCount)
