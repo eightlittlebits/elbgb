@@ -491,61 +491,66 @@ namespace elbgb_core
                 RenderSpriteScanline();
         }
 
-        private void RenderBackgroundScanline()
-        {
-            int renderedScanline = (_currentScanline + _scrollY) & 0xFF;
-            int scanlineOffset = _currentScanline * 160;
+		private unsafe void RenderBackgroundScanline()
+		{
+			int renderedScanline = (_currentScanline + _scrollY) & 0xFF;
 
-            // from which tile row are we rendering?
-            int tileRow = (renderedScanline >> 3) * 32;
+			// from which tile row are we rendering?
+			int tileRow = (renderedScanline >> 3) * 32;
 
-            // draw 160 pixel scanline
-            for (int x = 0; x < 160; x++)
-            {
-                // which tile column are we rendering
-                int tileColumn = ((x + _scrollX) & 0xFF) >> 3;
+			fixed(byte* screenPtr = _screenData)
+			{
+				// advance screen data write pointer to beginning of current scanline
+				byte* scanlinePtr = screenPtr + (_currentScanline * 160);
 
-                int tileAddress = _backgroundTileBaseAddress + tileRow + tileColumn;
+				// draw 160 pixel scanline
+				for (int x = 0; x < 160; x++)
+				{
+					// which tile column are we rendering
+					int tileColumn = ((x + _scrollX) & 0xFF) >> 3;
 
-                byte charIdentifier = 0;
+					int tileAddress = _backgroundTileBaseAddress + tileRow + tileColumn;
 
-                if (_signedCharIdentifier)
-                {
-                    // move the zero point of the tile identifier as these are signed
-                    // adding 128 so -128 becomes tile 0x00 and 127 becomes 0xFF
-                    // this simplifies the address decoding as we can just add onto 
-                    // the char ram base address
-                    charIdentifier = (byte)((sbyte)_vram[tileAddress & 0x1FFF] + 128);
-                }
-                else
-                {
-                    charIdentifier = _vram[tileAddress & 0x1FFF];
-                }
+					byte charIdentifier = 0;
 
-                // which line in the tile?
-                int line = (renderedScanline & 7);
+					if (_signedCharIdentifier)
+					{
+						// move the zero point of the tile identifier as these are signed
+						// adding 128 so -128 becomes tile 0x00 and 127 becomes 0xFF
+						// this simplifies the address decoding as we can just add onto 
+						// the char ram base address
+						charIdentifier = (byte)((sbyte)_vram[tileAddress & 0x1FFF] + 128);
+					}
+					else
+					{
+						charIdentifier = _vram[tileAddress & 0x1FFF];
+					}
 
-                // generate address of the appropriate line in the tile
-                // 16 bytes per character, 2 bytes per line
-                // char ram base address + charIdentifier * 16 + line * 2
-                int charDataAddress = _backgroundCharBaseAddress + (charIdentifier << 4) + (line << 1);
+					// which line in the tile?
+					int line = (renderedScanline & 7);
 
-                // wrap char data address to vram memory size
-                charDataAddress &= 0x1FFF;
+					// generate address of the appropriate line in the tile
+					// 16 bytes per character, 2 bytes per line
+					// char ram base address + charIdentifier * 16 + line * 2
+					int charDataAddress = _backgroundCharBaseAddress + (charIdentifier << 4) + (line << 1);
 
-                // decode character pixel data
-                byte charData1 = _vram[charDataAddress];
-                byte charData2 = _vram[charDataAddress + 1];
+					// wrap char data address to vram memory size
+					charDataAddress &= 0x1FFF;
 
-                int pixelOffset = 7 - ((x + _scrollX) & 7);
+					// decode character pixel data
+					byte charData1 = _vram[charDataAddress];
+					byte charData2 = _vram[charDataAddress + 1];
 
-                var pixel = ((charData2 >> pixelOffset) & 0x01) << 1 | (charData1 >> pixelOffset) & 0x01;
+					int pixelOffset = 7 - ((x + _scrollX) & 7);
 
-                _screenData[scanlineOffset + x] = _backgroundPalette[pixel];
-            }
+					var pixel = ((charData2 >> pixelOffset) & 0x01) << 1 | (charData1 >> pixelOffset) & 0x01;
+
+					*scanlinePtr++ = _backgroundPalette[pixel];
+				}
+			}
         }
 
-        private void RenderWindowScanline()
+        private unsafe void RenderWindowScanline()
         {
             // are we in the window and is the window on screen?
             if (_currentScanline < _windowY || _windowX >= 167)
@@ -554,63 +559,68 @@ namespace elbgb_core
             }
 
             int renderedScanline = _currentScanline - _windowY;
-            int scanlineOffset = _currentScanline * 160;
 
             // from which tile row are we rendering?
             int tileRow = (renderedScanline >> 3) * 32;
 
-            // draw 160 pixel scanline
-            for (int x = 0; x < 160; x++)
-            {
-                // if this is earlier in the scanline than the window x position
-                // skip window rendering
-                if (x < _windowX - 7)
-                    continue;
+			fixed (byte* screenPtr = _screenData)
+			{
+				// advance screen data write pointer to beginning of current scanline
+				byte* scanlinePtr = screenPtr + (_currentScanline * 160);
+				
+				// draw 160 pixel scanline
+				for (int x = 0; x < 160; x++)
+				{
+					// if this is earlier in the scanline than the window x position
+					// skip window rendering
+					if (x < _windowX - 7)
+						continue;
 
-                // which tile column are we rendering
-                int tileColumn = (x - (_windowX - 7)) >> 3;
+					// which tile column are we rendering
+					int tileColumn = (x - (_windowX - 7)) >> 3;
 
-                int tileAddress = _windowTileBaseAddress + tileRow + tileColumn;
+					int tileAddress = _windowTileBaseAddress + tileRow + tileColumn;
 
-                byte charIdentifier = 0;
+					byte charIdentifier = 0;
 
-                if (_signedCharIdentifier)
-                {
-                    // move the zero point of the tile identifier as these are signed
-                    // adding 128 so -128 becomes tile 0x00 and 127 becomes 0xFF
-                    // this simplifies the address decoding as we can just add onto 
-                    // the char ram base address
-                    charIdentifier = (byte)((sbyte)_vram[tileAddress & 0x1FFF] + 128);
-                }
-                else
-                {
-                    charIdentifier = _vram[tileAddress & 0x1FFF];
-                }
+					if (_signedCharIdentifier)
+					{
+						// move the zero point of the tile identifier as these are signed
+						// adding 128 so -128 becomes tile 0x00 and 127 becomes 0xFF
+						// this simplifies the address decoding as we can just add onto 
+						// the char ram base address
+						charIdentifier = (byte)((sbyte)_vram[tileAddress & 0x1FFF] + 128);
+					}
+					else
+					{
+						charIdentifier = _vram[tileAddress & 0x1FFF];
+					}
 
-                // which line in the tile?
-                int line = (renderedScanline & 7);
+					// which line in the tile?
+					int line = (renderedScanline & 7);
 
-                // generate address of the appropriate line in the tile
-                // 16 bytes per character, 2 bytes per line
-                // char ram base address + charIdentifier * 16 + line * 2
-                int charDataAddress = _backgroundCharBaseAddress + (charIdentifier << 4) + (line << 1);
+					// generate address of the appropriate line in the tile
+					// 16 bytes per character, 2 bytes per line
+					// char ram base address + charIdentifier * 16 + line * 2
+					int charDataAddress = _backgroundCharBaseAddress + (charIdentifier << 4) + (line << 1);
 
-                // wrap char data address to vram memory size
-                charDataAddress &= 0x1FFF;
+					// wrap char data address to vram memory size
+					charDataAddress &= 0x1FFF;
 
-                // decode character pixel data
-                byte charData1 = _vram[charDataAddress];
-                byte charData2 = _vram[charDataAddress + 1];
+					// decode character pixel data
+					byte charData1 = _vram[charDataAddress];
+					byte charData2 = _vram[charDataAddress + 1];
 
-                int pixelOffset = 7 - ((x - (_windowX - 7)) & 7);
+					int pixelOffset = 7 - ((x - (_windowX - 7)) & 7);
 
-                var pixel = ((charData2 >> pixelOffset) & 0x01) << 1 | (charData1 >> pixelOffset) & 0x01;
+					var pixel = ((charData2 >> pixelOffset) & 0x01) << 1 | (charData1 >> pixelOffset) & 0x01;
 
-                _screenData[scanlineOffset + x] = _backgroundPalette[pixel];
-            }
+					*scanlinePtr++ = _backgroundPalette[pixel];
+				}
+			}
         }
 
-        private void RenderSpriteScanline()
+        private unsafe void RenderSpriteScanline()
         {
             Sprite[] renderList = new Sprite[10];
 
@@ -624,86 +634,90 @@ namespace elbgb_core
             // the same then leave in OAM order
             SortRenderList(renderList, renderListCount);
 
-            int scanlineOffset = _currentScanline * 160;
+			fixed (byte* screenPtr = _screenData)
+			{
+				// advance screen data write pointer to beginning of current scanline
+				byte* scanlinePtr = screenPtr + (_currentScanline * 160);
+				
+				// run through each of the sprites, in reverse order to maintain priority
+				// higher priority sprites (earlier in list) will overdraw existing data
+				for (int i = renderListCount - 1; i >= 0; i--)
+				{
+					Sprite sprite = renderList[i];
 
-            // run through each of the sprites, in reverse order to maintain priority
-            // higher priority sprites (earlier in list) will overdraw existing data
-            for (int i = renderListCount - 1; i >= 0; i--)
-            {
-                Sprite sprite = renderList[i];
+					// extract flip and priority flags from attributes
+					bool flipY = (sprite.Attributes & SpriteAttributes.VerticalFlip) == SpriteAttributes.VerticalFlip;
+					bool flipX = (sprite.Attributes & SpriteAttributes.HorizontalFlip) == SpriteAttributes.HorizontalFlip;
+					bool backgroundPriority = (sprite.Attributes & SpriteAttributes.BackgroundPriority) == SpriteAttributes.BackgroundPriority;
 
-                // extract flip and priority flags from attributes
-                bool flipY = (sprite.Attributes & SpriteAttributes.VerticalFlip) == SpriteAttributes.VerticalFlip;
-                bool flipX = (sprite.Attributes & SpriteAttributes.HorizontalFlip) == SpriteAttributes.HorizontalFlip;
-                bool backgroundPriority = (sprite.Attributes & SpriteAttributes.BackgroundPriority) == SpriteAttributes.BackgroundPriority;
+					// get the correct palette based on the sprite attributes
+					byte[] palette = (sprite.Attributes & SpriteAttributes.SpritePalette) == SpriteAttributes.SpritePalette ? _spritePalette[1] : _spritePalette[0];
 
-                // get the correct palette based on the sprite attributes
-                byte[] palette = (sprite.Attributes & SpriteAttributes.SpritePalette) == SpriteAttributes.SpritePalette ? _spritePalette[1] : _spritePalette[0];
+					// which line in the final tile are we rendering?
+					int line;
 
-                // which line in the final tile are we rendering?
-                int line;
+					if (flipY)
+					{
+						line = (_spriteHeight - ((_currentScanline - sprite.Y) & 0xFF) - 1) & 0xFF;
+					}
+					else
+					{
+						line = (_currentScanline - sprite.Y) & 0x0F;
+					}
 
-                if (flipY)
-                {
-                    line = (_spriteHeight - ((_currentScanline - sprite.Y) & 0xFF) - 1) & 0xFF;
-                }
-                else
-                {
-                    line = (_currentScanline - sprite.Y) & 0x0F;
-                }
+					// generate address of the appropriate line in the tile
+					// 16 bytes per character, 2 bytes per line
+					// char ram base address + charIdentifier * 16 + line * 2
+					int charDataAddress = 0x8000 + (sprite.CharIdentifier << 4) + (line << 1);
 
-                // generate address of the appropriate line in the tile
-                // 16 bytes per character, 2 bytes per line
-                // char ram base address + charIdentifier * 16 + line * 2
-                int charDataAddress = 0x8000 + (sprite.CharIdentifier << 4) + (line << 1);
+					// wrap char data address to vram memory size
+					charDataAddress &= 0x1FFF;
 
-                // wrap char data address to vram memory size
-                charDataAddress &= 0x1FFF;
+					// decode character pixel data
+					byte charData1 = _vram[charDataAddress];
+					byte charData2 = _vram[charDataAddress + 1];
 
-                // decode character pixel data
-                byte charData1 = _vram[charDataAddress];
-                byte charData2 = _vram[charDataAddress + 1];
+					for (int p = 7; p >= 0; p--)
+					{
+						int pixelBit;
 
-                for (int p = 7; p >= 0; p--)
-                {
-                    int pixelBit;
+						if (flipX)
+						{
+							pixelBit = 7 - p;
+						}
+						else
+						{
+							pixelBit = p;
+						}
 
-                    if (flipX)
-                    {
-                        pixelBit = 7 - p;
-                    }
-                    else
-                    {
-                        pixelBit = p;
-                    }
+						int pixel = ((charData2 >> pixelBit) & 0x01) << 1 | (charData1 >> pixelBit) & 0x01;
 
-                    int pixel = ((charData2 >> pixelBit) & 0x01) << 1 | (charData1 >> pixelBit) & 0x01;
+						// a pixel value of 0 is transparent for sprites, skip pixel
+						if (pixel == 0)
+						{
+							continue;
+						}
 
-                    // a pixel value of 0 is transparent for sprites, skip pixel
-                    if (pixel == 0)
-                    {
-                        continue;
-                    }
+						byte targetX = (byte)(sprite.X + (7 - p));
 
-                    byte targetX = (byte)(sprite.X + (7 - p));
+						// if we're outside the bounds of the frame then skip this pixel
+						// either spriteX + pixelX is out, meaning we're overlapping the 
+						// right edge of the screen or the 
+						if (targetX >= ScreenWidth)
+						{
+							continue;
+						}
 
-                    // if we're outside the bounds of the frame then skip this pixel
-                    // either spriteX + pixelX is out, meaning we're overlapping the 
-                    // right edge of the screen or the 
-                    if (targetX >= ScreenWidth)
-                    {
-                        continue;
-                    }
+						// if the background has priority and is non zero then skip this pixel
+						if (backgroundPriority && *(scanlinePtr + targetX) != 0)
+						{
+							continue;
+						}
 
-                    // if the background has priority and is non zero then skip this pixel
-                    if (backgroundPriority && _screenData[(_currentScanline * 160) + targetX] != 0)
-                    {
-                        continue;
-                    }
-
-                    _screenData[scanlineOffset + targetX] = palette[pixel];
-                }
-            }
+						*(scanlinePtr + targetX) = palette[pixel];
+					}
+				}
+			}
         }
 
         private unsafe int GenerateSpriteRenderList(Sprite[] renderList)
@@ -713,7 +727,7 @@ namespace elbgb_core
             fixed (byte* oamPtr = _oam)
             {
                 // access oam as sprite records
-                Sprite* sprites = (Sprite*)oamPtr;
+                Sprite* sprite = (Sprite*)oamPtr;
 
                 // loop through all 40 sprites and find the first 10 that are on 
                 // the current scanline
@@ -721,12 +735,12 @@ namespace elbgb_core
                 {
                     // x coord of 0x08 is displayed at left edge of screen
                     // y coord of 0x10 is displayed at the top edge of the screen
-                    byte spriteX = (byte)(sprites[i].X - 0x08);
-                    byte spriteY = (byte)(sprites[i].Y - 0x10);
+                    byte spriteX = (byte)(sprite->X - 0x08);
+                    byte spriteY = (byte)(sprite->Y - 0x10);
 
                     if (((_currentScanline - spriteY) & 0xFF) < _spriteHeight)
                     {
-                        renderList[renderListCount] = sprites[i];
+                        renderList[renderListCount] = *sprite;
 
                         // set the x and y coords to be corrected screen space coords
                         renderList[renderListCount].Y = spriteY;
@@ -736,6 +750,8 @@ namespace elbgb_core
                         if (++renderListCount == 10)
                             break;
                     }
+
+					sprite++;
                 }
             }
 
