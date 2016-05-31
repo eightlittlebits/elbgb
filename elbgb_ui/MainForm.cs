@@ -16,7 +16,7 @@ using elbgb_core;
 
 namespace elbgb_ui
 {
-	public partial class MainForm : Form
+    public partial class MainForm : Form
 	{
 		private GameBoy _gameBoy;
 
@@ -137,30 +137,40 @@ namespace elbgb_ui
 
 		private void Frame()
 		{
+            long frameTimeStart = Stopwatch.GetTimestamp();
+
 			_gameBoy.StepFrame();
+
+            long frameTimeEnd = Stopwatch.GetTimestamp();
+
+            long renderTimeStart = frameTimeEnd;
 
 			RenderScreenDataToDisplayBuffer();
 			PresentDisplayBuffer();
+
+            long renderTimeEnd = Stopwatch.GetTimestamp();
 
 			long currentTimeStamp = Stopwatch.GetTimestamp();
 			long elapsedTicks = currentTimeStamp - _lastFrameTimestamp;
 
 			if (elapsedTicks < TargetFrameTicks)
 			{
-				// get ms to sleep for, cast to int to truncate to nearest millisecond
-				// take 1 ms off the sleep time as we don't always hit the sleep exactly, trade
-				// burning extra cpu in the spin loop for accuracy
-				int sleepMilliseconds = (int)((TargetFrameTicks - elapsedTicks) * 1000 / Stopwatch.Frequency) - 1;
+                // get ms to sleep for, cast to int to truncate to nearest millisecond
+                // take 1 ms off the sleep time as we don't always hit the sleep exactly, trade
+                // burning extra cpu in the spin loop for accuracy
+                int sleepMilliseconds = (int)((TargetFrameTicks - elapsedTicks) * 1000 / Stopwatch.Frequency) - 1;
 
-				if (sleepMilliseconds > 0)
-				{
-					Thread.Sleep(sleepMilliseconds);
-				}
+                if (sleepMilliseconds > 0)
+                {
+                    Thread.Sleep(sleepMilliseconds);
+                }
 
-				while ((Stopwatch.GetTimestamp() - _lastFrameTimestamp) < TargetFrameTicks)
+                // spin for the remaining partial millisecond to hit target frame rate
+                long sleepElapsed = Stopwatch.GetTimestamp();
+				while ((sleepElapsed - _lastFrameTimestamp) < TargetFrameTicks)
 				{
-					// spin for the remaining partial millisecond to hit target frame rate
-				}
+                    sleepElapsed = Stopwatch.GetTimestamp();
+                }
 			}
 			
 			long endFrameTimestamp = Stopwatch.GetTimestamp();
@@ -169,10 +179,12 @@ namespace elbgb_ui
 
 			_lastFrameTimestamp = endFrameTimestamp;
 
-			double elapsedMilliseconds = totalFrameTicks * 1000 / (double)(Stopwatch.Frequency);
-			double framesPerSecond = Stopwatch.Frequency / (double)totalFrameTicks;
+            double frameTimeMilliseconds = (frameTimeEnd - frameTimeStart) * 1000 / (double)Stopwatch.Frequency;
+            double renderTimeMilliseconds = (renderTimeEnd - renderTimeStart) * 1000 / (double)Stopwatch.Frequency;
 
-			this.Text = string.Format("elbgb - {0:00.###}ms {1:.####}fps", elapsedMilliseconds, framesPerSecond);
+            double elapsedMilliseconds = totalFrameTicks * 1000 / (double)(Stopwatch.Frequency);
+
+			this.Text = string.Format("elbgb - {0:00.000}ms {1:00.000}ms {2:00.0000}ms", frameTimeMilliseconds, renderTimeMilliseconds, elapsedMilliseconds);
 		}
 
 		private void RefreshScreenData(byte[] screenData)
