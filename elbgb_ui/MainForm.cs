@@ -137,7 +137,7 @@ namespace elbgb_ui
 
 		private void Frame()
 		{
-			_gameBoy.RunFrame();
+			_gameBoy.StepFrame();
 
 			RenderScreenDataToDisplayBuffer();
 			PresentDisplayBuffer();

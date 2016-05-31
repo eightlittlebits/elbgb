@@ -11,9 +11,6 @@ namespace elbgb_core
 {
 	public class GameBoy
 	{
-		// 70224 cycles per frame (456 cycles per scanline * 154 scanlines)
-		private const int CyclesPerFrame = 70224;
-
 		public GBCoreInterface Interface;
 
 		public SystemClock Clock;
@@ -57,19 +54,20 @@ namespace elbgb_core
 			Cartridge = Cartridge.LoadRom(romData);
 		}
 
-		public void RunFrame()
+		public void StepFrame()
 		{
-			// add one frames cycles onto current system clock timestamp to get 
-			// a target and run until reached
-			ulong targetFrameTimestamp = Clock.Timestamp + CyclesPerFrame;
+            // 70224 cycles per frame (456 cycles per scanline * 154 scanlines)
+            // calculate the next frame boundary (multiple of 70224) from the 
+            // current timestamp and set that as the target
+            ulong frameBoundary = Clock.Timestamp + (70224 - (Clock.Timestamp % 70224));
 
-			while (Clock.Timestamp < targetFrameTimestamp)
+			while (Clock.Timestamp < frameBoundary)
 			{
-				RunInstruction();
+				Step();
 			}
 		}
 
-		public void RunInstruction()
+		public void Step()
 		{
 			CPU.ProcessInterrupts();
 			CPU.ExecuteSingleInstruction();
