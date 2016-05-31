@@ -52,7 +52,7 @@ namespace elbgb_console
 				{
 					stopwatch.Restart();
 
-					gb.RunFrame();
+					gb.StepFrame();
 
 					stopwatch.Stop();
 
