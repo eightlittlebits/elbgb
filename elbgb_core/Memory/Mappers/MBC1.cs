@@ -67,7 +67,7 @@ namespace elbgb_core.Memory.Mappers
 				}
 			}
 			else
-				return 0x00;
+				return 0xFF;
 		}
 
 		public override void WriteByte(ushort address, byte value)
