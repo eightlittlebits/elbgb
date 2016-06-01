@@ -17,144 +17,144 @@ using elbgb_core;
 namespace elbgb_ui
 {
     public partial class MainForm : Form
-	{
-		private GameBoy _gameBoy;
+    {
+        private GameBoy _gameBoy;
 
-		private const int ScreenWidth = 160;
-		private const int ScreenHeight = 144;
+        private const int ScreenWidth = 160;
+        private const int ScreenHeight = 144;
 
-		private Dictionary<string, uint[]> _palettes;
-		private uint[] _activePalette;
+        private Dictionary<string, uint[]> _palettes;
+        private uint[] _activePalette;
 
-		private byte[] _screenData;
-		private DirectBitmap _displayBuffer;
+        private byte[] _screenData;
+        private DirectBitmap _displayBuffer;
 
-		private long _lastFrameTimestamp;
-		private readonly double TargetFrameTicks;
+        private long _lastFrameTimestamp;
+        private readonly double TargetFrameTicks;
 
-		private GBCoreInput _inputState;
+        private GBCoreInput _inputState;
 
-		public MainForm()
-		{
-			InitializeComponent();
+        public MainForm()
+        {
+            InitializeComponent();
 
-			InitialisePalettes();
-			_activePalette = _palettes["greyscale"];
-			
-			TargetFrameTicks = Stopwatch.Frequency / (4194304 / 70224.0);
+            InitialisePalettes();
+            _activePalette = _palettes["greyscale"];
 
-			_gameBoy = new GameBoy();
+            TargetFrameTicks = Stopwatch.Frequency / (4194304 / 70224.0);
 
-			_gameBoy.Interface.VideoRefresh = RefreshScreenData;
-			_gameBoy.Interface.PollInput = ReturnInputState;
+            _gameBoy = new GameBoy();
 
-			_gameBoy.LoadRom(File.ReadAllBytes(@"roms\Legend of Zelda, The - Link's Awakening (USA, Europe).gb"));
-			//_gameBoy.LoadRom(File.ReadAllBytes(@"roms\tetris.gb"));
-		}
+            _gameBoy.Interface.VideoRefresh = RefreshScreenData;
+            _gameBoy.Interface.PollInput = ReturnInputState;
 
-		protected override void OnLoad(EventArgs e)
-		{
-			base.OnLoad(e);
+            _gameBoy.LoadRom(File.ReadAllBytes(@"roms\Legend of Zelda, The - Link's Awakening (USA, Europe).gb"));
+            //_gameBoy.LoadRom(File.ReadAllBytes(@"roms\tetris.gb"));
+        }
 
-			int width = ScreenWidth * 2;
-			int height = ScreenHeight * 2 + mainFormMenuStrip.Height;
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
 
-			this.ClientSize = new Size(width, height);
+            int width = ScreenWidth * 2;
+            int height = ScreenHeight * 2 + mainFormMenuStrip.Height;
 
-			BuildPaletteMenu("greyscale");
+            this.ClientSize = new Size(width, height);
 
-			_screenData = new byte[ScreenWidth * ScreenHeight];
-			_displayBuffer = new DirectBitmap(ScreenWidth, ScreenHeight);
+            BuildPaletteMenu("greyscale");
 
-			displayPanel.RealTimeUpdate = true;
+            _screenData = new byte[ScreenWidth * ScreenHeight];
+            _displayBuffer = new DirectBitmap(ScreenWidth, ScreenHeight);
 
-			MessagePump.Run(Frame);
-		}
+            displayPanel.RealTimeUpdate = true;
 
-		private GBCoreInput ReturnInputState()
-		{
-			return _inputState;
-		}
+            MessagePump.Run(Frame);
+        }
 
-		protected override void OnKeyDown(KeyEventArgs e)
-		{
-			// returns true if the key was processed, if not pass to 
-			// default handler
-			if (!ProcessKeyboard(e.KeyCode, true))
-			{
-				base.OnKeyDown(e);
-			}
-		}
+        private GBCoreInput ReturnInputState()
+        {
+            return _inputState;
+        }
 
-		protected override void OnKeyUp(KeyEventArgs e)
-		{
-			// returns true if the key was processed, if not pass to 
-			// default handler
-			if (!ProcessKeyboard(e.KeyCode, false))
-			{
-				base.OnKeyUp(e);
-			}
-		}
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            // returns true if the key was processed, if not pass to 
+            // default handler
+            if (!ProcessKeyboard(e.KeyCode, true))
+            {
+                base.OnKeyDown(e);
+            }
+        }
 
-		private bool ProcessKeyboard(Keys key, bool pressed)
-		{
-			switch (key)
-			{
-				case Keys.Down:
-					_inputState.Down = pressed;
-					break;
+        protected override void OnKeyUp(KeyEventArgs e)
+        {
+            // returns true if the key was processed, if not pass to 
+            // default handler
+            if (!ProcessKeyboard(e.KeyCode, false))
+            {
+                base.OnKeyUp(e);
+            }
+        }
 
-				case Keys.Left:
-					_inputState.Left = pressed;
-					break;
+        private bool ProcessKeyboard(Keys key, bool pressed)
+        {
+            switch (key)
+            {
+                case Keys.Down:
+                    _inputState.Down = pressed;
+                    break;
 
-				case Keys.Right:
-					_inputState.Right = pressed;
-					break;
+                case Keys.Left:
+                    _inputState.Left = pressed;
+                    break;
 
-				case Keys.Up:
-					_inputState.Up = pressed;
-					break;
+                case Keys.Right:
+                    _inputState.Right = pressed;
+                    break;
 
-				case Keys.Z:
-					_inputState.B = pressed;
-					break;
+                case Keys.Up:
+                    _inputState.Up = pressed;
+                    break;
 
-				case Keys.X:
-					_inputState.A = pressed;
-					break;
+                case Keys.Z:
+                    _inputState.B = pressed;
+                    break;
 
-				case Keys.Space:
-					_inputState.Start = pressed;
-					break;
+                case Keys.X:
+                    _inputState.A = pressed;
+                    break;
 
-				default:
-					return false;
-			}
+                case Keys.Space:
+                    _inputState.Start = pressed;
+                    break;
 
-			return true;
-		}
+                default:
+                    return false;
+            }
 
-		private void Frame()
-		{
+            return true;
+        }
+
+        private void Frame()
+        {
             long frameTimeStart = Stopwatch.GetTimestamp();
 
-			_gameBoy.StepFrame();
+            _gameBoy.StepFrame();
 
             long frameTimeEnd = Stopwatch.GetTimestamp();
 
             long renderTimeStart = frameTimeEnd;
 
-			RenderScreenDataToDisplayBuffer();
-			PresentDisplayBuffer();
+            RenderScreenDataToDisplayBuffer();
+            PresentDisplayBuffer();
 
             long renderTimeEnd = Stopwatch.GetTimestamp();
 
-			long currentTimeStamp = Stopwatch.GetTimestamp();
-			long elapsedTicks = currentTimeStamp - _lastFrameTimestamp;
+            long currentTimeStamp = Stopwatch.GetTimestamp();
+            long elapsedTicks = currentTimeStamp - _lastFrameTimestamp;
 
-			if (elapsedTicks < TargetFrameTicks)
-			{
+            if (elapsedTicks < TargetFrameTicks)
+            {
                 // get ms to sleep for, cast to int to truncate to nearest millisecond
                 // take 1 ms off the sleep time as we don't always hit the sleep exactly, trade
                 // burning extra cpu in the spin loop for accuracy
@@ -167,125 +167,132 @@ namespace elbgb_ui
 
                 // spin for the remaining partial millisecond to hit target frame rate
                 long sleepElapsed = Stopwatch.GetTimestamp();
-				while ((sleepElapsed - _lastFrameTimestamp) < TargetFrameTicks)
-				{
+                while ((sleepElapsed - _lastFrameTimestamp) < TargetFrameTicks)
+                {
                     sleepElapsed = Stopwatch.GetTimestamp();
                 }
-			}
-			
-			long endFrameTimestamp = Stopwatch.GetTimestamp();
+            }
 
-			long totalFrameTicks = endFrameTimestamp - _lastFrameTimestamp;
+            long endFrameTimestamp = Stopwatch.GetTimestamp();
 
-			_lastFrameTimestamp = endFrameTimestamp;
+            long totalFrameTicks = endFrameTimestamp - _lastFrameTimestamp;
+
+            _lastFrameTimestamp = endFrameTimestamp;
 
             double frameTimeMilliseconds = (frameTimeEnd - frameTimeStart) * 1000 / (double)Stopwatch.Frequency;
             double renderTimeMilliseconds = (renderTimeEnd - renderTimeStart) * 1000 / (double)Stopwatch.Frequency;
 
             double elapsedMilliseconds = totalFrameTicks * 1000 / (double)(Stopwatch.Frequency);
 
-			this.Text = string.Format("elbgb - {0:00.000}ms {1:00.000}ms {2:00.0000}ms", frameTimeMilliseconds, renderTimeMilliseconds, elapsedMilliseconds);
-		}
+            this.Text = string.Format("elbgb - {0:00.000}ms {1:00.000}ms {2:00.0000}ms", frameTimeMilliseconds, renderTimeMilliseconds, elapsedMilliseconds);
+        }
 
-		private void RefreshScreenData(byte[] screenData)
-		{
-			Buffer.BlockCopy(screenData, 0, _screenData, 0, ScreenWidth * ScreenHeight);
-		}
+        private void RefreshScreenData(byte[] screenData)
+        {
+            Buffer.BlockCopy(screenData, 0, _screenData, 0, ScreenWidth * ScreenHeight);
+        }
 
-		private unsafe void RenderScreenDataToDisplayBuffer()
-		{
-			uint* displayPixel = (uint*)_displayBuffer.BitmapData;
+        private unsafe void RenderScreenDataToDisplayBuffer()
+        {
+            uint* displayPixel = (uint*)_displayBuffer.BitmapData;
 
-			fixed (uint* palette = _activePalette)
-			fixed (byte* screenPtr = _screenData)
-			{
-				byte* screenPixel = screenPtr;
+            fixed (uint* palette = _activePalette)
+            fixed (byte* screenPtr = _screenData)
+            {
+                byte* screenPixel = screenPtr;
 
-				for (int i = 0; i < _screenData.Length; i++)
-				{
-					*displayPixel++ = palette[*screenPixel++];
-				}
-			}
-		}
+                for (int i = 0; i < _screenData.Length; i++)
+                {
+                    *displayPixel++ = palette[*screenPixel++];
+                }
+            }
+        }
 
-		private void PresentDisplayBuffer()
-		{
-			using (Graphics grDest = Graphics.FromHwnd(displayPanel.Handle))
-			using (Graphics grSrc = Graphics.FromImage(_displayBuffer.Bitmap))
-			{
-				IntPtr hdcDest = IntPtr.Zero;
-				IntPtr hdcSrc = IntPtr.Zero;
-				IntPtr hBitmap = IntPtr.Zero;
-				IntPtr hOldObject = IntPtr.Zero;
+        private void PresentDisplayBuffer()
+        {
+            using (Graphics grDest = Graphics.FromHwnd(displayPanel.Handle))
+            using (Graphics grSrc = Graphics.FromImage(_displayBuffer.Bitmap))
+            {
+                IntPtr hdcDest = IntPtr.Zero;
+                IntPtr hdcSrc = IntPtr.Zero;
+                IntPtr hBitmap = IntPtr.Zero;
+                IntPtr hOldObject = IntPtr.Zero;
 
-				try
-				{
-					hdcDest = grDest.GetHdc();
-					hdcSrc = grSrc.GetHdc();
-					hBitmap = _displayBuffer.Bitmap.GetHbitmap();
+                try
+                {
+                    hdcDest = grDest.GetHdc();
+                    hdcSrc = grSrc.GetHdc();
+                    hBitmap = _displayBuffer.Bitmap.GetHbitmap();
 
-					hOldObject = NativeMethods.SelectObject(hdcSrc, hBitmap);
-					if (hOldObject == IntPtr.Zero)
-						throw new Win32Exception();
-
-					if (!NativeMethods.StretchBlt(hdcDest, 0, 0, displayPanel.Width, displayPanel.Height,
+                    hOldObject = NativeMethods.SelectObject(hdcSrc, hBitmap);
+                    if (hOldObject == IntPtr.Zero)
+                        throw new Win32Exception();
+#if FALSE
+                    if (!NativeMethods.StretchBlt(hdcDest, 0, 0, displayPanel.Width, displayPanel.Height,
 													hdcSrc, 0, 0, _displayBuffer.Width, _displayBuffer.Height,
 													NativeMethods.TernaryRasterOperations.SRCCOPY))
-						throw new Win32Exception();
-				}
-				finally
-				{
-					if (hOldObject != IntPtr.Zero) NativeMethods.SelectObject(hdcSrc, hOldObject);
-					if (hBitmap != IntPtr.Zero) NativeMethods.DeleteObject(hBitmap);
-					if (hdcDest != IntPtr.Zero) grDest.ReleaseHdc(hdcDest);
-					if (hdcSrc != IntPtr.Zero) grSrc.ReleaseHdc(hdcSrc);
-				}
-			}
-		}
+#else
+                    var blendFunction = new NativeMethods.BlendFunction(NativeMethods.AC_SRC_OVER, 0, 0x40, 0);
 
-		private void BuildPaletteMenu(string defaultPalette)
-		{
-			var rootPaletteMenuItem = new ToolStripMenuItem("&Palette");
+                    if (!NativeMethods.AlphaBlend(hdcDest, 0, 0, displayPanel.Width, displayPanel.Height,
+                                                    hdcSrc, 0, 0, _displayBuffer.Width, _displayBuffer.Height,
+                                                    blendFunction))
+#endif
+                        throw new Win32Exception();
+                }
+                finally
+                {
+                    if (hOldObject != IntPtr.Zero) NativeMethods.SelectObject(hdcSrc, hOldObject);
+                    if (hBitmap != IntPtr.Zero) NativeMethods.DeleteObject(hBitmap);
+                    if (hdcDest != IntPtr.Zero) grDest.ReleaseHdc(hdcDest);
+                    if (hdcSrc != IntPtr.Zero) grSrc.ReleaseHdc(hdcSrc);
+                }
+            }
+        }
 
-			mainFormMenuStrip.Items.Add(rootPaletteMenuItem);
+        private void BuildPaletteMenu(string defaultPalette)
+        {
+            var rootPaletteMenuItem = new ToolStripMenuItem("&Palette");
 
-			foreach (var paletteName in _palettes.Keys)
-			{
-				var paletteMenuItem = new Components.ToolStripRadioButtonMenuItem(paletteName,
-					null,
-					(sender, e) =>
-					{
-						_activePalette = _palettes[paletteName];
-					});
+            mainFormMenuStrip.Items.Add(rootPaletteMenuItem);
 
-				if (paletteName == defaultPalette)
-				{
-					paletteMenuItem.Checked = true;
-				}
+            foreach (var paletteName in _palettes.Keys)
+            {
+                var paletteMenuItem = new Components.ToolStripRadioButtonMenuItem(paletteName,
+                    null,
+                    (sender, e) =>
+                    {
+                        _activePalette = _palettes[paletteName];
+                    });
 
-				rootPaletteMenuItem.DropDownItems.Add(paletteMenuItem);
-			}
-		}
+                if (paletteName == defaultPalette)
+                {
+                    paletteMenuItem.Checked = true;
+                }
 
-		private void InitialisePalettes()
-		{
-			_palettes = new Dictionary<string, uint[]>
-			{
-				{"default",			new uint[] {0xFFFFFFFF, 0xFFB7B7B7, 0xFF686868, 0xFF000000} },
+                rootPaletteMenuItem.DropDownItems.Add(paletteMenuItem);
+            }
+        }
+
+        private void InitialisePalettes()
+        {
+            _palettes = new Dictionary<string, uint[]>
+            {
+                {"default",         new uint[] {0xFFFFFFFF, 0xFFB7B7B7, 0xFF686868, 0xFF000000} },
 
 				// the following palettes from http://www.hardcoregaming101.net/gbdebate/gbcolours.htm
-				{"dark yellow",		new uint[] {0xFFFFF77B, 0xFFB5AE4A, 0xFF6B6931, 0xFF212010} },
-				{"light yellow",	new uint[] {0xFFFFFF94, 0xFFD0D066, 0xFF949440, 0xFF666625} },
-				{"green",			new uint[] {0xFFB7DC11, 0xFF88A808, 0xFF306030, 0xFF083808} },
-				{"greyscale",		new uint[] {0xFFEFEFEF, 0xFFB2B2B2, 0xFF757575, 0xFF383838} },
-				{"stark b/w",		new uint[] {0xFFFFFFFF, 0xFFB2B2B2, 0xFF757575, 0xFF000000} },
-				{"gb pocket",		new uint[] {0xFFE3E6C9, 0xFFC3C4A5, 0xFF8E8B61, 0xFF6C6C4E} },
-			};
-		}
+				{"dark yellow",     new uint[] {0xFFFFF77B, 0xFFB5AE4A, 0xFF6B6931, 0xFF212010} },
+                {"light yellow",    new uint[] {0xFFFFFF94, 0xFFD0D066, 0xFF949440, 0xFF666625} },
+                {"green",           new uint[] {0xFFB7DC11, 0xFF88A808, 0xFF306030, 0xFF083808} },
+                {"greyscale",       new uint[] {0xFFEFEFEF, 0xFFB2B2B2, 0xFF757575, 0xFF383838} },
+                {"stark b/w",       new uint[] {0xFFFFFFFF, 0xFFB2B2B2, 0xFF757575, 0xFF000000} },
+                {"gb pocket",       new uint[] {0xFFE3E6C9, 0xFFC3C4A5, 0xFF8E8B61, 0xFF6C6C4E} },
+            };
+        }
 
-		private void exitToolStripMenuItem_Click(object sender, EventArgs e)
-		{
-			this.Close();
-		}
-	}
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+    }
 }
