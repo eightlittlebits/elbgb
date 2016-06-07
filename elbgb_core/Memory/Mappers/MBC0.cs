@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace elbgb_core.Memory.Mappers
 {
-	class RomOnly : Cartridge
+	class MBC0 : Cartridge
 	{
-		public RomOnly(CartridgeHeader header, byte[] romData)
+		public MBC0(CartridgeHeader header, byte[] romData)
 			: base(header, romData)
 		{
 			

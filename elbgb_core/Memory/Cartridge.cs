@@ -24,7 +24,7 @@ namespace elbgb_core.Memory
 			switch (header.CartridgeType)
 			{
 				case CartridgeType.RomOnly:
-					return new Mappers.RomOnly(header, romData);
+					return new Mappers.MBC0(header, romData);
 
 				case CartridgeType.Mbc1:
 				case CartridgeType.Mbc1Ram:
