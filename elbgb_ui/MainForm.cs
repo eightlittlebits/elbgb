@@ -18,6 +18,8 @@ namespace elbgb_ui
 {
     public partial class MainForm : Form
     {
+        private bool _isRunning;
+
         private GameBoy _gameBoy;
 
         private const int ScreenWidth = 160;
@@ -69,6 +71,18 @@ namespace elbgb_ui
             displayPanel.RealTimeUpdate = true;
 
             MessagePump.Run(Frame);
+
+            _isRunning = true;
+        }
+
+        protected override void OnActivated(EventArgs e)
+        {
+            _isRunning = true;
+        }
+
+        protected override void OnDeactivate(EventArgs e)
+        {
+            _isRunning = false;
         }
 
         private GBCoreInput ReturnInputState()
@@ -135,8 +149,14 @@ namespace elbgb_ui
             return true;
         }
 
-        private void Frame()
+        private bool Frame()
         {
+            if (!_isRunning)
+            {
+                // return false to break idle loop
+                return false;
+            }
+
             long frameTimeStart = Stopwatch.GetTimestamp();
 
             _gameBoy.StepFrame();
@@ -185,6 +205,8 @@ namespace elbgb_ui
             double elapsedMilliseconds = totalFrameTicks * 1000 / (double)(Stopwatch.Frequency);
 
             this.Text = string.Format("elbgb - {0:00.000}ms {1:00.000}ms {2:00.0000}ms", frameTimeMilliseconds, renderTimeMilliseconds, elapsedMilliseconds);
+
+            return true;
         }
 
         private void RefreshScreenData(byte[] screenData)

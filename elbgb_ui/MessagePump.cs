@@ -11,18 +11,20 @@ namespace elbgb_ui
 	{
 		private class IdleHandler
 		{
-			private Action _frameLoop;
+			private Func<bool> _frameLoop;
 
-			public IdleHandler(Action frameLoop)
+			public IdleHandler(Func<bool> frameLoop)
 			{
 				_frameLoop = frameLoop;
 			}
 
 			internal void OnIdle(object sender, EventArgs e)
 			{
-				while (MessagePump.ApplicationStillIdle)
+                bool running = true;
+
+				while (ApplicationStillIdle && running)
 				{
-					_frameLoop();
+					running = _frameLoop();
 				}
 			}
 		}
@@ -36,7 +38,7 @@ namespace elbgb_ui
 			}
 		}
 
-		public static void Run(Action frameLoop)
+		public static void Run(Func<bool> frameLoop)
 		{
 			Application.Idle += new IdleHandler(frameLoop).OnIdle;
 		}
