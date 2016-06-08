@@ -157,13 +157,13 @@ namespace elbgb_ui
                 return false;
             }
 
-            long frameTimeStart = Stopwatch.GetTimestamp();
+            long updateTimeStart = Stopwatch.GetTimestamp();
 
             _gameBoy.StepFrame();
 
-            long frameTimeEnd = Stopwatch.GetTimestamp();
+            long updateTimeEnd = Stopwatch.GetTimestamp();
 
-            long renderTimeStart = frameTimeEnd;
+            long renderTimeStart = updateTimeEnd;
 
             RenderScreenDataToDisplayBuffer();
             PresentDisplayBuffer();
@@ -199,12 +199,12 @@ namespace elbgb_ui
 
             _lastFrameTimestamp = endFrameTimestamp;
 
-            double frameTimeMilliseconds = (frameTimeEnd - frameTimeStart) * 1000 / (double)Stopwatch.Frequency;
-            double renderTimeMilliseconds = (renderTimeEnd - renderTimeStart) * 1000 / (double)Stopwatch.Frequency;
+            double updateTime = (updateTimeEnd - updateTimeStart) * 1000 / (double)Stopwatch.Frequency;
+            double renderTime = (renderTimeEnd - renderTimeStart) * 1000 / (double)Stopwatch.Frequency;
 
-            double elapsedMilliseconds = totalFrameTicks * 1000 / (double)(Stopwatch.Frequency);
+            double frameTime = totalFrameTicks * 1000 / (double)(Stopwatch.Frequency);
 
-            this.Text = string.Format("elbgb - {0:00.000}ms {1:00.000}ms {2:00.0000}ms", frameTimeMilliseconds, renderTimeMilliseconds, elapsedMilliseconds);
+            this.Text = string.Format("elbgb - {0:00.000}ms {1:00.000}ms {2:00.0000}ms", updateTime, renderTime, frameTime);
 
             return true;
         }
