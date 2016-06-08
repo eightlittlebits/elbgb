@@ -41,7 +41,7 @@ namespace elbgb_console
 
             //gb.Interface.SerialTransferComplete = OutputSerialValue;
 
-            gb.LoadRom(Path.GetFileNameWithoutExtension(romPath), rom);
+            gb.LoadRom(rom);
 
             int frameCounter = 0;
 
