@@ -14,6 +14,7 @@ namespace elbgb_core.CPU
 		private Registers _r;
 
 		private bool _halted;
+        private bool _enableInterrupts;
 
 		public LR35902(GameBoy gameBoy)
 		{
@@ -80,8 +81,15 @@ namespace elbgb_core.CPU
 
 		internal void ProcessInterrupts()
 		{
-			byte interruptFlag = _gb.MMU.ReadByte(MMU.Registers.IF);
-			byte interruptEnable = _gb.MMU.ReadByte(MMU.Registers.IE);
+            if (_enableInterrupts)
+            {
+                _enableInterrupts = false;
+                _r.IME = true;
+                return;
+            }
+
+			int interruptFlag = _gb.MMU.ReadByte(MMU.Registers.IF);
+            int interruptEnable = _gb.MMU.ReadByte(MMU.Registers.IE);
 
 			// bitwise and of the enable flag and the interrupt flag will only leave any bits set
 			// if the interrupt has been requested and the interrupt is enabled
@@ -560,7 +568,7 @@ namespace elbgb_core.CPU
 
 				// disable/enable interrupts
 				case 0xF3: _r.IME = false; break; // DI
-				case 0xFB: _r.IME = true; break; // EI
+				case 0xFB: _enableInterrupts = true; break; // EI
 
 				// stops execution until an interrupt occurs
 				case 0x76: _halted = true; break; // HALT
