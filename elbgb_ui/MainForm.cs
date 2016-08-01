@@ -36,6 +36,8 @@ namespace elbgb_ui
 
         private GBCoreInput _inputState;
 
+        private bool _limitFrameRate;
+
         public MainForm()
         {
             InitializeComponent();
@@ -73,6 +75,7 @@ namespace elbgb_ui
             MessagePump.Run(Frame);
 
             _isRunning = true;
+            _limitFrameRate = true;
         }
 
         protected override void OnActivated(EventArgs e)
@@ -142,6 +145,10 @@ namespace elbgb_ui
                     _inputState.Start = pressed;
                     break;
 
+                case Keys.ShiftKey:
+                    _limitFrameRate = !pressed;
+                    break;
+
                 default:
                     return false;
             }
@@ -173,7 +180,7 @@ namespace elbgb_ui
             long currentTimeStamp = Stopwatch.GetTimestamp();
             long elapsedTicks = currentTimeStamp - _lastFrameTimestamp;
 
-            if (elapsedTicks < TargetFrameTicks)
+            if (_limitFrameRate && elapsedTicks < TargetFrameTicks)
             {
                 // get ms to sleep for, cast to int to truncate to nearest millisecond
                 // take 1 ms off the sleep time as we don't always hit the sleep exactly, trade
