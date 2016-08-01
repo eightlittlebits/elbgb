@@ -225,6 +225,8 @@ namespace elbgb_core
                             // lcd starts in mode 2 when enabled
                             _displayEnabled = true;
                             _lcdMode = LcdMode.OamRead;
+
+                            CompareScanlineValue();
                         }
                         // reset LY when display is disabled
                         else if (!enableDisplay && _displayEnabled)
@@ -232,7 +234,6 @@ namespace elbgb_core
                             _displayEnabled = false;
 
                             _currentScanline = 0;
-                            CompareScanlineValue();
 
                             _frameClock = 0;
                             _lcdMode = 0;
