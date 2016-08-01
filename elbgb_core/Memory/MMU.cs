@@ -127,7 +127,7 @@ namespace elbgb_core.Memory
 					// 0xFF0F - interrupt flag
 					else if (address == Registers.IF)
 					{
-						return _interruptFlag;
+                        return (byte)(_interruptFlag | 0xE0);
 					}
 					// 0xFF10 - 0xFF26 - NR xx sound registers
 					// 0xFF30 - 0xFF3F - waveform ram
@@ -237,7 +237,7 @@ namespace elbgb_core.Memory
 										
 										// 0xFF0F - interrupt flag
 										case 0xF: // IF
-											_interruptFlag = (byte)(value & 0x1F);
+                                            _interruptFlag = value;
 											return;
 									}
 									break;

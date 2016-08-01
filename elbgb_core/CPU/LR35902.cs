@@ -1,22 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using elbgb_core.Memory;
 using System.Runtime.CompilerServices;
+using elbgb_core.Memory;
 
 namespace elbgb_core.CPU
 {
-	public class LR35902
+    public class LR35902
 	{
 		private GameBoy _gb;
 		private Registers _r;
 
 		private bool _halted;
+        private bool _haltBug;
         private bool _enableInterrupts;
 
-		public LR35902(GameBoy gameBoy)
+        public LR35902(GameBoy gameBoy)
 		{
 			_gb = gameBoy;
 		}
@@ -93,7 +90,7 @@ namespace elbgb_core.CPU
 
 			// bitwise and of the enable flag and the interrupt flag will only leave any bits set
 			// if the interrupt has been requested and the interrupt is enabled
-			int pendingInterrupt = interruptFlag & interruptEnable;
+			int pendingInterrupt = interruptFlag & interruptEnable & 0x1F;
 
 			// pending interrupt to service?
 			if (pendingInterrupt != 0)
@@ -146,16 +143,32 @@ namespace elbgb_core.CPU
 			}
 		}
 
-		public void ExecuteSingleInstruction()
-		{
-			if (_halted)
-			{
-				_gb.Clock.AddMachineCycle();
-				return;
-			}
-			
-			byte opcode = ReadByte(_r.PC++);
+        public void ExecuteInstruction()
+        {
+            // are we halted?
+            if (_halted)
+            {
+                _gb.Clock.AddMachineCycle();
 
+            }
+            // were interrupts disabled on HALT, triggering the halt bug?
+            else if (_haltBug)
+            {
+                _haltBug = false;
+
+                // execute the next opcode without incrementing the PC
+                byte opcode = ReadByte(_r.PC);
+                ExecuteOpcode(opcode);
+            }
+            else
+            {
+                byte opcode = ReadByte(_r.PC++);
+                ExecuteOpcode(opcode);
+            }
+        }
+
+		public void ExecuteOpcode(byte opcode)
+		{
 			switch (opcode)
 			{
 				#region 8-bit transfer and input/output instructions
@@ -571,7 +584,7 @@ namespace elbgb_core.CPU
 				case 0xFB: _enableInterrupts = true; break; // EI
 
 				// stops execution until an interrupt occurs
-				case 0x76: _halted = true; break; // HALT
+				case 0x76: Halt(); break; // HALT
 
 				// TODO(david): Implement STOP
 				case 0x10: _r.PC++; break; // STOP
@@ -1440,6 +1453,24 @@ namespace elbgb_core.CPU
 			if (_r.A == 0)
 				_r.F |= StatusFlags.Z;
 		}
+
+        private void Halt()
+        {
+            int interruptFlag = _gb.MMU.ReadByte(MMU.Registers.IF);
+            int interruptEnable = _gb.MMU.ReadByte(MMU.Registers.IE);
+
+            // if interrupts are disabled and there is a pending interrupt
+            // the next instruction executed does not increment PC as part of
+            // the instruction fetch
+            if (!_r.IME && (interruptFlag & interruptEnable & 0x1F) > 0)
+            {
+                _haltBug = true;
+            }
+            else
+            {
+                _halted = true;
+            }
+        }
 
 		#endregion
 	}

@@ -70,7 +70,7 @@ namespace elbgb_core
 		public void Step()
 		{
 			CPU.ProcessInterrupts();
-			CPU.ExecuteSingleInstruction();
+			CPU.ExecuteInstruction();
 
 			// synchronise hardware components with system clock after instruction
 			Timer.SynchroniseWithSystemClock();
