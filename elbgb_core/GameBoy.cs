@@ -81,11 +81,7 @@ namespace elbgb_core
 
 		internal void RequestInterrupt(Interrupt interrupt)
 		{
-			byte interruptRequest = MMU.ReadByte(MMU.Registers.IF);
-
-			interruptRequest |= (byte)interrupt;
-
-			MMU.WriteByte(MMU.Registers.IF, interruptRequest);
+			MMU.IF |= (byte)interrupt;
 		}
 	}
 }

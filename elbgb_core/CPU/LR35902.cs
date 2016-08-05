@@ -85,8 +85,8 @@ namespace elbgb_core.CPU
                 return;
             }
 
-			int interruptFlag = _gb.MMU.ReadByte(MMU.Registers.IF);
-            int interruptEnable = _gb.MMU.ReadByte(MMU.Registers.IE);
+			int interruptFlag = _gb.MMU.IF;
+            int interruptEnable = _gb.MMU.IE;
 
 			// bitwise and of the enable flag and the interrupt flag will only leave any bits set
 			// if the interrupt has been requested and the interrupt is enabled
@@ -120,7 +120,7 @@ namespace elbgb_core.CPU
 							_r.IME = false;
 
 							// clear the interrupt flag
-							_gb.MMU.WriteByte(MMU.Registers.IF, (byte)(interruptFlag & ~interrupt));
+							_gb.MMU.IF = (byte)(interruptFlag & ~interrupt);
 
 							// push current PC to stack - 2 cycles
 							PushWord(_r.PC);
@@ -1456,8 +1456,8 @@ namespace elbgb_core.CPU
 
         private void Halt()
         {
-            int interruptFlag = _gb.MMU.ReadByte(MMU.Registers.IF);
-            int interruptEnable = _gb.MMU.ReadByte(MMU.Registers.IE);
+            int interruptFlag = _gb.MMU.IF;
+            int interruptEnable = _gb.MMU.IE;
 
             // if interrupts are disabled and there is a pending interrupt
             // the next instruction executed does not increment PC as part of
