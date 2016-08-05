@@ -57,7 +57,21 @@ namespace elbgb_core
             VramRead = 0x03,
         }
 
-        private const byte UndefinedRead = 0xFF;
+        enum OamDmaStatus
+        {
+            Inactive,
+            Requested,
+            Active
+        }
+
+        struct OamDma
+        {
+            public OamDmaStatus Status;
+            public ushort Source;
+            public byte Address;
+
+            public bool OamAvailable { get { return Address == 0x00; } }
+        }
 
         private const int ScreenWidth = 160;
         private const int ScreenHeight = 144;
@@ -67,6 +81,7 @@ namespace elbgb_core
         private byte[] _vram;
 
         private byte[] _oam;
+        private OamDma _oamDma;
 
         private byte _lcdControl;                   // LCDC value store
         private bool _displayEnabled;               // LCDC bit 7 - 0: Off / 1: On
@@ -108,6 +123,7 @@ namespace elbgb_core
             _vram = new byte[0x2000];
 
             _oam = new byte[0xA0];
+            _oamDma = default(OamDma);
 
             _backgroundPalette = new byte[4];
 
@@ -126,7 +142,7 @@ namespace elbgb_core
                 // cannot access vram in mode 3
                 if (_lcdMode == LcdMode.VramRead)
                 {
-                    return UndefinedRead;
+                    return 0xFF;
                 }
 
                 return _vram[address & 0x1FFF];
@@ -135,9 +151,9 @@ namespace elbgb_core
             else if (address >= 0xFE00 && address <= 0xFE9F)
             {
                 // cannot access oam in mode 2 or 3
-                if (_lcdMode == LcdMode.OamRead || _lcdMode == LcdMode.VramRead)
+                if (_lcdMode == LcdMode.OamRead || _lcdMode == LcdMode.VramRead || !_oamDma.OamAvailable)
                 {
-                    return UndefinedRead;
+                    return 0xFF;
                 }
 
                 return _oam[address & 0xFF];
@@ -203,7 +219,7 @@ namespace elbgb_core
             else if (address >= 0xFE00 && address <= 0xFE9F)
             {
                 // cannot access oam in mode 2 or 3
-                if (_lcdMode == LcdMode.OamRead || _lcdMode == LcdMode.VramRead)
+                if (_lcdMode == LcdMode.OamRead || _lcdMode == LcdMode.VramRead || !_oamDma.OamAvailable)
                 {
                     return;
                 }
@@ -280,13 +296,9 @@ namespace elbgb_core
                         break;
 
                     case Registers.DMA:
-                        // TODO(david): this should take 671 cycles (160 microseconds), does it make a difference?
-                        int dmaStartAddress = value << 8;
+                        _oamDma.Source = (ushort)(value << 8);
+                        _oamDma.Status = OamDmaStatus.Requested;
 
-                        for (int i = 0; i < 0xA0; i++)
-                        {
-                            _oam[i] = _gb.MMU.ReadByte((ushort)(dmaStartAddress + i));
-                        }
                         break;
 
                     case Registers.BGP:
@@ -356,6 +368,11 @@ namespace elbgb_core
 
         public override void Update(uint cycleCount)
         {
+            if (_oamDma.Status != OamDmaStatus.Inactive)
+            {
+                UpdateOamDma(cycleCount);
+            }
+
             // only run lcd controller update if display is enabled
             if (!_displayEnabled)
                 return;
@@ -456,6 +473,41 @@ namespace elbgb_core
 
                         CompareScanlineValue();
                     }
+                }
+            }
+        }
+
+        private void UpdateOamDma(uint cycleCount)
+        {
+            uint dmaCycles = cycleCount / 4;
+
+            for (int i = 0; i < dmaCycles; i++)
+            {
+                switch (_oamDma.Status)
+                {
+                    // this burns the first 4 cycles of setup when DMA is requested
+                    case OamDmaStatus.Requested:
+                        _oamDma.Address = 0x00;
+                        _oamDma.Status = OamDmaStatus.Active;
+                        break;
+
+                    case OamDmaStatus.Active:
+                        // have we completed the dma transfer
+                        if (_oamDma.Address >= 0xA0)
+                        {
+                            _oamDma.Address = 0x00;
+                            _oamDma.Status = OamDmaStatus.Inactive;
+                            break;
+                        }
+
+                        // calculate address from source and current address
+                        _oam[_oamDma.Address] = _gb.MMU.ReadByte((ushort)(_oamDma.Source | _oamDma.Address));
+                        _oamDma.Address += 1;
+                        break;
+
+                    // have we changed the status to inactive inside of the loop?
+                    case OamDmaStatus.Inactive:
+                        return;
                 }
             }
         }
