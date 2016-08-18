@@ -16,15 +16,20 @@ namespace elbgb_core
 			_gb = gameBoy;
 		}
 
-		// Synchronise this component with the current system clock 
 		public void SynchroniseWithSystemClock()
 		{
+            // if we're up to date with the current timestamp there
+            // is nothing for us to do
+            if (_lastUpdate == _gb.Clock.Timestamp)
+            {
+                return;
+            }
+
 			ulong timestamp = _gb.Clock.Timestamp;
 			uint cyclesToUpdate = (uint)(timestamp - _lastUpdate);
+            _lastUpdate = timestamp;
 
-			_lastUpdate = timestamp;
-			
-			Update(cyclesToUpdate);
+            Update(cyclesToUpdate);
 		}
 
 		// Run this component for the required number of cycles
