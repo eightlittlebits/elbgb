@@ -69,7 +69,6 @@ namespace elbgb_core
 
 		public void Step()
 		{
-			CPU.ProcessInterrupts();
 			CPU.ExecuteInstruction();
 
 			// synchronise hardware components with system clock after instruction

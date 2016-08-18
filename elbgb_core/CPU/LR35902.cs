@@ -2,6 +2,8 @@
 using System.Runtime.CompilerServices;
 using elbgb_core.Memory;
 
+using static elbgb_core.Interrupt;
+
 namespace elbgb_core.CPU
 {
     public class LR35902
@@ -37,8 +39,9 @@ namespace elbgb_core.CPU
 			return (ushort)(hi << 8 | lo);
 		}
 
-		// Wrap the MMU WriteByte to handle the timing updates
-		private void WriteByte(ushort address, byte value)
+        // Wrap the MMU WriteByte to handle the timing updates
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void WriteByte(ushort address, byte value)
 		{
 			_gb.MMU.WriteByte(address, value);
 			_gb.Clock.AddMachineCycle();
@@ -78,6 +81,9 @@ namespace elbgb_core.CPU
 
 		internal void ProcessInterrupts()
 		{
+            // enabling interrupts is delayed until after the instruction following
+            // the IE instruction, IE will set this flag, preventing interrupts being
+            // serviced before the following instruction
             if (_enableInterrupts)
             {
                 _enableInterrupts = false;
@@ -101,51 +107,85 @@ namespace elbgb_core.CPU
 				// interrupts enabled?
 				if (_r.IME)
 				{
-					// check each bit in the pending interrupt to find out which needs to be processed
-					for (int i = 0; i < 5; i++)
-					{
-						int interrupt = 1 << i;
+#if true
+                    // determine interrupt to service, x & (-x) leaves the least significant bit set
+                    // interrupts take priority lsb to msb
+                    int interrupt = pendingInterrupt & (-pendingInterrupt);
 
-						if ((pendingInterrupt & interrupt) == interrupt)
-						{
-							// timing information from
-							// https://github.com/Gekkio/mooneye-gb/blob/master/docs/accuracy.markdown
-							// the above has been tested on a real DMG, 3 wait cycles followed by
-							// the push of the PC
+                    // timing information from
+                    // https://github.com/Gekkio/mooneye-gb/blob/master/docs/accuracy.markdown
+                    // the above has been tested on a real DMG, 3 wait cycles followed by
+                    // the push of the PC
 
-							// 3 wait cycles
-							_gb.Clock.AddMachineCycles(3);
+                    // 3 wait cycles
+                    _gb.Clock.AddMachineCycles(3);
 
-							// disable interrupts
-							_r.IME = false;
+                    // disable interrupts
+                    _r.IME = false;
 
-							// clear the interrupt flag
-							_gb.MMU.IF = (byte)(interruptFlag & ~interrupt);
+                    // clear the interrupt flag
+                    _gb.MMU.IF = (byte)(interruptFlag & ~interrupt);
 
-							// push current PC to stack - 2 cycles
-							PushWord(_r.PC);
+                    // push current PC to stack - 2 cycles
+                    PushWord(_r.PC);
 
-							// jump to interrupt address based on interrupt
-							switch (i)
-							{
-								case 0: _r.PC = 0x0040; break; // Vertical Blank
-								case 1: _r.PC = 0x0048; break; // LCDC Status
-								case 2: _r.PC = 0x0050; break; // Timer Overflow
-								case 3: _r.PC = 0x0058; break; // Serial Transfer Complete
-								case 4: _r.PC = 0x0060; break; // User Input
-							}
+                    // jump to appropriate interrupt handler
+                    switch ((Interrupt)interrupt)
+                    {
+                        case VBlank: _r.PC = 0x0040; break;
+                        case LCDCStatus: _r.PC = 0x0048; break;
+                        case TimerOverflow: _r.PC = 0x0050; break;
+                        case SerialIOComplete: _r.PC = 0x0058; break;
+                        case Input: _r.PC = 0x0060; break;
+                    }
+#else
+                    // check each bit in the pending interrupt to find out which needs to be processed
+                    for (int i = 0; i < 5; i++)
+                    {
+                    	int interrupt = 1 << i;
 
-							// interrupt processed, break from loop
-							break;
-						}
-					}
-				}
+                    	if ((pendingInterrupt & interrupt) == interrupt)
+                    	{
+                    		// timing information from
+                    		// https://github.com/Gekkio/mooneye-gb/blob/master/docs/accuracy.markdown
+                    		// the above has been tested on a real DMG, 3 wait cycles followed by
+                    		// the push of the PC
+
+                    		// 3 wait cycles
+                    		_gb.Clock.AddMachineCycles(3);
+
+                    		// disable interrupts
+                    		_r.IME = false;
+
+                    		// clear the interrupt flag
+                    		_gb.MMU.IF = (byte)(interruptFlag & ~interrupt);
+
+                    		// push current PC to stack - 2 cycles
+                    		PushWord(_r.PC);
+
+                    		// jump to interrupt address based on interrupt
+                    		switch (i)
+                    		{
+                    			case 0: _r.PC = 0x0040; break; // Vertical Blank
+                    			case 1: _r.PC = 0x0048; break; // LCDC Status
+                    			case 2: _r.PC = 0x0050; break; // Timer Overflow
+                    			case 3: _r.PC = 0x0058; break; // Serial Transfer Complete
+                    			case 4: _r.PC = 0x0060; break; // User Input
+                    		}
+
+                    		// interrupt processed, break from loop
+                    		break;
+                    	}
+                    }
+#endif
+                }
 			}
 		}
 
         public void ExecuteInstruction()
         {
-            // are we halted?
+            ProcessInterrupts();
+
             if (_halted)
             {
                 _gb.Clock.AddMachineCycle();
@@ -171,7 +211,7 @@ namespace elbgb_core.CPU
 		{
 			switch (opcode)
 			{
-				#region 8-bit transfer and input/output instructions
+                #region 8-bit transfer and input/output instructions
 
 				// load contents of register r' into register r
 				case 0x7F: _r.A = _r.A; break; // LD A,A
@@ -290,12 +330,12 @@ namespace elbgb_core.CPU
 				case 0x22: WriteByte(_r.HL++, _r.A); break; // LD (HL+),A
 				case 0x32: WriteByte(_r.HL--, _r.A); break; // LD (HL-),A
 
-				#endregion
+                #endregion
 
-				#region 16-bit transfer instructions
+                #region 16-bit transfer instructions
 
-				// load 2 bytes of immediate data to register pair
-				case 0x01: _r.BC = ReadWord(_r.PC); _r.PC += 2; break; // LD BC,nn
+                // load 2 bytes of immediate data to register pair
+                case 0x01: _r.BC = ReadWord(_r.PC); _r.PC += 2; break; // LD BC,nn
 				case 0x11: _r.DE = ReadWord(_r.PC); _r.PC += 2; break; // LD DE,nn
 				case 0x21: _r.HL = ReadWord(_r.PC); _r.PC += 2; break; // LD HL,nn
 				case 0x31: _r.SP = ReadWord(_r.PC); _r.PC += 2; break; // LD SP,nn
@@ -346,11 +386,11 @@ namespace elbgb_core.CPU
 						WriteByte((ushort)(address + 1), (byte)(_r.SP >> 8));
 					} break;
 
-				#endregion
+                #endregion
 
-				#region 8-bit arithmetic and logical operation instructions
+                #region 8-bit arithmetic and logical operation instructions
 
-				case 0x87: _r.A = Add8Bit(_r.A, _r.A); break;						// ADD A
+                case 0x87: _r.A = Add8Bit(_r.A, _r.A); break;						// ADD A
 				case 0x80: _r.A = Add8Bit(_r.A, _r.B); break;						// ADD B
 				case 0x81: _r.A = Add8Bit(_r.A, _r.C); break;						// ADD C
 				case 0x82: _r.A = Add8Bit(_r.A, _r.D); break;						// ADD D
@@ -446,13 +486,13 @@ namespace elbgb_core.CPU
 				case 0x1D: _r.E = Dec8Bit(_r.E); break;								// DEC E
 				case 0x25: _r.H = Dec8Bit(_r.H); break;								// DEC H
 				case 0x2D: _r.L = Dec8Bit(_r.L); break;								// DEC L
-				case 0x35: WriteByte(_r.HL, Dec8Bit(ReadByte(_r.HL))); break;		// DEC (HL)
+				case 0x35: WriteByte(_r.HL, Dec8Bit(ReadByte(_r.HL))); break;       // DEC (HL)
 
-				#endregion
+                #endregion
 
-				#region 16-bit arithmetic operation instructions
+                #region 16-bit arithmetic operation instructions
 
-				case 0x09: _r.HL = Add16Bit(_r.HL, _r.BC); _gb.Clock.AddMachineCycle(); break; // ADD HL,BC
+                case 0x09: _r.HL = Add16Bit(_r.HL, _r.BC); _gb.Clock.AddMachineCycle(); break; // ADD HL,BC
 				case 0x19: _r.HL = Add16Bit(_r.HL, _r.DE); _gb.Clock.AddMachineCycle(); break; // ADD HL,DE
 				case 0x29: _r.HL = Add16Bit(_r.HL, _r.HL); _gb.Clock.AddMachineCycle(); break; // ADD HL,HL
 				case 0x39: _r.HL = Add16Bit(_r.HL, _r.SP); _gb.Clock.AddMachineCycle(); break; // ADD HL,SP
@@ -484,12 +524,12 @@ namespace elbgb_core.CPU
 				case 0x2B: _r.HL--; _gb.Clock.AddMachineCycle(); break; // DEC HL
 				case 0x3B: _r.SP--; _gb.Clock.AddMachineCycle(); break; // DEC SP
 
-				#endregion
+                #endregion
 
-				#region rotate, shift and bit instructions
+                #region rotate, shift and bit instructions
 
-				// the same rotate methods are used for the extended opcodes, these do not set the Z flag
-				case 0x07: _r.A = RotateLeft(_r.A); _r.F &= ~StatusFlags.Z; break; // RLCA
+                // the same rotate methods are used for the extended opcodes, these do not set the Z flag
+                case 0x07: _r.A = RotateLeft(_r.A); _r.F &= ~StatusFlags.Z; break; // RLCA
 				case 0x17: _r.A = RotateLeftThroughCarry(_r.A); _r.F &= ~StatusFlags.Z; break; // RLA
 
 				case 0x0F: _r.A = RotateRight(_r.A); _r.F &= ~StatusFlags.Z; break; // RRCA
@@ -498,12 +538,12 @@ namespace elbgb_core.CPU
 				// extended opcodes are prefixed with OxCB, read next byte and run opcode 
 				case 0xCB: ExecuteExtendedOpcode(ReadByte(_r.PC++)); break;
 
-				#endregion
+                #endregion
 
-				#region jump instructions
+                #region jump instructions
 
-				// loads the operand nn into the program counter (PC)
-				case 0xC3: JumpImmediate(); break; // JP nn
+                // loads the operand nn into the program counter (PC)
+                case 0xC3: JumpImmediate(); break; // JP nn
 
 				// loads the operand nn into the PC if condition cc and the status flag match
 				case 0xC2: JumpImmediate(!_r.F.FlagSet(StatusFlags.Z)); break; // JP NZ,nn
@@ -523,12 +563,12 @@ namespace elbgb_core.CPU
 				// loads the contents of register pair HL in program counter PC
 				case 0xE9: _r.PC = _r.HL; break; // JP (HL)
 
-				#endregion
+                #endregion
 
-				#region call and return instructions
+                #region call and return instructions
 
-				// push PC onto stack and replace PC with immmediate value nn
-				case 0xCD: CallImmediate(); break; // CALL nn
+                // push PC onto stack and replace PC with immmediate value nn
+                case 0xCD: CallImmediate(); break; // CALL nn
 
 				// if condition and status flag match, push PC onto stack and replace PC with immmediate value nn
 				case 0xC4: CallImmediate(!_r.F.FlagSet(StatusFlags.Z)); break; // CALL NZ,n
@@ -560,12 +600,12 @@ namespace elbgb_core.CPU
 				case 0xF7: Reset(0x30); break; // RST 7
 				case 0xFF: Reset(0x38); break; // RST 8
 
-				#endregion
+                #endregion
 
-				#region general purpose arithmetic operations and CPU control instructions
+                #region general purpose arithmetic operations and CPU control instructions
 
-				// adjust the result in the accumulator after a BCD addition or subtraction
-				case 0x27: DecimalAdjustAccumulator(); break; // DAA
+                // adjust the result in the accumulator after a BCD addition or subtraction
+                case 0x27: DecimalAdjustAccumulator(); break; // DAA
 
 				// takes the ones complement of register a
 				case 0x2F: _r.A = (byte)~_r.A; _r.F |= (StatusFlags.N | StatusFlags.H); break; // CPL
@@ -589,7 +629,7 @@ namespace elbgb_core.CPU
 				// TODO(david): Implement STOP
 				case 0x10: _r.PC++; break; // STOP
 
-				#endregion
+#endregion
 
 				default:
 					throw new NotImplementedException(string.Format("Invalid opcode 0x{0:X2} at 0x{1:X4}", opcode, _r.PC - 1));
@@ -600,9 +640,9 @@ namespace elbgb_core.CPU
 		{
 			switch (opcode)
 			{
-				#region rotate shift instruction handlers
+                #region rotate shift instruction handlers
 
-				case 0x00: _r.B = RotateLeft(_r.B); break; // RLC B
+                case 0x00: _r.B = RotateLeft(_r.B); break; // RLC B
 				case 0x01: _r.C = RotateLeft(_r.C); break; // RLC C
 				case 0x02: _r.D = RotateLeft(_r.D); break; // RLC D
 				case 0x03: _r.E = RotateLeft(_r.E); break; // RLC E
@@ -674,11 +714,11 @@ namespace elbgb_core.CPU
 				case 0x36: WriteByte(_r.HL, Swap(ReadByte(_r.HL))); break; // SWAP (HL)
 				case 0x37: _r.A = Swap(_r.A); break; // SWAP A
 
-				#endregion
+                #endregion
 
-				#region bit operation instructions
+                #region bit operation instructions
 
-				case 0x40: TestBit(_r.B, 0); break; // BIT 0,B
+                case 0x40: TestBit(_r.B, 0); break; // BIT 0,B
 				case 0x41: TestBit(_r.C, 0); break; // BIT 0,C
 				case 0x42: TestBit(_r.D, 0); break; // BIT 0,D
 				case 0x43: TestBit(_r.E, 0); break; // BIT 0,E
@@ -894,13 +934,13 @@ namespace elbgb_core.CPU
 				case 0xBE: WriteByte(_r.HL, ResetBit(ReadByte(_r.HL), 7)); break; // RES 7,(HL)
 				case 0xBF: _r.A = ResetBit(_r.A, 7); break; // RES 7,A
 
-				#endregion
+#endregion
 			}
 		}
-		
-		#region jump instruction handlers
 
-		private void JumpImmediate()
+        #region jump instruction handlers
+
+        private void JumpImmediate()
 		{
 			ushort address = ReadWord(_r.PC);
 			
@@ -943,11 +983,11 @@ namespace elbgb_core.CPU
 			}
 		}
 
-		#endregion
+        #endregion
 
-		#region call instruction handlers
+        #region call instruction handlers
 
-		private void CallImmediate()
+        private void CallImmediate()
 		{
 			ushort address = ReadWord(_r.PC);
 			_r.PC += 2;
@@ -998,11 +1038,11 @@ namespace elbgb_core.CPU
 			_r.PC = resetAddress;
 		}
 
-		#endregion
+        #endregion
 
-		#region 8-bit arithmetic and logical operation instruction handlers
+        #region 8-bit arithmetic and logical operation instruction handlers
 
-		private byte Add8Bit(byte b1, byte b2)
+        private byte Add8Bit(byte b1, byte b2)
 		{
 			int result = b1 + b2;
 
@@ -1191,11 +1231,11 @@ namespace elbgb_core.CPU
 			return (byte)(b - 1);
 		}
 
-		#endregion
+        #endregion
 
-		#region 16-bit arithmetic operation instruction handlers
+        #region 16-bit arithmetic operation instruction handlers
 
-		private ushort Add16Bit(ushort u1, ushort u2)
+        private ushort Add16Bit(ushort u1, ushort u2)
 		{
 			int result = u1 + u2;
 
@@ -1213,11 +1253,11 @@ namespace elbgb_core.CPU
 			return (ushort)result;
 		}
 
-		#endregion
+        #endregion
 
-		#region rotate shift instruction handlers
+        #region rotate shift instruction handlers
 
-		private byte RotateLeft(byte b)
+        private byte RotateLeft(byte b)
 		{
 			// clear flags
 			_r.F = StatusFlags.Clear;
@@ -1393,12 +1433,12 @@ namespace elbgb_core.CPU
 			return (byte)result;
 		}
 
-		#endregion
+        #endregion
 
-		#region bit operation instruction handlers
+        #region bit operation instruction handlers
 
-		// test if bit bit is set in byte reg
-		private void TestBit(byte reg, int bit)
+        // test if bit bit is set in byte reg
+        private void TestBit(byte reg, int bit)
 		{
 			// preserve carry
 			_r.F &= StatusFlags.C;
@@ -1423,11 +1463,11 @@ namespace elbgb_core.CPU
 			return (byte)(reg & ~(1 << bit));
 		}
 
-		#endregion
+        #endregion
 
-		#region arithmetic and cpu control instruction handlers
+        #region arithmetic and cpu control instruction handlers
 
-		private void DecimalAdjustAccumulator()
+        private void DecimalAdjustAccumulator()
 		{
 			byte correctionFactor = 0;
 			bool subtraction = _r.F.FlagSet(StatusFlags.N);
@@ -1472,6 +1512,6 @@ namespace elbgb_core.CPU
             }
         }
 
-		#endregion
-	}
+        #endregion
+    }
 }
