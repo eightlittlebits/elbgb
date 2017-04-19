@@ -211,7 +211,7 @@ namespace elbgb_ui
 
             double frameTime = totalFrameTicks * 1000 / (double)(Stopwatch.Frequency);
 
-            this.Text = string.Format("elbgb - {0:00.000}ms {1:00.000}ms {2:00.0000}ms", updateTime, renderTime, frameTime);
+            this.Text = $"elbgb - {updateTime:00.000}ms {renderTime:00.000}ms {frameTime:00.0000}ms";
 
             return true;
         }

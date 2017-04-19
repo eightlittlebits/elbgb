@@ -57,7 +57,7 @@ namespace elbgb_core.Memory
 				case CartridgeType.HudsonHuC3:
 				case CartridgeType.HudsonHuC1:
 				default:
-					string message = string.Format("Mapper {0} ({0:X}) not implemented.", header.CartridgeType);
+					string message = $"Mapper {header.CartridgeType} ({header.CartridgeType:X}) not implemented.";
 					throw new NotImplementedException(message);
 			}
 		}

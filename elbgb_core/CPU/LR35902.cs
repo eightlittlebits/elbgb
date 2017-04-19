@@ -632,7 +632,7 @@ namespace elbgb_core.CPU
 #endregion
 
 				default:
-					throw new NotImplementedException(string.Format("Invalid opcode 0x{0:X2} at 0x{1:X4}", opcode, _r.PC - 1));
+					throw new NotImplementedException($"Invalid opcode 0x{opcode:X2} at 0x{_r.PC - 1:X4}");
 			}
 		}
 

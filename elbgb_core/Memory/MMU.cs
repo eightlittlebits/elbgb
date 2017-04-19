@@ -198,7 +198,7 @@ namespace elbgb_core.Memory
 			}
 
 			// return 0xFF for any unhandled addresses
-			Trace.WriteLine(string.Format("Unhandled address read: 0x{0:X}", address), "MMU");
+			Trace.WriteLine($"Unhandled address read: 0x{address:X}", "MMU");
 			return 0xFF;
 		}
 
@@ -323,7 +323,7 @@ namespace elbgb_core.Memory
 					break;
 			}
 
-			Trace.WriteLine(string.Format("Unhandled address write: 0x{0:X}", address), "MMU");
+			Trace.WriteLine($"Unhandled address write: 0x{address:X}", "MMU");
 		}
 	}
 }
