@@ -29,7 +29,7 @@ namespace elbgb_ui
 			}
 		}
 
-        private static bool ApplicationStillIdle => !NativeMethods.PeekMessage(out NativeMethods.Message msg, IntPtr.Zero, 0, 0, 0);
+        private static bool ApplicationStillIdle => !NativeMethods.PeekMessage(out _, IntPtr.Zero, 0, 0, 0);
 
         public static void Run(Func<bool> frameLoop)
 		{
