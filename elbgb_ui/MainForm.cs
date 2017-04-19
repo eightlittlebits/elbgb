@@ -281,10 +281,6 @@ namespace elbgb_ui
 
         private void BuildPaletteMenu(string defaultPalette)
         {
-            var rootPaletteMenuItem = new ToolStripMenuItem("&Palette");
-
-            mainFormMenuStrip.Items.Add(rootPaletteMenuItem);
-
             foreach (var paletteName in _palettes.Keys)
             {
                 var paletteMenuItem = new Components.ToolStripRadioButtonMenuItem(paletteName,
@@ -299,7 +295,7 @@ namespace elbgb_ui
                     paletteMenuItem.Checked = true;
                 }
 
-                rootPaletteMenuItem.DropDownItems.Add(paletteMenuItem);
+                paletteToolStripMenuItem.DropDownItems.Add(paletteMenuItem);
             }
         }
 
