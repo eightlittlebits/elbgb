@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -9,8 +10,6 @@ namespace elbgb_core.CPU
 	[Flags]
 	enum StatusFlags : byte
 	{
-		Clear = 0x00,
-
 		Z = 0x80,
 		N = 0x40,
 		H = 0x20,
@@ -19,6 +18,7 @@ namespace elbgb_core.CPU
 
 	static class StatusFlagExtensions
 	{
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static bool FlagSet(this StatusFlags f, StatusFlags flag)
 		{
 			return (f & flag) == flag;

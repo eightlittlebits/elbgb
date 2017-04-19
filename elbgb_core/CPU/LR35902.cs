@@ -2,10 +2,11 @@
 using System.Runtime.CompilerServices;
 using elbgb_core.Memory;
 
-using static elbgb_core.Interrupt;
-
 namespace elbgb_core.CPU
 {
+    using static elbgb_core.Interrupt;
+    using static elbgb_core.CPU.StatusFlags;
+
     public class LR35902
 	{
 		private GameBoy _gb;
@@ -363,13 +364,13 @@ namespace elbgb_core.CPU
 					{
 						sbyte e = (sbyte)ReadByte(_r.PC++);
 
-						_r.F = StatusFlags.Clear;
+						_r.F = 0;
 
 						if (((_r.SP & 0xFF) + (e & 0xFF)) > 0xFF)
-							_r.F |= StatusFlags.C;
+							_r.F |= C;
 
 						if (((_r.SP & 0x0F) + (e & 0x0F)) > 0x0F)
-							_r.F |= StatusFlags.H;
+							_r.F |= H;
 
 						_r.HL = (ushort)(_r.SP + e);
 
@@ -502,13 +503,13 @@ namespace elbgb_core.CPU
 					{
 						sbyte e = (sbyte)ReadByte(_r.PC++);
 
-						_r.F = StatusFlags.Clear;
+						_r.F = 0;
 
 						if (((_r.SP & 0xFF) + (e & 0xFF)) > 0xFF)
-							_r.F |= StatusFlags.C;
+							_r.F |= C;
 
 						if (((_r.SP & 0x0F) + (e & 0x0F)) > 0x0F)
-							_r.F |= StatusFlags.H;
+							_r.F |= H;
 
 						_r.SP = (ushort)(_r.SP + e);
 
@@ -530,11 +531,11 @@ namespace elbgb_core.CPU
                 #region rotate, shift and bit instructions
 
                 // the same rotate methods are used for the extended opcodes, these do not set the Z flag
-                case 0x07: _r.A = RotateLeft(_r.A); _r.F &= ~StatusFlags.Z; break; // RLCA
-				case 0x17: _r.A = RotateLeftThroughCarry(_r.A); _r.F &= ~StatusFlags.Z; break; // RLA
+                case 0x07: _r.A = RotateLeft(_r.A); _r.F &= ~Z; break; // RLCA
+				case 0x17: _r.A = RotateLeftThroughCarry(_r.A); _r.F &= ~Z; break; // RLA
 
-				case 0x0F: _r.A = RotateRight(_r.A); _r.F &= ~StatusFlags.Z; break; // RRCA
-				case 0x1F: _r.A = RotateRightThroughCarry(_r.A); _r.F &= ~StatusFlags.Z; break; // RRA
+				case 0x0F: _r.A = RotateRight(_r.A); _r.F &= ~Z; break; // RRCA
+				case 0x1F: _r.A = RotateRightThroughCarry(_r.A); _r.F &= ~Z; break; // RRA
 
 				// extended opcodes are prefixed with OxCB, read next byte and run opcode 
 				case 0xCB: ExecuteExtendedOpcode(ReadByte(_r.PC++)); break;
@@ -547,19 +548,19 @@ namespace elbgb_core.CPU
                 case 0xC3: JumpImmediate(); break; // JP nn
 
 				// loads the operand nn into the PC if condition cc and the status flag match
-				case 0xC2: JumpImmediate(!_r.F.FlagSet(StatusFlags.Z)); break; // JP NZ,nn
-				case 0xCA: JumpImmediate(_r.F.FlagSet(StatusFlags.Z)); break;  // JP Z,nn
-				case 0xD2: JumpImmediate(!_r.F.FlagSet(StatusFlags.C)); break; // JP NC,nn
-				case 0xDA: JumpImmediate(_r.F.FlagSet(StatusFlags.C)); break;  // JP C,nn
+				case 0xC2: JumpImmediate(!_r.F.FlagSet(Z)); break; // JP NZ,nn
+				case 0xCA: JumpImmediate(_r.F.FlagSet(Z)); break;  // JP Z,nn
+				case 0xD2: JumpImmediate(!_r.F.FlagSet(C)); break; // JP NC,nn
+				case 0xDA: JumpImmediate(_r.F.FlagSet(C)); break;  // JP C,nn
 
 				// jumps -127 to +129 steps from current address
 				case 0x18: JumpRelative(); break; // JR e
 
 				// if condition and status flag match, jumps -127 to +129 steps from current address
-				case 0x20: JumpRelative(!_r.F.FlagSet(StatusFlags.Z)); break; // JR NZ,n
-				case 0x28: JumpRelative(_r.F.FlagSet(StatusFlags.Z)); break;  // JR Z,n
-				case 0x30: JumpRelative(!_r.F.FlagSet(StatusFlags.C)); break; // JR NC,n
-				case 0x38: JumpRelative(_r.F.FlagSet(StatusFlags.C)); break;  // JR C,n
+				case 0x20: JumpRelative(!_r.F.FlagSet(Z)); break; // JR NZ,n
+				case 0x28: JumpRelative(_r.F.FlagSet(Z)); break;  // JR Z,n
+				case 0x30: JumpRelative(!_r.F.FlagSet(C)); break; // JR NC,n
+				case 0x38: JumpRelative(_r.F.FlagSet(C)); break;  // JR C,n
 
 				// loads the contents of register pair HL in program counter PC
 				case 0xE9: _r.PC = _r.HL; break; // JP (HL)
@@ -572,10 +573,10 @@ namespace elbgb_core.CPU
                 case 0xCD: CallImmediate(); break; // CALL nn
 
 				// if condition and status flag match, push PC onto stack and replace PC with immmediate value nn
-				case 0xC4: CallImmediate(!_r.F.FlagSet(StatusFlags.Z)); break; // CALL NZ,n
-				case 0xCC: CallImmediate(_r.F.FlagSet(StatusFlags.Z)); break;  // CALL Z,n
-				case 0xD4: CallImmediate(!_r.F.FlagSet(StatusFlags.C)); break; // CALL NC,n
-				case 0xDC: CallImmediate(_r.F.FlagSet(StatusFlags.C)); break;  // CALL C,n
+				case 0xC4: CallImmediate(!_r.F.FlagSet(Z)); break; // CALL NZ,n
+				case 0xCC: CallImmediate(_r.F.FlagSet(Z)); break;  // CALL Z,n
+				case 0xD4: CallImmediate(!_r.F.FlagSet(C)); break; // CALL NC,n
+				case 0xDC: CallImmediate(_r.F.FlagSet(C)); break;  // CALL C,n
 
 				// pops from the stack the PC value pushed when the subroutine was called
 				case 0xC9: Return(); break; // RET
@@ -584,10 +585,10 @@ namespace elbgb_core.CPU
 				case 0xD9: Return(); _r.IME = true; break; // RETI
 
 				// if condition and status flag match, pops from the stack the PC value pushed when the subroutine was called
-				case 0xC0: Return(!_r.F.FlagSet(StatusFlags.Z)); break; // RET NZ
-				case 0xC8: Return(_r.F.FlagSet(StatusFlags.Z)); break;  // RET Z
-				case 0xD0: Return(!_r.F.FlagSet(StatusFlags.C)); break; // RET NC
-				case 0xD8: Return(_r.F.FlagSet(StatusFlags.C)); break;  // RET C
+				case 0xC0: Return(!_r.F.FlagSet(Z)); break; // RET NZ
+				case 0xC8: Return(_r.F.FlagSet(Z)); break;  // RET Z
+				case 0xD0: Return(!_r.F.FlagSet(C)); break; // RET NC
+				case 0xD8: Return(_r.F.FlagSet(C)); break;  // RET C
 
 				// push PC onto stack and load the PC with the page 0 address provided by operand t
 				// operand t is provided in bits 3,4 and 5 of the operand (11tt t111) so masking opcode 
@@ -609,16 +610,16 @@ namespace elbgb_core.CPU
                 case 0x27: DecimalAdjustAccumulator(); break; // DAA
 
 				// takes the ones complement of register a
-				case 0x2F: _r.A = (byte)~_r.A; _r.F |= (StatusFlags.N | StatusFlags.H); break; // CPL
+				case 0x2F: _r.A = (byte)~_r.A; _r.F |= (N | H); break; // CPL
 
 				// PC advances, no other effects
 				case 0x00: break; // NOP
 
 				// complement carry flag, resets HN and preserves Z
-				case 0x3F: _r.F = (_r.F &= (StatusFlags.Z | StatusFlags.C)) ^ StatusFlags.C; break; // CCF
+				case 0x3F: _r.F = (_r.F &= (Z | C)) ^ C; break; // CCF
 
 				// set carry flag, resets HN and preserves Z
-				case 0x37: _r.F = (_r.F &= StatusFlags.Z) | StatusFlags.C; break; //SCF
+				case 0x37: _r.F = (_r.F &= Z) | C; break; //SCF
 
 				// disable/enable interrupts
 				case 0xF3: _r.IME = false; break; // DI
@@ -1048,43 +1049,43 @@ namespace elbgb_core.CPU
 			int result = b1 + b2;
 
 			// clear flags
-			_r.F = StatusFlags.Clear;
+			_r.F = 0;
 
 			// carry
 			if (result > 0xFF)
-				_r.F |= StatusFlags.C;
+				_r.F |= C;
 
 			// half carry
 			if ((b1 & 0x0F) + (b2 & 0x0F) > 0x0F)
-				_r.F |= StatusFlags.H;
+				_r.F |= H;
 
 			// zero 
 			if ((result & 0xFF) == 0)
-				_r.F |= StatusFlags.Z;
+				_r.F |= Z;
 
 			return (byte)result;
 		}
 
 		private byte AddWithCarry8Bit(byte b1, byte b2)
 		{
-			int carry = _r.F.FlagSet(StatusFlags.C) ? 1 : 0;
+			int carry = _r.F.FlagSet(C) ? 1 : 0;
 
 			int result = b1 + b2 + carry;
 
 			// clear flags
-			_r.F = StatusFlags.Clear;
+			_r.F = 0;
 
 			// carry
 			if (result > 0xFF)
-				_r.F |= StatusFlags.C;
+				_r.F |= C;
 
 			// half carry
 			if ((b1 & 0x0F) + (b2 & 0x0F) + carry > 0x0F)
-				_r.F |= StatusFlags.H;
+				_r.F |= H;
 
 			// zero 
 			if ((result & 0xFF) == 0)
-				_r.F |= StatusFlags.Z;
+				_r.F |= Z;
 
 			return (byte)result;
 		}
@@ -1094,43 +1095,43 @@ namespace elbgb_core.CPU
 			int result = b1 - b2;
 
 			// set subtract
-			_r.F = StatusFlags.N;
+			_r.F = N;
 
 			// carry
 			if (result < 0x00)
-				_r.F |= StatusFlags.C;
+				_r.F |= C;
 
 			// half carry
 			if ((b1 & 0x0F) - (b2 & 0x0F) < 0x00)
-				_r.F |= StatusFlags.H;
+				_r.F |= H;
 
 			// zero 
 			if ((result & 0xFF) == 0)
-				_r.F |= StatusFlags.Z;
+				_r.F |= Z;
 
 			return (byte)result;
 		}
 
 		private byte SubWithCarry8Bit(byte b1, byte b2)
 		{
-			int carry = _r.F.FlagSet(StatusFlags.C) ? 1 : 0;
+			int carry = _r.F.FlagSet(C) ? 1 : 0;
 
 			int result = b1 - b2 - carry;
 
 			// set subtract
-			_r.F = StatusFlags.N;
+			_r.F = N;
 
 			// carry
 			if (result < 0x00)
-				_r.F |= StatusFlags.C;
+				_r.F |= C;
 
 			// half carry
 			if ((b1 & 0x0F) - (b2 & 0x0F) - carry < 0x00)
-				_r.F |= StatusFlags.H;
+				_r.F |= H;
 
 			// zero 
 			if ((result & 0xFF) == 0)
-				_r.F |= StatusFlags.Z;
+				_r.F |= Z;
 
 			return (byte)result;
 		}
@@ -1140,11 +1141,11 @@ namespace elbgb_core.CPU
 			byte result = (byte)(b1 & b2);
 
 			// set half carry
-			_r.F = StatusFlags.H;
+			_r.F = H;
 
 			// zero
 			if (result == 0)
-				_r.F |= StatusFlags.Z;
+				_r.F |= Z;
 
 			return result;
 		}
@@ -1154,11 +1155,11 @@ namespace elbgb_core.CPU
 			byte result = (byte)(b1 | b2);
 
 			// clear flags
-			_r.F = StatusFlags.Clear;
+			_r.F = 0;
 
 			// zero
 			if (result == 0)
-				_r.F |= StatusFlags.Z;
+				_r.F |= Z;
 
 			return result;
 		}
@@ -1168,11 +1169,11 @@ namespace elbgb_core.CPU
 			byte result = (byte)(b1 ^ b2);
 
 			// clear flags
-			_r.F = StatusFlags.Clear;
+			_r.F = 0;
 
 			// zero
 			if (result == 0)
-				_r.F |= StatusFlags.Z;
+				_r.F |= Z;
 
 			return result;
 		}
@@ -1182,33 +1183,33 @@ namespace elbgb_core.CPU
 			int result = b1 - b2;
 
 			// set subtract
-			_r.F = StatusFlags.N;
+			_r.F = N;
 
 			// carry
 			if (b1 < b2)
-				_r.F |= StatusFlags.C;
+				_r.F |= C;
 
 			// half carry
 			if ((b1 & 0x0F) < (b2 & 0x0F))
-				_r.F |= StatusFlags.H;
+				_r.F |= H;
 
 			// zero 
 			if (b1 == b2)
-				_r.F |= StatusFlags.Z;
+				_r.F |= Z;
 		}
 
 		private byte Inc8Bit(byte b)
 		{
 			// preserve carry
-			_r.F &= StatusFlags.C;
+			_r.F &= C;
 
 			// half carry, if 0x0F before increment will carry
 			if ((b & 0x0F) == 0x0F)
-				_r.F |= StatusFlags.H;
+				_r.F |= H;
 
 			// zero, if 0xFF before increment will inc to zero
 			if (b == 0xFF)
-				_r.F |= StatusFlags.Z;
+				_r.F |= Z;
 
 			return (byte)(b + 1);
 		}
@@ -1216,18 +1217,18 @@ namespace elbgb_core.CPU
 		private byte Dec8Bit(byte b)
 		{
 			// preserve carry
-			_r.F &= StatusFlags.C;
+			_r.F &= C;
 
 			// set subtract
-			_r.F |= StatusFlags.N;
+			_r.F |= N;
 
 			// half carry, if 0x00 before decrement will borrow
 			if ((b & 0x0F) == 0x00)
-				_r.F |= StatusFlags.H;
+				_r.F |= H;
 
 			// zero, if 0x01 before decrement will dec to zero
 			if (b == 0x01)
-				_r.F |= StatusFlags.Z;
+				_r.F |= Z;
 
 			return (byte)(b - 1);
 		}
@@ -1241,15 +1242,15 @@ namespace elbgb_core.CPU
 			int result = u1 + u2;
 
 			// preserve zero
-			_r.F &= StatusFlags.Z;
+			_r.F &= Z;
 
 			// carry
 			if (result > 0xFFFF)
-				_r.F |= StatusFlags.C;
+				_r.F |= C;
 
 			// half carry
 			if ((u1 & 0x0FFF) + (u2 & 0x0FFF) > 0x0FFF)
-				_r.F |= StatusFlags.H;
+				_r.F |= H;
 
 			return (ushort)result;
 		}
@@ -1261,7 +1262,7 @@ namespace elbgb_core.CPU
         private byte RotateLeft(byte b)
 		{
 			// clear flags
-			_r.F = StatusFlags.Clear;
+			_r.F = 0;
 
 			// grab bit 7
 			bool bit7 = ((b & 0x80) == 0x80);
@@ -1269,7 +1270,7 @@ namespace elbgb_core.CPU
 			// set carry flag if old bit 7 was set
 			if (bit7)
 			{
-				_r.F |= StatusFlags.C;
+				_r.F |= C;
 			}
 
 			// shift left and place old bit 7 in LSB
@@ -1277,28 +1278,28 @@ namespace elbgb_core.CPU
 
 			// zero
 			if (result == 0)
-				_r.F |= StatusFlags.Z;
+				_r.F |= Z;
 
 			return result;
 		}
 
 		private byte RotateLeftThroughCarry(byte b)
 		{
-			bool oldCarry = _r.F.FlagSet(StatusFlags.C);
+			bool oldCarry = _r.F.FlagSet(C);
 
 			// clear flags
-			_r.F = StatusFlags.Clear;
+			_r.F = 0;
 
 			// set carry if top bit is set
 			if ((b & 0x80) == 0x80)
-				_r.F |= StatusFlags.C;
+				_r.F |= C;
 
 			// shift left and place old carry in LSB
 			byte result = (byte)((b << 1) | (oldCarry ? 1 : 0));
 
 			// zero
 			if (result == 0)
-				_r.F |= StatusFlags.Z;
+				_r.F |= Z;
 
 			return result;
 		}
@@ -1306,7 +1307,7 @@ namespace elbgb_core.CPU
 		private byte RotateRight(byte b)
 		{
 			// clear flags
-			_r.F = StatusFlags.Clear;
+			_r.F = 0;
 
 			// grab bit 0
 			bool bit0 = ((b & 0x01) == 0x01);
@@ -1314,7 +1315,7 @@ namespace elbgb_core.CPU
 			// set carry flag if old bit 0 was set
 			if (bit0)
 			{
-				_r.F |= StatusFlags.C;
+				_r.F |= C;
 			}
 
 			// shift right and place old bit 0 in MSB
@@ -1322,28 +1323,28 @@ namespace elbgb_core.CPU
 
 			// zero
 			if (result == 0)
-				_r.F |= StatusFlags.Z;
+				_r.F |= Z;
 
 			return result;
 		}
 
 		private byte RotateRightThroughCarry(byte b)
 		{
-			bool oldCarry = _r.F.FlagSet(StatusFlags.C);
+			bool oldCarry = _r.F.FlagSet(C);
 
 			// clear flags
-			_r.F = StatusFlags.Clear;
+			_r.F = 0;
 
 			// set carry if bottom bit is set
 			if ((b & 0x01) == 0x01)
-				_r.F |= StatusFlags.C;
+				_r.F |= C;
 
 			// shift left and place old carry in MSB
 			byte result = (byte)((b >> 1) | (oldCarry ? 0x80 : 0));
 
 			// zero
 			if (result == 0)
-				_r.F |= StatusFlags.Z;
+				_r.F |= Z;
 
 			return result;
 		}
@@ -1351,18 +1352,18 @@ namespace elbgb_core.CPU
 		private byte ShiftLeftArithmetic(byte b)
 		{
 			// clear flags
-			_r.F = StatusFlags.Clear;
+			_r.F = 0;
 
 			// set carry if top bit is set
 			if ((b & 0x80) == 0x80)
-				_r.F |= StatusFlags.C;
+				_r.F |= C;
 
 			// shift left
 			byte result = (byte)(b << 1);
 
 			// zero
 			if (result == 0)
-				_r.F |= StatusFlags.Z;
+				_r.F |= Z;
 
 			return result;
 		}
@@ -1370,7 +1371,7 @@ namespace elbgb_core.CPU
 		private byte ShiftRightArithmetic(byte b)
 		{
 			// clear flags
-			_r.F = StatusFlags.Clear;
+			_r.F = 0;
 
 			// grab bit 0
 			bool bit0 = ((b & 0x01) == 0x01);
@@ -1381,7 +1382,7 @@ namespace elbgb_core.CPU
 			// set carry flag if old bit 0 was set
 			if (bit0)
 			{
-				_r.F |= StatusFlags.C;
+				_r.F |= C;
 			}
 
 			// shift right, set bit 7 to previous value (sign extend)
@@ -1389,7 +1390,7 @@ namespace elbgb_core.CPU
 
 			// zero
 			if (result == 0)
-				_r.F |= StatusFlags.Z;
+				_r.F |= Z;
 
 			return result;
 		}
@@ -1397,7 +1398,7 @@ namespace elbgb_core.CPU
 		private byte ShiftRightLogical(byte b)
 		{
 			// clear flags
-			_r.F = StatusFlags.Clear;
+			_r.F = 0;
 
 			// grab bit 0
 			bool bit0 = ((b & 0x01) == 0x01);
@@ -1405,7 +1406,7 @@ namespace elbgb_core.CPU
 			// set carry flag if old bit 0 was set
 			if (bit0)
 			{
-				_r.F |= StatusFlags.C;
+				_r.F |= C;
 			}
 
 			// shift right
@@ -1413,7 +1414,7 @@ namespace elbgb_core.CPU
 
 			// zero
 			if (result == 0)
-				_r.F |= StatusFlags.Z;
+				_r.F |= Z;
 
 			return result;
 		}
@@ -1421,7 +1422,7 @@ namespace elbgb_core.CPU
 		private byte Swap(byte b)
 		{
 			// clear flags
-			_r.F = StatusFlags.Clear;
+			_r.F = 0;
 
 			// swap high and low nibble
 
@@ -1429,7 +1430,7 @@ namespace elbgb_core.CPU
 
 			// zero
 			if (result == 0)
-				_r.F |= StatusFlags.Z;
+				_r.F |= Z;
 
 			return (byte)result;
 		}
@@ -1442,15 +1443,15 @@ namespace elbgb_core.CPU
         private void TestBit(byte reg, int bit)
 		{
 			// preserve carry
-			_r.F &= StatusFlags.C;
+			_r.F &= C;
 
 			// set half carry
-			_r.F |= StatusFlags.H;
+			_r.F |= H;
 
 			// set zero flag if bit N of reg is not set
 			if ((reg & (1 << bit)) == 0)
 			{
-				_r.F |= StatusFlags.Z;
+				_r.F |= Z;
 			}
 		}
 
@@ -1471,17 +1472,17 @@ namespace elbgb_core.CPU
         private void DecimalAdjustAccumulator()
 		{
 			byte correctionFactor = 0;
-			bool subtraction = _r.F.FlagSet(StatusFlags.N);
+			bool subtraction = _r.F.FlagSet(N);
 
-			if ((_r.A > 0x99 && !subtraction) || _r.F.FlagSet(StatusFlags.C))
+			if ((_r.A > 0x99 && !subtraction) || _r.F.FlagSet(C))
 			{
 				correctionFactor |= 0x60;
-				_r.F |= StatusFlags.C;
+				_r.F |= C;
 			}
 			else
-				_r.F &= ~StatusFlags.C;
+				_r.F &= ~C;
 
-			if (((_r.A & 0x0F) > 0x09 && !subtraction) || _r.F.FlagSet(StatusFlags.H))
+			if (((_r.A & 0x0F) > 0x09 && !subtraction) || _r.F.FlagSet(H))
 				correctionFactor |= 0x06;
 
 			if (!subtraction)
@@ -1489,10 +1490,10 @@ namespace elbgb_core.CPU
 			else
 				_r.A -= correctionFactor;
 
-			_r.F &= ~(StatusFlags.Z | StatusFlags.H);
+			_r.F &= ~(Z | H);
 
 			if (_r.A == 0)
-				_r.F |= StatusFlags.Z;
+				_r.F |= Z;
 		}
 
         private void Halt()
