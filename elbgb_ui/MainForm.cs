@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using elbgb_core;
+using System.Security.Cryptography;
 
 namespace elbgb_ui
 {
@@ -318,6 +319,23 @@ namespace elbgb_ui
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void checksumToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show($"Screen MD5: {CalculateMD5String(_screenData)}");
+        }
+
+        private static string CalculateMD5String(byte[] buffer)
+        {
+            byte[] hash;
+
+            using (MD5 md5 = MD5.Create())
+            {
+                hash = md5.ComputeHash(buffer);
+            }
+
+            return string.Concat(hash.Select(x => x.ToString("x2")));
         }
     }
 }
