@@ -18,6 +18,7 @@ namespace elbgb_core.CPU
         public LR35902(GameBoy gameBoy)
 		{
 			_gb = gameBoy;
+            _r = new Registers();
 		}
 
 		// Wrap the MMU ReadByte to handle the timing updates

@@ -6,41 +6,40 @@ using System.Threading.Tasks;
 
 namespace elbgb_core.CPU
 {
-	struct Registers
-	{
-		private const StatusFlags FLAG_MASK_BYTE = (StatusFlags)0xF0;
-		private const ushort FLAG_MASK_WORD = 0xFFF0;
+    class Registers
+    {
+        private const StatusFlags FLAG_MASK_BYTE = (StatusFlags)0xF0;
+        private const ushort FLAG_MASK_WORD = 0xFFF0;
 
-		private PairedRegister _af;
-		private PairedRegister _bc;
-		private PairedRegister _de;
-		private PairedRegister _hl;
+        private PairedRegister _af;
+        private PairedRegister _bc;
+        private PairedRegister _de;
+        private PairedRegister _hl;
 
-		private ushort _pc;
-		private ushort _sp;
+        private ushort _pc;
+        private ushort _sp;
 
-		private bool _ime;
+        private bool _ime;
 
-		public byte A { get { return _af.hi; } set { _af.hi = value; } }
-		public StatusFlags F { get { return (StatusFlags)_af.lo; } set { _af.lo = (byte)(value & FLAG_MASK_BYTE); } }
-		public ushort AF { get { return _af.word; } set { _af.word = (ushort)(value & FLAG_MASK_WORD); } }
+        public ref byte A { get => ref _af.hi; }
+        public StatusFlags F { get { return (StatusFlags)_af.lo; } set { _af.lo = (byte)(value & FLAG_MASK_BYTE); } }
+        public ushort AF { get { return _af.word; } set { _af.word = (ushort)(value & FLAG_MASK_WORD); } }
 
-		public byte B { get { return _bc.hi; } set { _bc.hi = value; } }
-		public byte C { get { return _bc.lo; } set { _bc.lo = value; } }
-		public ushort BC { get { return _bc.word; } set { _bc.word = value; } }
+        public ref byte B { get => ref _bc.hi; }
+        public ref byte C { get => ref _bc.lo; }
+        public ref ushort BC { get => ref _bc.word; }
 
-		public byte D { get { return _de.hi; } set { _de.hi = value; } }
-		public byte E { get { return _de.lo; } set { _de.lo = value; } }
-		public ushort DE { get { return _de.word; } set { _de.word = value; } }
+        public ref byte D { get => ref _de.hi; }
+        public ref byte E { get => ref _de.lo; }
+        public ref ushort DE { get => ref _de.word; }
 
-		public byte H { get { return _hl.hi; } set { _hl.hi = value; } }
-		public byte L { get { return _hl.lo; } set { _hl.lo = value; } }
-		public ushort HL { get { return _hl.word; } set { _hl.word = value; } }
+        public ref byte H { get => ref _hl.hi; }
+        public ref byte L { get => ref _hl.lo; }
+        public ref ushort HL { get => ref _hl.word; }
 
-		public ushort PC { get { return _pc; } set { _pc = value; } }
-		public ushort SP { get { return _sp; } set { _sp = value; } }
+        public ref ushort PC { get => ref _pc; }
+        public ref ushort SP { get => ref _sp; }
 
-		public bool IME { get { return _ime; } set { _ime = value; } }
-
-	}
+        public ref bool IME { get => ref _ime; }
+    }
 }
