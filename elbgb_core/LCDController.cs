@@ -127,9 +127,11 @@ namespace elbgb_core
 
             _backgroundPalette = new byte[4];
 
-            _spritePalette = new byte[2][];
-            _spritePalette[0] = new byte[4];
-            _spritePalette[1] = new byte[4];
+            _spritePalette = new byte[2][]
+            {
+                new byte[4],
+                new byte[4]
+            };
         }
 
         public byte ReadByte(ushort address)

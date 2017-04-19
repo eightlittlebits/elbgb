@@ -29,16 +29,9 @@ namespace elbgb_ui
 			}
 		}
 
-		private static bool ApplicationStillIdle
-		{
-			get
-			{
-				NativeMethods.Message msg;
-				return !NativeMethods.PeekMessage(out msg, IntPtr.Zero, 0, 0, 0);
-			}
-		}
+        private static bool ApplicationStillIdle => !NativeMethods.PeekMessage(out NativeMethods.Message msg, IntPtr.Zero, 0, 0, 0);
 
-		public static void Run(Func<bool> frameLoop)
+        public static void Run(Func<bool> frameLoop)
 		{
 			Application.Idle += new IdleHandler(frameLoop).OnIdle;
 		}

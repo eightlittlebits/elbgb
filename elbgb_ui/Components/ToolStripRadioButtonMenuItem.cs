@@ -84,17 +84,15 @@ namespace elbgb_ui.Components
 			// Clear the checked state for all siblings. 
 			foreach (ToolStripItem item in Parent.Items)
 			{
-				ToolStripRadioButtonMenuItem radioItem =
-					item as ToolStripRadioButtonMenuItem;
-				if (radioItem != null && radioItem != this && radioItem.Checked)
-				{
-					radioItem.Checked = false;
+                if (item is ToolStripRadioButtonMenuItem radioItem && radioItem != this && radioItem.Checked)
+                {
+                    radioItem.Checked = false;
 
-					// Only one item can be selected at a time, 
-					// so there is no need to continue.
-					return;
-				}
-			}
+                    // Only one item can be selected at a time, 
+                    // so there is no need to continue.
+                    return;
+                }
+            }
 		}
 
 		protected override void OnClick(EventArgs e)
@@ -159,8 +157,7 @@ namespace elbgb_ui.Components
 			Point imageLocation = new Point(ContentRectangle.Location.X + 4, ContentRectangle.Location.Y + offset);
 
 			// Paint the RadioButton. 
-			RadioButtonRenderer.DrawRadioButton(
-				e.Graphics, imageLocation, buttonState);
+			RadioButtonRenderer.DrawRadioButton(e.Graphics, imageLocation, buttonState);
 		}
 
 		private bool mouseHoverState = false;
@@ -227,13 +224,12 @@ namespace elbgb_ui.Components
 		// CheckedChanged event. 
 		protected override void OnOwnerChanged(EventArgs e)
 		{
-			ToolStripMenuItem ownerMenuItem = OwnerItem as ToolStripMenuItem;
-			if (ownerMenuItem != null && ownerMenuItem.CheckOnClick)
-			{
-				ownerMenuItem.CheckedChanged += new EventHandler(OwnerMenuItem_CheckedChanged);
-			}
+            if (OwnerItem is ToolStripMenuItem ownerMenuItem && ownerMenuItem.CheckOnClick)
+            {
+                ownerMenuItem.CheckedChanged += new EventHandler(OwnerMenuItem_CheckedChanged);
+            }
 
-			base.OnOwnerChanged(e);
+            base.OnOwnerChanged(e);
 		}
 
 		// When the checked state of the parent item changes, 

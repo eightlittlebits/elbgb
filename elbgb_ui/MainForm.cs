@@ -32,7 +32,7 @@ namespace elbgb_ui
         private DirectBitmap _displayBuffer;
 
         private long _lastFrameTimestamp;
-        private readonly double TargetFrameTicks;
+        private readonly double _targetFrameTicks;
 
         private GBCoreInput _inputState;
 
@@ -45,7 +45,7 @@ namespace elbgb_ui
             InitialisePalettes();
             _activePalette = _palettes["greyscale"];
 
-            TargetFrameTicks = Stopwatch.Frequency / (4194304 / 70224.0);
+            _targetFrameTicks = Stopwatch.Frequency / (4194304 / 70224.0);
 
             _gameBoy = new GameBoy();
 
@@ -180,12 +180,12 @@ namespace elbgb_ui
             long currentTimeStamp = Stopwatch.GetTimestamp();
             long elapsedTicks = currentTimeStamp - _lastFrameTimestamp;
 
-            if (_limitFrameRate && elapsedTicks < TargetFrameTicks)
+            if (_limitFrameRate && elapsedTicks < _targetFrameTicks)
             {
                 // get ms to sleep for, cast to int to truncate to nearest millisecond
                 // take 1 ms off the sleep time as we don't always hit the sleep exactly, trade
                 // burning extra cpu in the spin loop for accuracy
-                int sleepMilliseconds = (int)((TargetFrameTicks - elapsedTicks) * 1000 / Stopwatch.Frequency) - 1;
+                int sleepMilliseconds = (int)((_targetFrameTicks - elapsedTicks) * 1000 / Stopwatch.Frequency) - 1;
 
                 if (sleepMilliseconds > 0)
                 {
@@ -194,7 +194,7 @@ namespace elbgb_ui
 
                 // spin for the remaining partial millisecond to hit target frame rate
                 long sleepElapsed = Stopwatch.GetTimestamp();
-                while ((sleepElapsed - _lastFrameTimestamp) < TargetFrameTicks)
+                while ((sleepElapsed - _lastFrameTimestamp) < _targetFrameTicks)
                 {
                     sleepElapsed = Stopwatch.GetTimestamp();
                 }
@@ -256,7 +256,7 @@ namespace elbgb_ui
                     hOldObject = NativeMethods.SelectObject(hdcSrc, hBitmap);
                     if (hOldObject == IntPtr.Zero)
                         throw new Win32Exception();
-#if FALSE
+#if true
                     if (!NativeMethods.StretchBlt(hdcDest, 0, 0, displayPanel.Width, displayPanel.Height,
 													hdcSrc, 0, 0, _displayBuffer.Width, _displayBuffer.Height,
 													NativeMethods.TernaryRasterOperations.SRCCOPY))
