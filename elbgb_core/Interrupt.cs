@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace elbgb_core
 {
-	[Flags]
-	enum Interrupt : byte
-	{
-		VBlank				= 1 << 0,
-		LCDCStatus			= 1 << 1,
-		TimerOverflow		= 1 << 2,
-		SerialIOComplete	= 1 << 3,
-		Input				= 1 << 4,
-	}
+    [Flags]
+    enum Interrupt : byte
+    {
+        VBlank           = 0b0000_0001,
+        LCDCStatus       = 0b0000_0010,
+        TimerOverflow    = 0b0000_0100,
+        SerialIOComplete = 0b0000_1000,
+        Input            = 0b0001_0000,
+    }
 }
