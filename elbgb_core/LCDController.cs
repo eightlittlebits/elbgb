@@ -73,6 +73,8 @@ namespace elbgb_core
             public bool OamAvailable { get { return Address == 0x00; } }
         }
 
+        private IVideoFrameSink _frameSink;
+
         private const int ScreenWidth = 160;
         private const int ScreenHeight = 144;
 
@@ -115,9 +117,11 @@ namespace elbgb_core
         private uint _frameClock;                   // counter of clock cycles elapsed in the current frame
         private uint _vblankClock;                  // counter of clock cycles elapsed in current scanline in vblank
 
-        public LCDController(GameBoy gameBoy)
+        public LCDController(GameBoy gameBoy, IVideoFrameSink frameSink)
             : base(gameBoy)
         {
+            _frameSink = frameSink;
+
             _screenData = new byte[ScreenWidth * ScreenHeight];
 
             _vram = new byte[0x2000];
@@ -452,7 +456,7 @@ namespace elbgb_core
 
                     // we've just entered vblank so the rendering for the frame is finished
                     // present the screen data
-                    _gb.Interface.VideoRefresh(_screenData);
+                    _frameSink.AppendFrame(_screenData);
 
                     // clear the _screenData for the next frame
                     Array.Clear(_screenData, 0, _screenData.Length);

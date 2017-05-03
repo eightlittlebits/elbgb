@@ -1,1 +1,6 @@
-* implement some way of saving battery backed roms
+# Todo
+
+- [ ] save battery backed ram on exit
+- [ ] quick boot option
+- [x] abstract video sink
+- [ ] abstract audio sink

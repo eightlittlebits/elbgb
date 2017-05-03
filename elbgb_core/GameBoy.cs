@@ -24,15 +24,12 @@ namespace elbgb_core
 
 		public Cartridge Cartridge;
 
-		public GameBoy()
+		public GameBoy(IVideoFrameSink frameSink)
 		{
 			// default to an null interface, implementation by front ends is optional
 			Interface = new GBCoreInterface
 				{
-					PollInput = () => default(GBCoreInput),
-
-					VideoRefresh = screenData => { },
-					
+					PollInput = () => default(GBCoreInput),					
 					SerialTransferComplete = serialData => { },
 				};
 
@@ -41,7 +38,7 @@ namespace elbgb_core
 			CPU = new LR35902(this);
 			MMU = new MMU(this);
 			Timer = new Timer(this);
-			LCD = new LCDController(this);
+			LCD = new LCDController(this, frameSink);
 			PSG = new SoundController(this);
 			Input = new InputController(this);
 			SerialIO = new SerialCommunicationController(this);

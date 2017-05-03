@@ -17,7 +17,7 @@ using System.Security.Cryptography;
 
 namespace elbgb_ui
 {
-    public partial class MainForm : Form
+    public partial class MainForm : Form, IVideoFrameSink
     {
         private bool _isRunning;
 
@@ -48,9 +48,8 @@ namespace elbgb_ui
 
             _targetFrameTicks = Stopwatch.Frequency / (4194304 / 70224.0);
 
-            _gameBoy = new GameBoy();
+            _gameBoy = new GameBoy(this);
 
-            _gameBoy.Interface.VideoRefresh = RefreshScreenData;
             _gameBoy.Interface.PollInput = ReturnInputState;
 
             _gameBoy.LoadRom(File.ReadAllBytes(@"roms\Legend of Zelda, The - Link's Awakening (USA, Europe).gb"));
@@ -217,9 +216,11 @@ namespace elbgb_ui
             return true;
         }
 
-        private void RefreshScreenData(byte[] screenData)
+        void IVideoFrameSink.AppendFrame(byte[] frame)
         {
-            Buffer.BlockCopy(screenData, 0, _screenData, 0, ScreenWidth * ScreenHeight);
+            Debug.Assert(frame.Length == _screenData.Length);
+
+            Buffer.BlockCopy(frame, 0, _screenData, 0, frame.Length);
         }
 
         private unsafe void RenderScreenDataToDisplayBuffer()

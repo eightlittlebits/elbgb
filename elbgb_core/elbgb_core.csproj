@@ -54,6 +54,7 @@
     <Compile Include="IMemoryMappedComponent.cs" />
     <Compile Include="InputController.cs" />
     <Compile Include="Interrupt.cs" />
+    <Compile Include="IVideoFrameSink.cs" />
     <Compile Include="Memory\Cartridge.cs" />
     <Compile Include="Memory\CartridgeHeader.cs" />
     <Compile Include="Memory\Mappers\MBC1.cs" />

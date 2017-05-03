@@ -11,6 +11,14 @@ namespace elbgb_console
 {
     class Program
     {
+        class NullVideoSink : IVideoFrameSink
+        {
+            public void AppendFrame(byte[] frame)
+            {
+                return;
+            }
+        }
+
         static void Main(string[] args)
         {
             string romPath = args[0];
@@ -37,7 +45,7 @@ namespace elbgb_console
 
             byte[] rom = File.ReadAllBytes(romPath);
 
-            GameBoy gb = new GameBoy();
+            GameBoy gb = new GameBoy(new NullVideoSink());
 
             //gb.Interface.SerialTransferComplete = OutputSerialValue;
 
