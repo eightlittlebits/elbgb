@@ -33,6 +33,8 @@ namespace elbgb_ui
         private DirectBitmap _displayBuffer;
 
         private long _lastFrameTimestamp;
+
+        private readonly double _stopwatchFrequency;
         private readonly double _targetFrameTicks;
 
         private GBCoreInput _inputState;
@@ -46,14 +48,14 @@ namespace elbgb_ui
             InitialisePalettes();
             _activePalette = _palettes["greyscale"];
 
-            _targetFrameTicks = Stopwatch.Frequency / (4194304 / 70224.0);
+            _stopwatchFrequency = Stopwatch.Frequency;
+            _targetFrameTicks = _stopwatchFrequency / (4194304 / 70224.0);
 
             _gameBoy = new GameBoy(this);
 
             _gameBoy.Interface.PollInput = ReturnInputState;
 
-            _gameBoy.LoadRom(File.ReadAllBytes(@"roms\Legend of Zelda, The - Link's Awakening (USA, Europe).gb"));
-            //_gameBoy.LoadRom(File.ReadAllBytes(@"roms\tetris.gb"));
+            _gameBoy.LoadRom(File.ReadAllBytes(@"roms\Legend of Zelda, The - Link's Awakening (U) (V1.2) [!].gb"));
         }
 
         protected override void OnLoad(EventArgs e)
@@ -185,7 +187,7 @@ namespace elbgb_ui
                 // get ms to sleep for, cast to int to truncate to nearest millisecond
                 // take 1 ms off the sleep time as we don't always hit the sleep exactly, trade
                 // burning extra cpu in the spin loop for accuracy
-                int sleepMilliseconds = (int)((_targetFrameTicks - elapsedTicks) * 1000 / Stopwatch.Frequency) - 1;
+                int sleepMilliseconds = (int)((_targetFrameTicks - elapsedTicks) * 1000 / _stopwatchFrequency) - 1;
 
                 if (sleepMilliseconds > 0)
                 {
@@ -206,10 +208,10 @@ namespace elbgb_ui
 
             _lastFrameTimestamp = endFrameTimestamp;
 
-            double updateTime = (updateTimeEnd - updateTimeStart) * 1000 / (double)Stopwatch.Frequency;
-            double renderTime = (renderTimeEnd - renderTimeStart) * 1000 / (double)Stopwatch.Frequency;
+            double updateTime = (updateTimeEnd - updateTimeStart) * 1000 / _stopwatchFrequency;
+            double renderTime = (renderTimeEnd - renderTimeStart) * 1000 / _stopwatchFrequency;
 
-            double frameTime = totalFrameTicks * 1000 / (double)(Stopwatch.Frequency);
+            double frameTime = totalFrameTicks * 1000 / _stopwatchFrequency;
 
             this.Text = $"elbgb - {updateTime:00.000}ms {renderTime:00.000}ms {frameTime:00.0000}ms";
 
