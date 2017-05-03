@@ -6,7 +6,7 @@ elbgb is a Nintendo GameBoy emulator written in C#.
 
 ## compatibility
 
-### blargg's tests - <http://blargg.8bitalley.com/parodius/gb-tests/>
+### blargg's tests - <http://gbdev.gg8.se/files/roms/blargg-gb-tests/>
 
 - [x] cpu\_instrs  
 - [x] instr\_timing
