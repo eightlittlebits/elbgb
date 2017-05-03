@@ -265,11 +265,17 @@ namespace elbgb_ui
 													hdcSrc, 0, 0, _displayBuffer.Width, _displayBuffer.Height,
 													NativeMethods.TernaryRasterOperations.SRCCOPY))
 #else
-                    var blendFunction = new NativeMethods.BlendFunction(NativeMethods.AC_SRC_OVER, 0, 0x40, 0);
+                    var perPixelAlphaBlend = new NativeMethods.BlendFunction
+                    {
+                        BlendOp = NativeMethods.AC_SRC_OVER,
+                        BlendFlags = 0,
+                        SourceConstantAlpha = 0xFF,
+                        AlphaFormat = NativeMethods.AC_SRC_ALPHA
+                    };
 
                     if (!NativeMethods.AlphaBlend(hdcDest, 0, 0, displayPanel.Width, displayPanel.Height,
                                                     hdcSrc, 0, 0, _displayBuffer.Width, _displayBuffer.Height,
-                                                    blendFunction))
+                                                    perPixelAlphaBlend))
 #endif
                         throw new Win32Exception();
                 }

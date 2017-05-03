@@ -105,18 +105,10 @@ namespace elbgb_ui
         [StructLayout(LayoutKind.Sequential)]
         public struct BlendFunction
         {
-            byte BlendOp;
-            byte BlendFlags;
-            byte SourceConstantAlpha;
-            byte AlphaFormat;
-
-            public BlendFunction(byte op, byte flags, byte alpha, byte format)
-            {
-                BlendOp = op;
-                BlendFlags = flags;
-                SourceConstantAlpha = alpha;
-                AlphaFormat = format;
-            }
+            public byte BlendOp;
+            public byte BlendFlags;
+            public byte SourceConstantAlpha;
+            public byte AlphaFormat;
         }
 
         [DllImport("winmm.dll", EntryPoint = "timeBeginPeriod", SetLastError = true)]
