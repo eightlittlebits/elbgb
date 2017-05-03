@@ -4,8 +4,8 @@ using elbgb_core.Memory;
 
 namespace elbgb_core.CPU
 {
-    using static elbgb_core.Interrupt;
-    using static elbgb_core.CPU.StatusFlags;
+    using static Interrupt;
+    using static StatusFlags;
 
     public class LR35902
 	{
@@ -109,7 +109,6 @@ namespace elbgb_core.CPU
 				// interrupts enabled?
 				if (_r.IME)
 				{
-#if true
                     // determine interrupt to service, x & (-x) leaves the least significant bit set
                     // interrupts take priority lsb to msb
                     int interrupt = pendingInterrupt & (-pendingInterrupt);
@@ -140,46 +139,6 @@ namespace elbgb_core.CPU
                         case SerialIOComplete: _r.PC = 0x0058; break;
                         case Input: _r.PC = 0x0060; break;
                     }
-#else
-                    // check each bit in the pending interrupt to find out which needs to be processed
-                    for (int i = 0; i < 5; i++)
-                    {
-                    	int interrupt = 1 << i;
-
-                    	if ((pendingInterrupt & interrupt) == interrupt)
-                    	{
-                    		// timing information from
-                    		// https://github.com/Gekkio/mooneye-gb/blob/master/docs/accuracy.markdown
-                    		// the above has been tested on a real DMG, 3 wait cycles followed by
-                    		// the push of the PC
-
-                    		// 3 wait cycles
-                    		_gb.Clock.AddMachineCycles(3);
-
-                    		// disable interrupts
-                    		_r.IME = false;
-
-                    		// clear the interrupt flag
-                    		_gb.MMU.IF = (byte)(interruptFlag & ~interrupt);
-
-                    		// push current PC to stack - 2 cycles
-                    		PushWord(_r.PC);
-
-                    		// jump to interrupt address based on interrupt
-                    		switch (i)
-                    		{
-                    			case 0: _r.PC = 0x0040; break; // Vertical Blank
-                    			case 1: _r.PC = 0x0048; break; // LCDC Status
-                    			case 2: _r.PC = 0x0050; break; // Timer Overflow
-                    			case 3: _r.PC = 0x0058; break; // Serial Transfer Complete
-                    			case 4: _r.PC = 0x0060; break; // User Input
-                    		}
-
-                    		// interrupt processed, break from loop
-                    		break;
-                    	}
-                    }
-#endif
                 }
 			}
 		}
@@ -191,7 +150,6 @@ namespace elbgb_core.CPU
             if (_halted)
             {
                 _gb.Clock.AddMachineCycle();
-
             }
             // were interrupts disabled on HALT, triggering the halt bug?
             else if (_haltBug)
