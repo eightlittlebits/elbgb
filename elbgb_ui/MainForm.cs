@@ -19,8 +19,6 @@ namespace elbgb_ui
 {
     public partial class MainForm : Form, IVideoFrameSink
     {
-        private bool _isRunning;
-
         private GameBoy _gameBoy;
 
         private const int ScreenWidth = 160;
@@ -55,7 +53,7 @@ namespace elbgb_ui
 
             _gameBoy.Interface.PollInput = ReturnInputState;
 
-            _gameBoy.LoadRom(File.ReadAllBytes(@"roms\Legend of Zelda, The - Link's Awakening (U) (V1.2) [!].gb"));
+            //_gameBoy.LoadRom(File.ReadAllBytes(@"roms\Legend of Zelda, The - Link's Awakening (U) (V1.2) [!].gb"));
         }
 
         protected override void OnLoad(EventArgs e)
@@ -74,20 +72,30 @@ namespace elbgb_ui
 
             displayPanel.RealTimeUpdate = true;
 
-            MessagePump.Run(Frame);
+            MessagePump.RunWhileIdle(Frame);
 
-            _isRunning = true;
             _limitFrameRate = true;
         }
 
         protected override void OnActivated(EventArgs e)
         {
-            _isRunning = true;
+            base.OnActivated(e);
+
+            MessagePump.Resume();
         }
 
         protected override void OnDeactivate(EventArgs e)
         {
-            _isRunning = false;
+            base.OnDeactivate(e);
+
+            MessagePump.Pause();
+        }
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            base.OnClosing(e);
+
+            MessagePump.Stop();
         }
 
         private GBCoreInput ReturnInputState()
@@ -158,14 +166,8 @@ namespace elbgb_ui
             return true;
         }
 
-        private bool Frame()
+        private void Frame()
         {
-            if (!_isRunning)
-            {
-                // return false to break idle loop
-                return false;
-            }
-
             long updateTimeStart = Stopwatch.GetTimestamp();
 
             _gameBoy.StepFrame();
@@ -214,8 +216,6 @@ namespace elbgb_ui
             double frameTime = totalFrameTicks * 1000 / _stopwatchFrequency;
 
             this.Text = $"elbgb - {updateTime:00.000}ms {renderTime:00.000}ms {frameTime:00.0000}ms";
-
-            return true;
         }
 
         void IVideoFrameSink.AppendFrame(byte[] frame)
