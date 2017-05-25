@@ -1,31 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace elbgb_ui
+namespace elbgb_ui.NativeMethods
 {
-    static class NativeMethods
+    static class Gdi32
     {
-        [StructLayout(LayoutKind.Sequential)]
-        internal struct Message
-        {
-            public IntPtr hWnd;
-            public uint msg;
-            public IntPtr wParam;
-            public IntPtr lParam;
-            public uint time;
-            public Point p;
-        }
-
-        [System.Security.SuppressUnmanagedCodeSecurity]
-        [DllImport("User32.dll", CharSet = CharSet.Auto)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool PeekMessage(out Message msg, IntPtr hWnd, uint messageFilterMin, uint messageFilterMax, uint flags);
-
         [System.Security.SuppressUnmanagedCodeSecurity]
         [DllImport("gdi32.dll", EntryPoint = "SelectObject")]
         public static extern System.IntPtr SelectObject(
@@ -50,7 +29,7 @@ namespace elbgb_ui
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool StretchBlt(
             [In] System.IntPtr hdcDest, int nXOriginDest, int nYOriginDest, int nWidthDest, int nHeightDest,
-            [In] System.IntPtr hdcSrc, int nXOriginSrc, int nYOriginSrc, int nWidthSrc, int nHeightSrc, 
+            [In] System.IntPtr hdcSrc, int nXOriginSrc, int nYOriginSrc, int nWidthSrc, int nHeightSrc,
             TernaryRasterOperations dwRop);
 
         public enum TernaryRasterOperations : uint
@@ -95,7 +74,7 @@ namespace elbgb_ui
         [System.Security.SuppressUnmanagedCodeSecurity]
         [DllImport("gdi32.dll", EntryPoint = "GdiAlphaBlend")]
         public static extern bool AlphaBlend(
-            IntPtr hdcDest, int nXOriginDest, int nYOriginDest,int nWidthDest, int nHeightDest,
+            IntPtr hdcDest, int nXOriginDest, int nYOriginDest, int nWidthDest, int nHeightDest,
             IntPtr hdcSrc, int nXOriginSrc, int nYOriginSrc, int nWidthSrc, int nHeightSrc,
             BlendFunction blendFunction);
 
@@ -110,8 +89,5 @@ namespace elbgb_ui
             public byte SourceConstantAlpha;
             public byte AlphaFormat;
         }
-
-        [DllImport("winmm.dll", EntryPoint = "timeBeginPeriod", SetLastError = true)]
-        public static extern uint TimeBeginPeriod(uint uMilliseconds);
     }
 }

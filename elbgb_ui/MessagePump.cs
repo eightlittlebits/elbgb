@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using elbgb_ui.NativeMethods;
 
 namespace elbgb_ui
 {
@@ -13,7 +14,7 @@ namespace elbgb_ui
         private static bool _initialised;
         private static bool _running;
 
-        private static bool ApplicationStillIdle => !NativeMethods.PeekMessage(out _, IntPtr.Zero, 0, 0, 0);
+        private static bool ApplicationStillIdle => !User32.PeekMessage(out _, IntPtr.Zero, 0, 0, 0);
 
         public static void RunWhileIdle(Action idleLoop)
 		{
@@ -22,7 +23,6 @@ namespace elbgb_ui
             _running = true;
 
             Application.Idle += OnIdle;
-
 		}
 
         public static void Pause() => _running = false;

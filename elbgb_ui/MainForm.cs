@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using elbgb_core;
 using System.Security.Cryptography;
+using elbgb_ui.NativeMethods;
 
 namespace elbgb_ui
 {
@@ -257,13 +258,13 @@ namespace elbgb_ui
                     hdcSrc = grSrc.GetHdc();
                     hBitmap = _displayBuffer.Bitmap.GetHbitmap();
 
-                    hOldObject = NativeMethods.SelectObject(hdcSrc, hBitmap);
+                    hOldObject = Gdi32.SelectObject(hdcSrc, hBitmap);
                     if (hOldObject == IntPtr.Zero)
                         throw new Win32Exception();
 #if true
-                    if (!NativeMethods.StretchBlt(hdcDest, 0, 0, displayPanel.Width, displayPanel.Height,
+                    if (!Gdi32.StretchBlt(hdcDest, 0, 0, displayPanel.Width, displayPanel.Height,
 													hdcSrc, 0, 0, _displayBuffer.Width, _displayBuffer.Height,
-													NativeMethods.TernaryRasterOperations.SRCCOPY))
+                                                    Gdi32.TernaryRasterOperations.SRCCOPY))
 #else
                     var perPixelAlphaBlend = new NativeMethods.BlendFunction
                     {
@@ -281,8 +282,8 @@ namespace elbgb_ui
                 }
                 finally
                 {
-                    if (hOldObject != IntPtr.Zero) NativeMethods.SelectObject(hdcSrc, hOldObject);
-                    if (hBitmap != IntPtr.Zero) NativeMethods.DeleteObject(hBitmap);
+                    if (hOldObject != IntPtr.Zero) Gdi32.SelectObject(hdcSrc, hOldObject);
+                    if (hBitmap != IntPtr.Zero) Gdi32.DeleteObject(hBitmap);
                     if (hdcDest != IntPtr.Zero) grDest.ReleaseHdc(hdcDest);
                     if (hdcSrc != IntPtr.Zero) grSrc.ReleaseHdc(hdcSrc);
                 }
