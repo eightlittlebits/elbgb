@@ -4,22 +4,16 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
+using System.Security.Cryptography;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using elbgb_core;
-using System.Security.Cryptography;
-
-using static elbgb_ui.NativeMethods;
 
 namespace elbgb_ui
 {
-    public partial class MainForm : Form, IVideoFrameSink
+    public partial class MainForm : Form
     {
         private GameBoy _gameBoy;
 
@@ -27,10 +21,8 @@ namespace elbgb_ui
         private const int ScreenHeight = 144;
 
         private Dictionary<string, uint[]> _palettes;
-        private uint[] _activePalette;
 
-        private byte[] _screenData;
-        private DirectBitmap _displayBuffer;
+        private GdiRenderer _renderer;
 
         private long _lastFrameTimestamp;
 
@@ -46,16 +38,9 @@ namespace elbgb_ui
             InitializeComponent();
 
             InitialisePalettes();
-            _activePalette = _palettes["greyscale"];
 
             _stopwatchFrequency = Stopwatch.Frequency;
             _targetFrameTicks = _stopwatchFrequency / (4194304 / 70224.0);
-
-            _gameBoy = new GameBoy(this);
-
-            _gameBoy.Interface.PollInput = ReturnInputState;
-
-            //_gameBoy.LoadRom(File.ReadAllBytes(@"roms\Legend of Zelda, The - Link's Awakening (U) (V1.2) [!].gb"));
         }
 
         protected override void OnLoad(EventArgs e)
@@ -69,8 +54,13 @@ namespace elbgb_ui
 
             BuildPaletteMenu("greyscale");
 
-            _screenData = new byte[ScreenWidth * ScreenHeight];
-            _displayBuffer = new DirectBitmap(ScreenWidth, ScreenHeight);
+            _renderer = new GdiRenderer(ScreenWidth, ScreenHeight, displayPanel, _palettes["greyscale"]);
+            _gameBoy = new GameBoy(_renderer);
+
+            _gameBoy.Interface.PollInput = ReturnInputState;
+
+            string romPath = @"roms\Legend of Zelda, The - Link's Awakening (U) (V1.2) [!].gb";
+            _gameBoy.LoadRom(File.ReadAllBytes(romPath));
 
             displayPanel.RealTimeUpdate = true;
 
@@ -98,6 +88,8 @@ namespace elbgb_ui
             base.OnClosing(e);
 
             MessagePump.Stop();
+
+            _renderer.Dispose();
         }
 
         private GBCoreInput ReturnInputState()
@@ -178,8 +170,7 @@ namespace elbgb_ui
 
             long renderTimeStart = updateTimeEnd;
 
-            RenderScreenDataToDisplayBuffer();
-            PresentDisplayBuffer();
+            _renderer.RenderScreen();
 
             long renderTimeEnd = Stopwatch.GetTimestamp();
 
@@ -220,77 +211,6 @@ namespace elbgb_ui
             this.Text = $"elbgb - {updateTime:00.000}ms {renderTime:00.000}ms {frameTime:00.0000}ms";
         }
 
-        void IVideoFrameSink.AppendFrame(byte[] frame)
-        {
-            Debug.Assert(frame.Length == _screenData.Length);
-
-            Buffer.BlockCopy(frame, 0, _screenData, 0, frame.Length);
-        }
-
-        private unsafe void RenderScreenDataToDisplayBuffer()
-        {
-            uint* displayPixel = (uint*)_displayBuffer.BitmapData;
-
-            fixed (uint* palette = _activePalette)
-            fixed (byte* screenPtr = _screenData)
-            {
-                byte* screenPixel = screenPtr;
-
-                for (int i = 0; i < _screenData.Length; i++)
-                {
-                    *displayPixel++ = palette[*screenPixel++];
-                }
-            }
-        }
-
-        private void PresentDisplayBuffer()
-        {
-            using (Graphics grDest = Graphics.FromHwnd(displayPanel.Handle))
-            using (Graphics grSrc = Graphics.FromImage(_displayBuffer.Bitmap))
-            {
-                IntPtr hdcDest = IntPtr.Zero;
-                IntPtr hdcSrc = IntPtr.Zero;
-                IntPtr hBitmap = IntPtr.Zero;
-                IntPtr hOldObject = IntPtr.Zero;
-
-                try
-                {
-                    hdcDest = grDest.GetHdc();
-                    hdcSrc = grSrc.GetHdc();
-                    hBitmap = _displayBuffer.Bitmap.GetHbitmap();
-
-                    hOldObject = Gdi32.SelectObject(hdcSrc, hBitmap);
-                    if (hOldObject == IntPtr.Zero)
-                        throw new Win32Exception();
-#if true
-                    if (!Gdi32.StretchBlt(hdcDest, 0, 0, displayPanel.Width, displayPanel.Height,
-													hdcSrc, 0, 0, _displayBuffer.Width, _displayBuffer.Height,
-                                                    Gdi32.TernaryRasterOperations.SRCCOPY))
-#else
-                    var perPixelAlphaBlend = new NativeMethods.BlendFunction
-                    {
-                        BlendOp = NativeMethods.AC_SRC_OVER,
-                        BlendFlags = 0,
-                        SourceConstantAlpha = 0xFF,
-                        AlphaFormat = NativeMethods.AC_SRC_ALPHA
-                    };
-
-                    if (!NativeMethods.AlphaBlend(hdcDest, 0, 0, displayPanel.Width, displayPanel.Height,
-                                                    hdcSrc, 0, 0, _displayBuffer.Width, _displayBuffer.Height,
-                                                    perPixelAlphaBlend))
-#endif
-                        throw new Win32Exception();
-                }
-                finally
-                {
-                    if (hOldObject != IntPtr.Zero) Gdi32.SelectObject(hdcSrc, hOldObject);
-                    if (hBitmap != IntPtr.Zero) Gdi32.DeleteObject(hBitmap);
-                    if (hdcDest != IntPtr.Zero) grDest.ReleaseHdc(hdcDest);
-                    if (hdcSrc != IntPtr.Zero) grSrc.ReleaseHdc(hdcSrc);
-                }
-            }
-        }
-
         private void BuildPaletteMenu(string defaultPalette)
         {
             foreach (var paletteName in _palettes.Keys)
@@ -299,7 +219,7 @@ namespace elbgb_ui
                     null,
                     (sender, e) =>
                     {
-                        _activePalette = _palettes[paletteName];
+                        _renderer.Palette = _palettes[paletteName];
                     });
 
                 if (paletteName == defaultPalette)
@@ -334,7 +254,7 @@ namespace elbgb_ui
 
         private void checksumToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show($"Screen MD5: {CalculateMD5String(_screenData)}");
+            MessageBox.Show($"Screen MD5: {CalculateMD5String(_renderer.ScreenData)}");
         }
 
         private static string CalculateMD5String(byte[] buffer)
