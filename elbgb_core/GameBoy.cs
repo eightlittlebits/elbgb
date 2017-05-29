@@ -51,7 +51,7 @@ namespace elbgb_core
 			Cartridge = Cartridge.LoadRom(romData);
 		}
 
-		public void StepFrame()
+		public void RunFrame()
 		{
             // 70224 cycles per frame (456 cycles per scanline * 154 scanlines)
             // calculate the next frame boundary (multiple of 70224) from the 

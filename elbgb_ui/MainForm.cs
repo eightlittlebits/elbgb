@@ -171,7 +171,7 @@ namespace elbgb_ui
         {
             long updateTimeStart = Stopwatch.GetTimestamp();
 
-            _gameBoy.StepFrame();
+            _gameBoy.RunFrame();
 
             long updateTimeEnd = Stopwatch.GetTimestamp();
 

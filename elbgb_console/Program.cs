@@ -54,12 +54,12 @@ namespace elbgb_console
             int frameCounter = 0;
 
             double maxFrameTime = 0;
-            
+
             while (true)
             {
                 long startFrame = Stopwatch.GetTimestamp();
 
-					gb.StepFrame();
+                gb.RunFrame();
 
                 long endFrame = Stopwatch.GetTimestamp();
 
