@@ -14,7 +14,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using elbgb_core;
 using System.Security.Cryptography;
-using elbgb_ui.NativeMethods;
+
+using static elbgb_ui.NativeMethods;
 
 namespace elbgb_ui
 {

@@ -4,7 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using elbgb_ui.NativeMethods;
+
+using static elbgb_ui.NativeMethods;
 
 namespace elbgb_ui
 {

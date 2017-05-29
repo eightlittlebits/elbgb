@@ -1,10 +1,13 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace elbgb_ui.NativeMethods
+namespace elbgb_ui
 {
-    static class WinMM
-    { 
-        [DllImport("winmm.dll", EntryPoint = "timeBeginPeriod", SetLastError = true)]
-        public static extern uint TimeBeginPeriod(uint uMilliseconds);
+    static partial class NativeMethods
+    {
+        internal static class WinMM
+        {
+            [DllImport("winmm.dll", EntryPoint = "timeBeginPeriod", SetLastError = true)]
+            public static extern uint TimeBeginPeriod(uint uMilliseconds);
+        }
     }
 }
