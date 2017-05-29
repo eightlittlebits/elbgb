@@ -70,7 +70,7 @@ namespace elbgb_core
             public ushort Source;
             public byte Address;
 
-            public bool OamAvailable { get { return Address == 0x00; } }
+            public bool OamAvailable => Address == 0x00;
         }
 
         private IVideoFrameSink _frameSink;

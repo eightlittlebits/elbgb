@@ -18,10 +18,7 @@ namespace elbgb_ui.Components
 
         public bool RealTimeUpdate
         {
-            get
-            {
-                return _realTimeUpdate;
-            }
+            get => _realTimeUpdate;
             set
             {
                 _realTimeUpdate = value;

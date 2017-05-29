@@ -213,11 +213,8 @@ namespace elbgb_ui.Components
 				else 
 					return base.Enabled;
 			}
-			set
-			{
-				base.Enabled = value;
-			}
-		}
+            set => base.Enabled = value;
+        }
 
 		// When OwnerItem becomes available, if it is a ToolStripMenuItem 
 		// with a CheckOnClick property value of true, subscribe to its 

@@ -22,8 +22,16 @@ namespace elbgb_core.CPU
         private bool _ime;
 
         public ref byte A { get => ref _af.hi; }
-        public StatusFlags F { get { return (StatusFlags)_af.lo; } set { _af.lo = (byte)(value & FLAG_MASK_BYTE); } }
-        public ushort AF { get { return _af.word; } set { _af.word = (ushort)(value & FLAG_MASK_WORD); } }
+        public StatusFlags F
+        {
+            get => (StatusFlags)_af.lo;
+            set => _af.lo = (byte)(value & FLAG_MASK_BYTE);
+        }
+        public ushort AF
+        {
+            get => _af.word;
+            set => _af.word = (ushort)(value & FLAG_MASK_WORD);
+        }
 
         public ref byte B { get => ref _bc.hi; }
         public ref byte C { get => ref _bc.lo; }

@@ -72,26 +72,14 @@ namespace elbgb_core.Memory
 
         public byte IF
         {
-            get
-            {
-                return (byte)(_interruptFlag | 0xE0);
-            }
-            set
-            {
-                _interruptFlag = value;
-            }
+            get => (byte)(_interruptFlag | 0xE0);
+            set => _interruptFlag = value;
         }
 
         public byte IE
         {
-            get
-            {
-                return _hram[0x7F];
-            }
-            set
-            {
-                _hram[0x7F] = value;
-            }
+            get => _hram[0x7F];
+            set => _hram[0x7F] = value;
         }
 
         public MMU(GameBoy gameBoy)
