@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,5 +24,15 @@ namespace elbgb_core.Memory
 		{
 			return;
 		}
-	}
+
+        public override void LoadExternalRam(Stream stream)
+        {
+            return;
+        }
+
+        public override void SaveExternalRam(Stream stream)
+        {
+            return;
+        }
+    }
 }

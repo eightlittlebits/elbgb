@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -34,6 +35,28 @@ namespace elbgb_core.Memory.Mappers
                     case 2: _ram = new byte[0x2000]; break; // 64Kbit, 8KB
                     case 3: _ram = new byte[0x8000]; break; // 256Kbit, 32KB
                 }
+            }
+        }
+
+        public override void LoadExternalRam(Stream stream)
+        {
+            int index = 0;
+            int count = (int)stream.Length;
+
+            while (count > 0)
+            {
+                int n = stream.Read(_ram, index, count);
+
+                index += n;
+                count -= n;
+            }
+        }
+
+        public override void SaveExternalRam(Stream stream)
+        {
+            if (_hasRam)
+            {
+                stream.Write(_ram, 0, _ram.Length); 
             }
         }
 

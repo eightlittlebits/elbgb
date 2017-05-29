@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -68,8 +69,11 @@ namespace elbgb_core.Memory
 			_romData = romData;
 		}
 
-		public abstract byte ReadByte(ushort address);
+        public abstract byte ReadByte(ushort address);
 		public abstract void WriteByte(ushort address, byte value);
+
+        public abstract void LoadExternalRam(Stream stream);
+        public abstract void SaveExternalRam(Stream stream);
 
 		private static CartridgeHeader ReadCartridgeHeader(byte[] romData)
 		{

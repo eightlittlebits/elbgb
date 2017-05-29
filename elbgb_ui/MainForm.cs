@@ -33,6 +33,8 @@ namespace elbgb_ui
 
         private bool _limitFrameRate;
 
+        private string _savePath;
+
         public MainForm()
         {
             InitializeComponent();
@@ -62,6 +64,15 @@ namespace elbgb_ui
             string romPath = @"roms\Legend of Zelda, The - Link's Awakening (U) (V1.2) [!].gb";
             _gameBoy.LoadRom(File.ReadAllBytes(romPath));
 
+            _savePath = Path.ChangeExtension(romPath, "sav");
+            if (File.Exists(_savePath))
+            {
+                using (var stream = File.OpenRead(_savePath))
+                {
+                    _gameBoy.Cartridge.LoadExternalRam(stream);
+                }
+            }
+
             displayPanel.RealTimeUpdate = true;
 
             MessagePump.RunWhileIdle(Frame);
@@ -88,6 +99,11 @@ namespace elbgb_ui
             base.OnClosing(e);
 
             MessagePump.Stop();
+
+            using (var stream = File.Open(_savePath, FileMode.Create, FileAccess.Write))
+            {
+                _gameBoy.Cartridge.SaveExternalRam(stream);
+            }
 
             _renderer.Dispose();
         }
