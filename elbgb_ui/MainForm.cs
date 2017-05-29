@@ -190,11 +190,7 @@ namespace elbgb_ui
                 }
 
                 // spin for the remaining partial millisecond to hit target frame rate
-                long sleepElapsed = Stopwatch.GetTimestamp();
-                while ((sleepElapsed - _lastFrameTimestamp) < _targetFrameTicks)
-                {
-                    sleepElapsed = Stopwatch.GetTimestamp();
-                }
+                while ((Stopwatch.GetTimestamp() - _lastFrameTimestamp) < _targetFrameTicks) ;
             }
 
             long endFrameTimestamp = Stopwatch.GetTimestamp();
