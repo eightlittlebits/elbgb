@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace elbgb_core.CPU
 {
-	[StructLayout(LayoutKind.Explicit)]
-	struct PairedRegister
-	{
-		[FieldOffset(0)] public ushort word;
-		[FieldOffset(1)] public byte hi;
-		[FieldOffset(0)] public byte lo;
-	}
+    [StructLayout(LayoutKind.Explicit)]
+    struct PairedRegister
+    {
+        [FieldOffset(0)] public ushort word;
+        [FieldOffset(1)] public byte hi;
+        [FieldOffset(0)] public byte lo;
+    }
 }

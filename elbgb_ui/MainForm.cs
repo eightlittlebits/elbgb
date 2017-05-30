@@ -249,8 +249,8 @@ namespace elbgb_ui
             {
                 {"default",         new uint[] {0xFFFFFFFF, 0xFFB7B7B7, 0xFF686868, 0xFF000000} },
 
-				// the following palettes from http://www.hardcoregaming101.net/gbdebate/gbcolours.htm
-				{"dark yellow",     new uint[] {0xFFFFF77B, 0xFFB5AE4A, 0xFF6B6931, 0xFF212010} },
+                // the following palettes from http://www.hardcoregaming101.net/gbdebate/gbcolours.htm
+                {"dark yellow",     new uint[] {0xFFFFF77B, 0xFFB5AE4A, 0xFF6B6931, 0xFF212010} },
                 {"light yellow",    new uint[] {0xFFFFFF94, 0xFFD0D066, 0xFF949440, 0xFF666625} },
                 {"green",           new uint[] {0xFFB7DC11, 0xFF88A808, 0xFF306030, 0xFF083808} },
                 {"greyscale",       new uint[] {0xFFEFEFEF, 0xFFB2B2B2, 0xFF757575, 0xFF383838} },

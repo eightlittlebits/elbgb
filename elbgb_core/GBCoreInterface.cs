@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace elbgb_core
 {
-	public struct GBCoreInterface
-	{
-		public Func<GBCoreInput> PollInput;
-		public Action<byte> SerialTransferComplete;
-	}
+    public struct GBCoreInterface
+    {
+        public Func<GBCoreInput> PollInput;
+        public Action<byte> SerialTransferComplete;
+    }
 }

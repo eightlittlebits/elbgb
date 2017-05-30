@@ -7,23 +7,23 @@ using System.Threading.Tasks;
 
 namespace elbgb_core.Memory
 {
-	class NullCartridge : Cartridge
-	{
-		public NullCartridge(CartridgeHeader header, byte[] romData)
-			: base(header, romData)
-		{
+    class NullCartridge : Cartridge
+    {
+        public NullCartridge(CartridgeHeader header, byte[] romData)
+            : base(header, romData)
+        {
 
-		}
+        }
 
-		public override byte ReadByte(ushort address)
-		{
-			return 0xFF;
-		}
+        public override byte ReadByte(ushort address)
+        {
+            return 0xFF;
+        }
 
-		public override void WriteByte(ushort address, byte value)
-		{
-			return;
-		}
+        public override void WriteByte(ushort address, byte value)
+        {
+            return;
+        }
 
         public override void LoadExternalRam(Stream stream)
         {

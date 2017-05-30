@@ -9,8 +9,8 @@ using static elbgb_ui.NativeMethods;
 
 namespace elbgb_ui
 {
-	static class MessagePump
-	{
+    static class MessagePump
+    {
         private static Action _idleLoop;
         private static bool _initialised;
         private static bool _running;
@@ -18,13 +18,13 @@ namespace elbgb_ui
         private static bool ApplicationStillIdle => !User32.PeekMessage(out _, IntPtr.Zero, 0, 0, 0);
 
         public static void RunWhileIdle(Action idleLoop)
-		{
+        {
             _idleLoop = idleLoop;
             _initialised = true;
             _running = true;
 
             Application.Idle += OnIdle;
-		}
+        }
 
         public static void Pause() => _running = false;
 

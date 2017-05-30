@@ -95,14 +95,14 @@ namespace elbgb_core.Memory.Mappers
             // MBC1 has 4 hardware registers to control the mapping:
             //
             // Register 0: 0x0000-0x1FFF - RAM Enable, value 0x0A
-            //				Writing 0x0A to this enables RAM access
+            //                Writing 0x0A to this enables RAM access
             // Register 1: 0x2000-0x3FFF - ROM Bank Select, values 0x01-0x1F
             // Register 2: 0x4000-0x5FFF - Upper ROM bank/RAM bank select, values 0-3
-            //				Upper ROM bank code when using 8Mbits or more of ROM (and register 3 is 0)
-            //				RAM bank code when using 256kbits of RAM (and register 3 is 1)
+            //                Upper ROM bank code when using 8Mbits or more of ROM (and register 3 is 0)
+            //                RAM bank code when using 256kbits of RAM (and register 3 is 1)
             // Register 3: 0x6000-0x7FFF - ROM/RAM Change, values 0-1
-            //				When 0 Register 2 controls the upper ROM banks
-            //				When 1 Register 2 controls the RAM bank select
+            //                When 0 Register 2 controls the upper ROM banks
+            //                When 1 Register 2 controls the RAM bank select
 
             // expansion ram
             if (_ramEnabled && address >= 0xA000 && address < 0xC000)
