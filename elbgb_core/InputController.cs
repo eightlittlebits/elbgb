@@ -30,7 +30,7 @@ namespace elbgb_core
                 // that was not pressed the previous state, if so, raise the
                 // input interrupt
                 if (ButtonPressed(_inputState, newInputState))
-                    _gb.RequestInterrupt(Interrupt.Input);
+                    _gb.InterruptController.RequestInterrupt(Interrupt.Input);
 
                 _inputState = newInputState;
 

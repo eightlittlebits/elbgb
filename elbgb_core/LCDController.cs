@@ -363,7 +363,7 @@ namespace elbgb_core
                 _lcdStatus |= 0x04;
 
                 // if the LYC = LY interrupt selection is set then raise the interrupt
-                if ((_lcdStatus & 0x40) == 0x40) _gb.RequestInterrupt(Interrupt.LCDCStatus);
+                if ((_lcdStatus & 0x40) == 0x40) _gb.InterruptController.RequestInterrupt(Interrupt.LCDCStatus);
             }
             else
             {
@@ -407,7 +407,7 @@ namespace elbgb_core
                         _lcdMode = LcdMode.OamRead;
 
                         // raise OAM stat interrupt if requested
-                        if ((_lcdStatus & 0x20) == 0x20) _gb.RequestInterrupt(Interrupt.LCDCStatus);
+                        if ((_lcdStatus & 0x20) == 0x20) _gb.InterruptController.RequestInterrupt(Interrupt.LCDCStatus);
                     }
                 }
                 // Mode 3 - OAM and VRAM read, 162-175 cycles of frame
@@ -426,7 +426,7 @@ namespace elbgb_core
                         _lcdMode = LcdMode.HBlank;
 
                         // raise hblank stat interrupt if requested
-                        if ((_lcdStatus & 0x08) == 0x08) _gb.RequestInterrupt(Interrupt.LCDCStatus);
+                        if ((_lcdStatus & 0x08) == 0x08) _gb.InterruptController.RequestInterrupt(Interrupt.LCDCStatus);
 
                         RenderScanline();
                     }
@@ -447,10 +447,10 @@ namespace elbgb_core
                     _vblankClock = _frameClock - 65664;
 
                     // raise vblank stat interrupt if requested
-                    if ((_lcdStatus & 0x10) == 0x10) _gb.RequestInterrupt(Interrupt.LCDCStatus);
+                    if ((_lcdStatus & 0x10) == 0x10) _gb.InterruptController.RequestInterrupt(Interrupt.LCDCStatus);
 
                     // raise vblank interrupt
-                    _gb.RequestInterrupt(Interrupt.VBlank);
+                    _gb.InterruptController.RequestInterrupt(Interrupt.VBlank);
 
                     //DEBUG_DumpVramTiles();
 

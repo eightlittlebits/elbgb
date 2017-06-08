@@ -13,14 +13,15 @@ namespace elbgb_core
     {
         public GBCoreInterface Interface;
 
-        public SystemClock Clock;
-        public LR35902 CPU;
-        public MMU MMU;
-        public Timer Timer;
-        public LCDController LCD;
-        public SoundController PSG;
-        public InputController Input;
-        public SerialCommunicationController SerialIO;
+        internal SystemClock Clock;
+        internal InterruptController InterruptController;
+        internal LR35902 CPU;
+        internal MMU MMU;
+        internal Timer Timer;
+        internal LCDController LCD;
+        internal SoundController PSG;
+        internal InputController Input;
+        internal SerialCommunicationController SerialIO;
 
         public Cartridge Cartridge;
 
@@ -34,6 +35,7 @@ namespace elbgb_core
                 };
 
             Clock = new SystemClock();
+            InterruptController = new InterruptController();
 
             CPU = new LR35902(this);
             MMU = new MMU(this);
@@ -73,11 +75,6 @@ namespace elbgb_core
             LCD.SynchroniseWithSystemClock();
             PSG.SynchroniseWithSystemClock();
             SerialIO.SynchroniseWithSystemClock();
-        }
-
-        internal void RequestInterrupt(Interrupt interrupt)
-        {
-            MMU.IF |= (byte)interrupt;
         }
     }
 }

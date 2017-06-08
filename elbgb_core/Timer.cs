@@ -132,7 +132,7 @@ namespace elbgb_core
                     {
                         _tima = _tma;
 
-                        _gb.RequestInterrupt(Interrupt.TimerOverflow);
+                        _gb.InterruptController.RequestInterrupt(Interrupt.TimerOverflow);
                     }
                 }
             }

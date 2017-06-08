@@ -57,7 +57,7 @@ namespace elbgb_core
 
                         _gb.Interface.SerialTransferComplete(_serialData);
 
-                        _gb.RequestInterrupt(Interrupt.SerialIOComplete);
+                        _gb.InterruptController.RequestInterrupt(Interrupt.SerialIOComplete);
                     }
                 }
             }

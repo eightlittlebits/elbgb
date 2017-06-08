@@ -11,9 +11,7 @@ namespace elbgb_core.Memory
     {
         public static class Registers
         {
-            public const ushort IF = 0xFF0F;
             public const ushort BOOTROMLOCK = 0xFF50;
-            public const ushort IE = 0xFFFF;
         }
 
         private GameBoy _gb;
@@ -68,20 +66,6 @@ namespace elbgb_core.Memory
         private byte[] _wram;
         private byte[] _hram;
 
-        private byte _interruptFlag;
-
-        public byte IF
-        {
-            get => (byte)(_interruptFlag | 0xE0);
-            set => _interruptFlag = value;
-        }
-
-        public byte IE
-        {
-            get => _hram[0x7F];
-            set => _hram[0x7F] = value;
-        }
-
         public MMU(GameBoy gameBoy)
         {
             _gb = gameBoy;
@@ -89,7 +73,7 @@ namespace elbgb_core.Memory
             _bootRomLocked = false;
 
             _wram = new byte[0x2000];
-            _hram = new byte[0x80];
+            _hram = new byte[0x7F];
         }
 
         public byte ReadByte(ushort address)
@@ -162,9 +146,9 @@ namespace elbgb_core.Memory
                         return _gb.Timer.ReadByte(address);
                     }
                     // 0xFF0F - interrupt flag
-                    else if (address == Registers.IF)
+                    else if (address == 0xFF0F)
                     {
-                        return (byte)(_interruptFlag | 0xE0);
+                        return _gb.InterruptController.ReadByte(address);
                     }
                     // 0xFF10 - 0xFF26 - NR xx sound registers
                     // 0xFF30 - 0xFF3F - waveform ram
@@ -178,9 +162,13 @@ namespace elbgb_core.Memory
                         return _gb.LCD.ReadByte(address);
                     }
                     // 0xFF80 - 0xFFFE - hi ram
-                    else if (address >= 0xFF80 && address <= 0xFFFF)
+                    else if (address >= 0xFF80 && address <= 0xFFFE)
                     {
                         return _hram[address & 0x7F];
+                    }
+                    else if (address == 0xFFFF)
+                    {
+                        return _gb.InterruptController.ReadByte(address);
                     }
                     break;
             }
@@ -274,7 +262,7 @@ namespace elbgb_core.Memory
                                         
                                         // 0xFF0F - interrupt flag
                                         case 0xF: // IF
-                                            _interruptFlag = value;
+                                            _gb.InterruptController.WriteByte(address, value);
                                             return;
                                     }
                                     break;
@@ -302,9 +290,22 @@ namespace elbgb_core.Memory
                                 
                                 // 0xFF80 - 0xFFFE - hi ram
                                 case 0x80: case 0x90: case 0xA0: case 0xB0:
-                                case 0xC0: case 0xD0: case 0xE0: case 0xF0:
+                                case 0xC0: case 0xD0: case 0xE0: 
                                     _hram[address & 0x7F] = value;
                                     return;
+
+                                case 0xF0:
+                                    switch (address & 0x000F)
+                                    {
+                                        default:
+                                            _hram[address & 0x7F] = value;
+                                            return;
+
+                                        // 0xFFFF - interrupt enable
+                                        case 0xF: // IE
+                                            _gb.InterruptController.WriteByte(address, value);
+                                            return;
+                                    }
                             }
                             break;
                     }
