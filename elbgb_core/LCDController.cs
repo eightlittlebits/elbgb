@@ -82,6 +82,10 @@ namespace elbgb_core
 
         private byte[] _vram;
 
+        private byte[][] _tileCache;
+        private bool _updateTileCache;
+        private bool[] _tileCacheInvalid;
+
         private byte[] _oam;
         private OamDma _oamDma;
 
@@ -129,6 +133,15 @@ namespace elbgb_core
             _screenData = new byte[ScreenWidth * ScreenHeight];
 
             _vram = new byte[0x2000];
+
+            _tileCache = new byte[384][];
+
+            for (int i = 0; i < _tileCache.Length; i++)
+            {
+                _tileCache[i] = new byte[64];
+            }
+
+            _tileCacheInvalid = new bool[384];
 
             _oam = new byte[0xA0];
             _oamDma = default(OamDma);
@@ -224,6 +237,13 @@ namespace elbgb_core
                 }
 
                 _vram[address & 0x1FFF] = value;
+
+                // invalidate the tile cache for any tiles updated
+                if (address < 0x9800)
+                {
+                    _updateTileCache = true;
+                    _tileCacheInvalid[(address & 0x1FF0) >> 4] = true;
+                }
             }
             // 0xFE00 - 0xFE9F - OAM memory
             else if (address >= 0xFE00 && address <= 0xFE9F)
@@ -547,6 +567,12 @@ namespace elbgb_core
 
         private void RenderScanline()
         {
+            if (_updateTileCache)
+            {
+                UpdateTileCache();
+                _updateTileCache = false;
+            }
+
             if (_backgroundEnabled)
                 RenderBackgroundScanline();
 
@@ -555,6 +581,38 @@ namespace elbgb_core
 
             if (_spritesEnabled)
                 RenderSpriteScanline();
+        }
+
+        private void UpdateTileCache()
+        {
+            for (int i = 0; i < _tileCacheInvalid.Length; i++)
+            {
+                if (_tileCacheInvalid[i])
+                {
+                    int tileBaseAddress = (i * 0x10);
+
+                    for (int y = 0; y < 8; y++)
+                    {
+                        int tileRow = tileBaseAddress + (y << 1);
+
+                        byte charData1 = _vram[tileRow];
+                        byte charData2 = _vram[tileRow + 1];
+
+                        int rowIndex = y * 8;
+
+                        for (int x = 0; x < 8; x++)
+                        {
+                            int pixelOffset = 7 - x;
+
+                            var pixel = ((charData2 >> pixelOffset) & 0x01) << 1 | (charData1 >> pixelOffset) & 0x01;
+
+                            _tileCache[i][rowIndex + x] = (byte)pixel;
+                        }
+                    }
+
+                    _tileCacheInvalid[i] = false;
+                }
+            }
         }
 
         private unsafe void RenderBackgroundScanline()
@@ -577,15 +635,11 @@ namespace elbgb_core
 
                     int tileAddress = _backgroundTileBaseAddress + tileRow + tileColumn;
 
-                    byte charIdentifier = 0;
+                    int charIdentifier = 0;
 
                     if (_signedCharIdentifier)
                     {
-                        // move the zero point of the tile identifier as these are signed
-                        // adding 128 so -128 becomes tile 0x00 and 127 becomes 0xFF
-                        // this simplifies the address decoding as we can just add onto 
-                        // the char ram base address
-                        charIdentifier = (byte)((sbyte)_vram[tileAddress & 0x1FFF] + 128);
+                        charIdentifier = (sbyte)_vram[tileAddress & 0x1FFF] + 256;
                     }
                     else
                     {
@@ -595,21 +649,7 @@ namespace elbgb_core
                     // which line in the tile?
                     int line = (renderedScanline & 7);
 
-                    // generate address of the appropriate line in the tile
-                    // 16 bytes per character, 2 bytes per line
-                    // char ram base address + charIdentifier * 16 + line * 2
-                    int charDataAddress = _backgroundCharBaseAddress + (charIdentifier << 4) + (line << 1);
-
-                    // wrap char data address to vram memory size
-                    charDataAddress &= 0x1FFF;
-
-                    // decode character pixel data
-                    byte charData1 = _vram[charDataAddress];
-                    byte charData2 = _vram[charDataAddress + 1];
-
-                    int pixelOffset = 7 - ((x + _scrollX) & 7);
-
-                    var pixel = ((charData2 >> pixelOffset) & 0x01) << 1 | (charData1 >> pixelOffset) & 0x01;
+                    var pixel = _tileCache[charIdentifier][(line * 8) + ((x + _scrollX) & 7)];
 
                     *scanlinePtr++ = _backgroundPalette[pixel];
                 }
@@ -647,15 +687,11 @@ namespace elbgb_core
 
                     int tileAddress = _windowTileBaseAddress + tileRow + tileColumn;
 
-                    byte charIdentifier = 0;
+                    int charIdentifier = 0;
 
                     if (_signedCharIdentifier)
                     {
-                        // move the zero point of the tile identifier as these are signed
-                        // adding 128 so -128 becomes tile 0x00 and 127 becomes 0xFF
-                        // this simplifies the address decoding as we can just add onto 
-                        // the char ram base address
-                        charIdentifier = (byte)((sbyte)_vram[tileAddress & 0x1FFF] + 128);
+                        charIdentifier = (sbyte)_vram[tileAddress & 0x1FFF] + 256;
                     }
                     else
                     {
@@ -665,21 +701,7 @@ namespace elbgb_core
                     // which line in the tile?
                     int line = (renderedScanline & 7);
 
-                    // generate address of the appropriate line in the tile
-                    // 16 bytes per character, 2 bytes per line
-                    // char ram base address + charIdentifier * 16 + line * 2
-                    int charDataAddress = _backgroundCharBaseAddress + (charIdentifier << 4) + (line << 1);
-
-                    // wrap char data address to vram memory size
-                    charDataAddress &= 0x1FFF;
-
-                    // decode character pixel data
-                    byte charData1 = _vram[charDataAddress];
-                    byte charData2 = _vram[charDataAddress + 1];
-
-                    int pixelOffset = 7 - ((x - (_windowX - 7)) & 7);
-
-                    var pixel = ((charData2 >> pixelOffset) & 0x01) << 1 | (charData1 >> pixelOffset) & 0x01;
+                    var pixel = _tileCache[charIdentifier][(line * 8) + ((x - (_windowX - 7)) & 7)];
 
                     *scanlinePtr++ = _backgroundPalette[pixel];
                 }
