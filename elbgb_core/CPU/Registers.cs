@@ -1,53 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace elbgb_core.CPU
 {
-    class Registers
+    [StructLayout(LayoutKind.Explicit)]
+    struct Registers
     {
-        private const StatusFlags FLAG_MASK_BYTE = (StatusFlags)0xF0;
-        private const ushort FLAG_MASK_WORD = 0xFFF0;
+        [FieldOffset(0)] public ushort AF;
+        [FieldOffset(1)] public byte A;
+        [FieldOffset(0)] public StatusFlags F;
 
-        private PairedRegister _af;
-        private PairedRegister _bc;
-        private PairedRegister _de;
-        private PairedRegister _hl;
+        [FieldOffset(2)] public ushort BC;
+        [FieldOffset(3)] public byte B;
+        [FieldOffset(2)] public byte C;
 
-        private ushort _pc;
-        private ushort _sp;
+        [FieldOffset(4)] public ushort DE;
+        [FieldOffset(5)] public byte D;
+        [FieldOffset(4)] public byte E;
 
-        private bool _ime;
-
-        public ref byte A { get => ref _af.hi; }
-        public StatusFlags F
-        {
-            get => (StatusFlags)_af.lo;
-            set => _af.lo = (byte)(value & FLAG_MASK_BYTE);
-        }
-        public ushort AF
-        {
-            get => _af.word;
-            set => _af.word = (ushort)(value & FLAG_MASK_WORD);
-        }
-
-        public ref byte B { get => ref _bc.hi; }
-        public ref byte C { get => ref _bc.lo; }
-        public ref ushort BC { get => ref _bc.word; }
-
-        public ref byte D { get => ref _de.hi; }
-        public ref byte E { get => ref _de.lo; }
-        public ref ushort DE { get => ref _de.word; }
-
-        public ref byte H { get => ref _hl.hi; }
-        public ref byte L { get => ref _hl.lo; }
-        public ref ushort HL { get => ref _hl.word; }
-
-        public ref ushort PC { get => ref _pc; }
-        public ref ushort SP { get => ref _sp; }
-
-        public ref bool IME { get => ref _ime; }
+        [FieldOffset(6)] public ushort HL;
+        [FieldOffset(7)] public byte H;
+        [FieldOffset(6)] public byte L;
     }
 }
