@@ -578,10 +578,10 @@ namespace elbgb_core.CPU
                 case 0x00: break; // NOP
 
                 // complement carry flag, resets HN and preserves Z
-                case 0x3F: _r.F = (_r.F &= (Z | C)) ^ C; break; // CCF
+                case 0x3F: _r.F = (_r.F & (Z | C)) ^ C; break; // CCF
 
                 // set carry flag, resets HN and preserves Z
-                case 0x37: _r.F = (_r.F &= Z) | C; break; //SCF
+                case 0x37: _r.F = (_r.F & Z) | C; break; //SCF
 
                 // disable/enable interrupts
                 case 0xF3: _ime = false; break; // DI
