@@ -13,10 +13,13 @@ namespace elbgb_core
     {
         public GBCoreInterface Interface;
 
+        internal Interconnect Interconnect;
+
+        private SystemMemory _memory;
+
         internal SystemClock Clock;
         internal InterruptController InterruptController;
         internal LR35902 CPU;
-        internal MMU MMU;
         internal Timer Timer;
         internal LCDController LCD;
         internal SoundController PSG;
@@ -24,7 +27,7 @@ namespace elbgb_core
         internal SerialCommunicationController SerialIO;
 
         public Cartridge Cartridge;
-
+        
         public GameBoy(IVideoFrameSink frameSink)
         {
             // default to an null interface, implementation by front ends is optional
@@ -35,22 +38,26 @@ namespace elbgb_core
                 };
 
             Clock = new SystemClock();
-            InterruptController = new InterruptController();
+            Interconnect = new Interconnect();
+
+            Interconnect.AddAddressHandler(0x0000, 0x00FF, new BootRom());
+            _memory = new SystemMemory(this);
+                        
+            InterruptController = new InterruptController(this);
 
             CPU = new LR35902(this);
-            MMU = new MMU(this);
             Timer = new Timer(this);
             LCD = new LCDController(this, frameSink);
             PSG = new SoundController(this);
             Input = new InputController(this);
             SerialIO = new SerialCommunicationController(this);
 
-            Cartridge = Cartridge.LoadRom(null);
+            Cartridge = Cartridge.LoadRom(this, null);
         }
 
         public void LoadRom(byte[] romData)
         {
-            Cartridge = Cartridge.LoadRom(romData);
+            Cartridge = Cartridge.LoadRom(this, romData);
         }
 
         public void RunFrame()

@@ -26,7 +26,7 @@ namespace elbgb_core.CPU
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private byte ReadByte(ushort address)
         {
-            byte value = _gb.MMU.ReadByte(address);
+            byte value = _gb.Interconnect.ReadByte(address);
             _gb.Clock.AddMachineCycle();
 
             return value;
@@ -45,7 +45,7 @@ namespace elbgb_core.CPU
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void WriteByte(ushort address, byte value)
         {
-            _gb.MMU.WriteByte(address, value);
+            _gb.Interconnect.WriteByte(address, value);
             _gb.Clock.AddMachineCycle();
         }
 

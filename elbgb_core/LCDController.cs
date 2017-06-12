@@ -6,7 +6,7 @@ using System.Text;
 
 namespace elbgb_core
 {
-    public class LCDController : ClockedComponent
+    public class LCDController : ClockedComponent, IMemoryMappedComponent
     {
         public static class Registers
         {
@@ -120,6 +120,10 @@ namespace elbgb_core
         public LCDController(GameBoy gameBoy, IVideoFrameSink frameSink)
             : base(gameBoy)
         {
+            gameBoy.Interconnect.AddAddressHandler(0xFF40, 0xFF4B, this); // control registers
+            gameBoy.Interconnect.AddAddressHandler(0x8000, 0x9FFF, this); // vram
+            gameBoy.Interconnect.AddAddressHandler(0xFE00, 0xFE9F, this); // oam
+
             _frameSink = frameSink;
 
             _screenData = new byte[ScreenWidth * ScreenHeight];
@@ -507,7 +511,7 @@ namespace elbgb_core
                         }
 
                         // calculate address from source and current address
-                        _oam[_oamDma.Address] = _gb.MMU.ReadByte((ushort)(_oamDma.Source | _oamDma.Address));
+                        _oam[_oamDma.Address] = _gb.Interconnect.ReadByte((ushort)(_oamDma.Source | _oamDma.Address));
                         _oamDma.Address += 1;
                         break;
 

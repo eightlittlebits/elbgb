@@ -7,17 +7,17 @@ using System.Threading.Tasks;
 
 namespace elbgb_core.Memory
 {
-    public abstract class Cartridge
+    public abstract class Cartridge : IMemoryMappedComponent
     {
         public CartridgeHeader Header { get; set; }
 
         protected byte[] _romData;
 
-        public static Cartridge LoadRom(byte[] romData)
+        public static Cartridge LoadRom(GameBoy gameBoy, byte[] romData)
         {
             if (romData == null)
             {
-                return new NullCartridge(default(CartridgeHeader), null);
+                return new NullCartridge(gameBoy, default(CartridgeHeader), null);
             }
 
             CartridgeHeader header = ReadCartridgeHeader(romData);
@@ -25,12 +25,12 @@ namespace elbgb_core.Memory
             switch (header.CartridgeType)
             {
                 case CartridgeType.RomOnly:
-                    return new Mappers.MBC0(header, romData);
+                    return new Mappers.MBC0(gameBoy, header, romData);
 
                 case CartridgeType.Mbc1:
                 case CartridgeType.Mbc1Ram:
                 case CartridgeType.Mbc1RamBattery:
-                    return new Mappers.MBC1(header, romData);
+                    return new Mappers.MBC1(gameBoy, header, romData);
                                     
                 case CartridgeType.Mbc2:
                 case CartridgeType.Mbc2Battery:
@@ -58,13 +58,17 @@ namespace elbgb_core.Memory
                 case CartridgeType.HudsonHuC3:
                 case CartridgeType.HudsonHuC1:
                 default:
-                    string message = $"Mapper {header.CartridgeType} ({header.CartridgeType:X}) not implemented.";
-                    throw new NotImplementedException(message);
+                    throw new NotImplementedException($"Mapper {header.CartridgeType} ({header.CartridgeType:X}) not implemented.");
             }
         }
 
-        protected Cartridge(CartridgeHeader header, byte[] romData)
+        protected Cartridge(GameBoy gameBoy, CartridgeHeader header, byte[] romData)
         {
+            gameBoy.Interconnect.AddAddressHandler(0x0100, 0x7FFF, this); // rom
+            gameBoy.Interconnect.AddAddressHandler(0xA000, 0xBFFF, this); // ram
+
+            gameBoy.Interconnect.AddAddressHandler(0xFF50, new DeferredMemoryMapping(gameBoy.Interconnect, 0x0000, 0x00FF, this));
+
             Header = header;
             _romData = romData;
         }

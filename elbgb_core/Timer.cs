@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace elbgb_core
 {
-    public class Timer : ClockedComponent
+    public class Timer : ClockedComponent, IMemoryMappedComponent
     {
         public static class Registers
         {
@@ -30,7 +30,7 @@ namespace elbgb_core
         public Timer(GameBoy gameBoy)
             : base(gameBoy)
         {
-
+            gameBoy.Interconnect.AddAddressHandler(0xFF04, 0xFF07, this);
         }
 
         public byte ReadByte(ushort address)

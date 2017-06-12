@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace elbgb_core.Sound
 {
-    public class SoundController : ClockedComponent
+    public class SoundController : ClockedComponent, IMemoryMappedComponent
     {
         public static class Registers
         {

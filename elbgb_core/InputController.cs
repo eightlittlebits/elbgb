@@ -5,7 +5,7 @@ using System.Text;
 
 namespace elbgb_core
 {
-    public class InputController
+    public class InputController : IMemoryMappedComponent
     {
         private GameBoy _gb;
 
@@ -16,7 +16,9 @@ namespace elbgb_core
 
         public InputController(GameBoy gameBoy)
         {
-            this._gb = gameBoy;
+            gameBoy.Interconnect.AddAddressHandler(0xFF00, this);
+
+            _gb = gameBoy;
         }
 
         public byte ReadByte(ushort address)

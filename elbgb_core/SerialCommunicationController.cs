@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace elbgb_core
 {
-    public class SerialCommunicationController : ClockedComponent
+    public class SerialCommunicationController : ClockedComponent, IMemoryMappedComponent
     {
         public static class Registers
         {
@@ -30,6 +30,8 @@ namespace elbgb_core
         public SerialCommunicationController(GameBoy gameBoy)
             : base(gameBoy)
         {
+            gameBoy.Interconnect.AddAddressHandler(0xFF01, 0xFF02, this);
+
             // internal shift clock is 8192Hz 
             _internalShiftClockInterval = SystemClock.ClockFrequency / 8192;
 

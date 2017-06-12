@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Memory\BootRom.cs" />
     <Compile Include="ClockedComponent.cs" />
     <Compile Include="CPU\LR35902.cs" />
     <Compile Include="CPU\PairedRegister.cs" />
@@ -58,11 +59,14 @@
     <Compile Include="IVideoFrameSink.cs" />
     <Compile Include="Memory\Cartridge.cs" />
     <Compile Include="Memory\CartridgeHeader.cs" />
+    <Compile Include="Memory\DeferredMemoryMapping.cs" />
     <Compile Include="Memory\Mappers\MBC1.cs" />
     <Compile Include="Memory\Mappers\MBC0.cs" />
-    <Compile Include="Memory\MMU.cs" />
+    <Compile Include="Memory\Interconnect.cs" />
     <Compile Include="LCDController.cs" />
     <Compile Include="Memory\NullCartridge.cs" />
+    <Compile Include="Memory\SystemMemory.cs" />
+    <Compile Include="Memory\UnmappedMemory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SerialCommunicationController.cs" />
     <Compile Include="Sound\SoundController.cs" />

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using elbgb_core.Memory;
 
 namespace elbgb_core
 {
@@ -16,6 +17,12 @@ namespace elbgb_core
         
         private byte _interruptEnable;
         private byte _interruptFlag;
+
+        public InterruptController(GameBoy gameBoy)
+        {
+            gameBoy.Interconnect.AddAddressHandler(Registers.IF, this);
+            gameBoy.Interconnect.AddAddressHandler(Registers.IE, this);
+        }
 
         public byte IF
         {
