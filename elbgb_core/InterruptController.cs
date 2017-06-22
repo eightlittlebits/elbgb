@@ -14,9 +14,6 @@ namespace elbgb_core
             public const ushort IF = 0xFF0F;
             public const ushort IE = 0xFFFF;
         }
-        
-        private byte _interruptEnable;
-        private byte _interruptFlag;
 
         public InterruptController(GameBoy gameBoy)
         {
@@ -24,27 +21,18 @@ namespace elbgb_core
             gameBoy.Interconnect.AddAddressHandler(Registers.IE, this);
         }
 
-        public byte IF
-        {
-            get => (byte)(_interruptFlag | 0xE0);
-            set => _interruptFlag = value;
-        }
-
-        public byte IE
-        {
-            get => _interruptEnable;
-            set => _interruptEnable = value;
-        }
+        public byte IF;
+        public byte IE;
 
         public byte ReadByte(ushort address)
         {
             switch (address)
             {
                 case Registers.IF:
-                    return (byte)(_interruptFlag | 0xE0);
+                    return IF;
 
                 case Registers.IE:
-                    return _interruptEnable;
+                    return IE;
 
                 default:
                     throw new ArgumentOutOfRangeException(nameof(address));
@@ -56,11 +44,11 @@ namespace elbgb_core
             switch (address)
             {
                 case Registers.IF:
-                    _interruptFlag = value;
+                    IF = (byte)(value | 0xE0);
                     break;
 
                 case Registers.IE:
-                    _interruptEnable = value;
+                    IE = value;
                     break;
 
                 default:
@@ -70,7 +58,7 @@ namespace elbgb_core
 
         internal void RequestInterrupt(Interrupt interrupt)
         {
-            _interruptFlag |= (byte)interrupt;
+            IF |= (byte)interrupt;
         }
     }
 }
