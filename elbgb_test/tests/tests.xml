@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Tests xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Test Name="blargg\halt_bug.gb" FrameCount="442" Hash="b66f5c777891c1821be98b2717a1da28" Status="Passing" />
+  <Test Name="blargg\cpu_instrs\cpu_instrs.gb" FrameCount="3534" Hash="cda404071e88b2f7527232c96d9ba6c4" Status="Passing" />
+  <Test Name="blargg\cpu_instrs\individual\01-special.gb" FrameCount="478" Hash="ba2b2749885e6fe92c473ca01e307d8f" Status="Passing" />
+  <Test Name="blargg\cpu_instrs\individual\02-interrupts.gb" FrameCount="364" Hash="053d0c31cfa6b445d86070a0d42184a3" Status="Passing" />
+  <Test Name="blargg\cpu_instrs\individual\03-op sp,hl.gb" FrameCount="479" Hash="220753b2657f08b723af1fd9b9545f17" Status="Passing" />
+  <Test Name="blargg\cpu_instrs\individual\04-op r,imm.gb" FrameCount="502" Hash="1b449079c403222b5a5afd5fd130595e" Status="Passing" />
+  <Test Name="blargg\cpu_instrs\individual\05-op rp.gb" FrameCount="563" Hash="d6b64bd2c469e02663bc047df40b4a96" Status="Passing" />
+  <Test Name="blargg\cpu_instrs\individual\06-ld r,r.gb" FrameCount="373" Hash="bf4de29e4c4fc858c4e11a2d2429adc7" Status="Passing" />
+  <Test Name="blargg\cpu_instrs\individual\07-jr,jp,call,ret,rst.gb" FrameCount="381" Hash="d519de49569f76eb02553c7dfce5f79d" Status="Passing" />
+  <Test Name="blargg\cpu_instrs\individual\08-misc instrs.gb" FrameCount="371" Hash="49a8565d8f495e14af6b950279c41e74" Status="Passing" />
+  <Test Name="blargg\cpu_instrs\individual\09-op r,r.gb" FrameCount="884" Hash="6e557f0366b47839e425a5e4d159af41" Status="Passing" />
+  <Test Name="blargg\cpu_instrs\individual\10-bit ops.gb" FrameCount="1167" Hash="68094fb6d9f6004cac5b1d3117fa354a" Status="Passing" />
+  <Test Name="blargg\cpu_instrs\individual\11-op a,(hl).gb" FrameCount="1389" Hash="354148bfe5694d27acf63a165f1c464d" Status="Passing" />
+  <Test Name="blargg\instr_timing\instr_timing.gb" FrameCount="377" Hash="b12b93e4ffc7a41df089dc1c052712f9" Status="Passing" />
+  <Test Name="blargg\mem_timing\mem_timing.gb" FrameCount="429" Hash="7c7dcd8fc12a3c12efd4773bbb21b587" Status="Passing" />
+  <Test Name="blargg\mem_timing\individual\01-read_timing.gb" FrameCount="366" Hash="bd5dae1111060b7d8182dad46bf2a788" Status="Passing" />
+  <Test Name="blargg\mem_timing\individual\02-write_timing.gb" FrameCount="365" Hash="ba10f0503c5c6ced9d097b2a90d409e1" Status="Passing" />
+  <Test Name="blargg\mem_timing\individual\03-modify_timing.gb" FrameCount="368" Hash="b96635121b022538d25b642cbcabd4b6" Status="Passing" />
+  <Test Name="blargg\mem_timing-2\mem_timing.gb" FrameCount="502" Hash="2ac80dda8801a70cf1abd8062202a559" Status="Passing" />
+  <Test Name="blargg\mem_timing-2\rom_singles\01-read_timing.gb" FrameCount="365" Hash="bd5dae1111060b7d8182dad46bf2a788" Status="Passing" />
+  <Test Name="blargg\mem_timing-2\rom_singles\02-write_timing.gb" FrameCount="364" Hash="ba10f0503c5c6ced9d097b2a90d409e1" Status="Passing" />
+  <Test Name="blargg\mem_timing-2\rom_singles\03-modify_timing.gb" FrameCount="367" Hash="b96635121b022538d25b642cbcabd4b6" Status="Passing" />
+  <Test Name="blargg\oam_bug\oam_bug.gb" FrameCount="1166" Hash="69a77d5b193492d5b97f7d8192c736ec" Status="Failing" />
+  <Test Name="blargg\oam_bug\rom_singles\1-lcd_sync.gb" FrameCount="371" Hash="773a896975868b8298bf5af9bd35ce9a" Status="Failing" />
+  <Test Name="blargg\oam_bug\rom_singles\2-causes.gb" FrameCount="374" Hash="399234c14a61309c47f360e4ab51627d" Status="Failing" />
+  <Test Name="blargg\oam_bug\rom_singles\3-non_causes.gb" FrameCount="435" Hash="d7763c22c2706864c18f0910ac1cb5fa" Status="Passing" />
+  <Test Name="blargg\oam_bug\rom_singles\4-scanline_timing.gb" FrameCount="383" Hash="2dda4c8ac932e99f4b6530dc7c6587da" Status="Failing" />
+  <Test Name="blargg\oam_bug\rom_singles\5-timing_bug.gb" FrameCount="377" Hash="b3936efd908398119f1f9f8f0dda2fc4" Status="Failing" />
+  <Test Name="blargg\oam_bug\rom_singles\6-timing_no_bug.gb" FrameCount="424" Hash="6719ee8d6378fed8179dcd7b91bb954e" Status="Passing" />
+  <Test Name="blargg\oam_bug\rom_singles\7-timing_effect.gb" FrameCount="773" Hash="59958538789ccec9c884e7617203caf0" Status="Failing" />
+  <Test Name="blargg\oam_bug\rom_singles\8-instr_effect.gb" FrameCount="387" Hash="090b61de3e1b2cccc2f0db30b7babed6" Status="Failing" />
+  <Test Name="blargg\oam_bug-2\oam_bug.gb" FrameCount="1166" Hash="69a77d5b193492d5b97f7d8192c736ec" Status="Failing" />
+  <Test Name="blargg\oam_bug-2\rom_singles\1-lcd_sync.gb" FrameCount="371" Hash="773a896975868b8298bf5af9bd35ce9a" Status="Failing" />
+  <Test Name="blargg\oam_bug-2\rom_singles\2-causes.gb" FrameCount="374" Hash="399234c14a61309c47f360e4ab51627d" Status="Failing" />
+  <Test Name="blargg\oam_bug-2\rom_singles\3-non_causes.gb" FrameCount="435" Hash="d7763c22c2706864c18f0910ac1cb5fa" Status="Passing" />
+  <Test Name="blargg\oam_bug-2\rom_singles\4-scanline_timing.gb" FrameCount="383" Hash="2dda4c8ac932e99f4b6530dc7c6587da" Status="Failing" />
+  <Test Name="blargg\oam_bug-2\rom_singles\5-timing_bug.gb" FrameCount="377" Hash="b3936efd908398119f1f9f8f0dda2fc4" Status="Failing" />
+  <Test Name="blargg\oam_bug-2\rom_singles\6-timing_no_bug.gb" FrameCount="424" Hash="6719ee8d6378fed8179dcd7b91bb954e" Status="Passing" />
+  <Test Name="blargg\oam_bug-2\rom_singles\7-timing_effect.gb" FrameCount="773" Hash="59958538789ccec9c884e7617203caf0" Status="Failing" />
+  <Test Name="blargg\oam_bug-2\rom_singles\8-instr_effect.gb" FrameCount="387" Hash="090b61de3e1b2cccc2f0db30b7babed6" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\add_sp_e_timing.gb" FrameCount="349" Hash="edb28d569d8bd66849529c37ac3988b0" Status="Passing" />
+  <Test Name="mooneye-gb\acceptance\boot_hwio-dmg0.gb" FrameCount="346" Hash="1d9d1b4199e0fafcf295055ff4c57f1d" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\boot_hwio-dmgABCXmgb.gb" FrameCount="346" Hash="1d9d1b4199e0fafcf295055ff4c57f1d" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\boot_hwio-S.gb" FrameCount="346" Hash="6b3ccf3c188c55c08ebab93a9492577f" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\boot_regs-dmg0.gb" FrameCount="346" Hash="8ad3e6f0843599cb2b72d0a2dc5e665f" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\boot_regs-dmgABCX.gb" FrameCount="346" Hash="e083553cfe022ce4c9f0bac363e8a76c" Status="Passing" />
+  <Test Name="mooneye-gb\acceptance\boot_regs-mgb.gb" FrameCount="346" Hash="0768c26b4bc501b2446396d480fbcacc" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\boot_regs-sgb.gb" FrameCount="346" Hash="1c0111925c9b83d924e8a3bdf936944f" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\boot_regs-sgb2.gb" FrameCount="346" Hash="a2a0a696766a9ddd0054f13687b782e5" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\call_cc_timing.gb" FrameCount="349" Hash="5c4494d36191cf0824fe220f776b0231" Status="Passing" />
+  <Test Name="mooneye-gb\acceptance\call_cc_timing2.gb" FrameCount="350" Hash="36d5ef80c60b69451df1b80f802a8b9a" Status="Passing" />
+  <Test Name="mooneye-gb\acceptance\call_timing.gb" FrameCount="349" Hash="5c4494d36191cf0824fe220f776b0231" Status="Passing" />
+  <Test Name="mooneye-gb\acceptance\call_timing2.gb" FrameCount="350" Hash="9e6e8699b19596d02e1c58db85dd7457" Status="Passing" />
+  <Test Name="mooneye-gb\acceptance\div_timing.gb" FrameCount="346" Hash="0ab0ee9cd1e8036558c8486512d06f8f" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\di_timing-GS.gb" FrameCount="352" Hash="5c4494d36191cf0824fe220f776b0231" Status="Passing" />
+  <Test Name="mooneye-gb\acceptance\ei_timing.gb" FrameCount="346" Hash="9572f87d068a2544ac44846110eb1194" Status="Passing" />
+  <Test Name="mooneye-gb\acceptance\halt_ime0_ei.gb" FrameCount="347" Hash="5c4494d36191cf0824fe220f776b0231" Status="Passing" />
+  <Test Name="mooneye-gb\acceptance\halt_ime0_nointr_timing.gb" FrameCount="350" Hash="22046c96ecbc40b28cf6cf004fa3c6e9" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\halt_ime1_timing.gb" FrameCount="346" Hash="9abb79714169a30b93eb9eb93acdb1fa" Status="Passing" />
+  <Test Name="mooneye-gb\acceptance\halt_ime1_timing2-GS.gb" FrameCount="354" Hash="1c0104ee6adfd78934ddd884013cb175" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\if_ie_registers.gb" FrameCount="346" Hash="6a21e28b35c192a21fc0f04a7a8cccfe" Status="Passing" />
+  <Test Name="mooneye-gb\acceptance\intr_timing.gb" FrameCount="346" Hash="1d6b57e7dff2301687b7035da4252b27" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\jp_cc_timing.gb" FrameCount="349" Hash="5c4494d36191cf0824fe220f776b0231" Status="Passing" />
+  <Test Name="mooneye-gb\acceptance\jp_timing.gb" FrameCount="349" Hash="5c4494d36191cf0824fe220f776b0231" Status="Passing" />
+  <Test Name="mooneye-gb\acceptance\ld_hl_sp_e_timing.gb" FrameCount="349" Hash="6c7c87296eff8f898376593fdeec35d8" Status="Passing" />
+  <Test Name="mooneye-gb\acceptance\oam_dma_restart.gb" FrameCount="349" Hash="aa0f695b363ceb188d105f2be2c78292" Status="Passing" />
+  <Test Name="mooneye-gb\acceptance\oam_dma_start.gb" FrameCount="350" Hash="d11f6474daa52cef236f1b5a95ce22d6" Status="Passing" />
+  <Test Name="mooneye-gb\acceptance\oam_dma_timing.gb" FrameCount="349" Hash="aa0f695b363ceb188d105f2be2c78292" Status="Passing" />
+  <Test Name="mooneye-gb\acceptance\pop_timing.gb" FrameCount="346" Hash="691fff6a2c3f48397b4a614835bf983a" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\push_timing.gb" FrameCount="349" Hash="17f70c8d13463299a3d12f6dfe4e41ef" Status="Passing" />
+  <Test Name="mooneye-gb\acceptance\rapid_di_ei.gb" FrameCount="346" Hash="05af0cb84f018477d4e4bbb0a60c4938" Status="Passing" />
+  <Test Name="mooneye-gb\acceptance\reti_intr_timing.gb" FrameCount="346" Hash="77d785876767d6d3077d1883179f7b83" Status="Passing" />
+  <Test Name="mooneye-gb\acceptance\reti_timing.gb" FrameCount="350" Hash="5c4494d36191cf0824fe220f776b0231" Status="Passing" />
+  <Test Name="mooneye-gb\acceptance\ret_cc_timing.gb" FrameCount="350" Hash="9cf4bd6c85e8e2cac9c38819633e1dd6" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\ret_timing.gb" FrameCount="350" Hash="5c4494d36191cf0824fe220f776b0231" Status="Passing" />
+  <Test Name="mooneye-gb\acceptance\rst_timing.gb" FrameCount="349" Hash="26e965e35223dcbb6812d431c6a1b3d9" Status="Passing" />
+  <Test Name="mooneye-gb\acceptance\bits\mem_oam.gb" FrameCount="346" Hash="5c4494d36191cf0824fe220f776b0231" Status="Passing" />
+  <Test Name="mooneye-gb\acceptance\bits\reg_f.gb" FrameCount="346" Hash="13c9e4a764a78f3226ac9dcd14e2eb90" Status="Passing" />
+  <Test Name="mooneye-gb\acceptance\bits\unused_hwio-GS.gb" FrameCount="346" Hash="53abb3ae7048f0e197abe4984f5e8dcc" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\gpu\hblank_ly_scx_timing-GS.gb" FrameCount="349" Hash="a1f255aca3007605c860bc88782b4fff" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\gpu\intr_1_2_timing-GS.gb" FrameCount="349" Hash="e519068fcef8a582b97548aee3f347dc" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\gpu\intr_2_0_timing.gb" FrameCount="348" Hash="37675cfdb76bec4026494c1ed6803ef1" Status="Passing" />
+  <Test Name="mooneye-gb\acceptance\gpu\intr_2_mode0_timing.gb" FrameCount="348" Hash="fb4e7370460be13672510d7549802932" Status="Passing" />
+  <Test Name="mooneye-gb\acceptance\gpu\intr_2_mode0_timing_sprites.gb" FrameCount="356" Hash="842c9f2f94a8f4ba29044bf15ec936d8" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\gpu\intr_2_mode3_timing.gb" FrameCount="348" Hash="f8c89473a1e5aa9b3678230fa0bb0e88" Status="Passing" />
+  <Test Name="mooneye-gb\acceptance\gpu\intr_2_oam_ok_timing.gb" FrameCount="348" Hash="897fbc7a621c811034e9fea300f48575" Status="Passing" />
+  <Test Name="mooneye-gb\acceptance\gpu\lcdon_timing-dmgABCXmgbS.gb" FrameCount="354" Hash="1a724308df45a63d80da983c159660b8" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\gpu\lcdon_write_timing-GS.gb" FrameCount="371" Hash="5bb13e5132a0b6f9aba46e2ad4ff5d6e" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\gpu\stat_irq_blocking.gb" FrameCount="347" Hash="08adac912a7e3a7055114100f4b83aad" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\gpu\vblank_stat_intr-GS.gb" FrameCount="354" Hash="dbffa8dc60028f457677544bc5e42d2d" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\serial\boot_sclk_align-dmgABCXmgb.gb" FrameCount="346" Hash="70afa457d4db4f8ff85ffd9aad8820a8" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\timer\div_write.gb" FrameCount="346" Hash="af158cbe657089f210821e8874dd68a9" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\timer\rapid_toggle.gb" FrameCount="346" Hash="5bc15452c17d83f4a2b839b9b66c2e85" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\timer\tim00.gb" FrameCount="346" Hash="2117dac2ff173d398078cc7946af3e5c" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\timer\tim00_div_trigger.gb" FrameCount="346" Hash="eacb98eee39911aebf1b004d7fd81a5c" Status="Passing" />
+  <Test Name="mooneye-gb\acceptance\timer\tim01.gb" FrameCount="346" Hash="d252e733414f41501dd17aeb45afecab" Status="Passing" />
+  <Test Name="mooneye-gb\acceptance\timer\tim01_div_trigger.gb" FrameCount="346" Hash="9e6a05244a713d35088644877cc729c1" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\timer\tim10.gb" FrameCount="346" Hash="2117dac2ff173d398078cc7946af3e5c" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\timer\tim10_div_trigger.gb" FrameCount="346" Hash="ed9c5f408c4623aa505b01921e6954f0" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\timer\tim11.gb" FrameCount="346" Hash="2117dac2ff173d398078cc7946af3e5c" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\timer\tim11_div_trigger.gb" FrameCount="346" Hash="eacb98eee39911aebf1b004d7fd81a5c" Status="Passing" />
+  <Test Name="mooneye-gb\acceptance\timer\tima_reload.gb" FrameCount="346" Hash="08f4d69cf1650a88cbf1f9552fe5172c" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\timer\tima_write_reloading.gb" FrameCount="346" Hash="7963fe0cc1d853098d1f35f64840dfe5" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\timer\tma_write_reloading.gb" FrameCount="346" Hash="89e5390f14f6ebd6691787a106b039ab" Status="Failing" />
+  <Test Name="mooneye-gb\emulator-only\mbc1\multicart_rom_8Mb.gb" FrameCount="347" Hash="c3d29ac582d81d0dd3aca8d684b031bc" Status="Failing" />
+  <Test Name="mooneye-gb\emulator-only\mbc1\ram_256Kb.gb" FrameCount="0" Hash="" Status="Failing" />
+  <Test Name="mooneye-gb\emulator-only\mbc1\ram_64Kb.gb" FrameCount="0" Hash="" Status="Failing" />
+  <Test Name="mooneye-gb\emulator-only\mbc1\rom_16Mb.gb" FrameCount="348" Hash="d2b63238a9578e864e7b7058d5f4da84" Status="Failing" />
+  <Test Name="mooneye-gb\emulator-only\mbc1\rom_1Mb.gb" FrameCount="0" Hash="" Status="Failing" />
+  <Test Name="mooneye-gb\emulator-only\mbc1\rom_2Mb.gb" FrameCount="0" Hash="" Status="Failing" />
+  <Test Name="mooneye-gb\emulator-only\mbc1\rom_4Mb.gb" FrameCount="0" Hash="" Status="Failing" />
+  <Test Name="mooneye-gb\emulator-only\mbc1\rom_512Kb.gb" FrameCount="0" Hash="" Status="Failing" />
+  <Test Name="mooneye-gb\emulator-only\mbc1\rom_8Mb.gb" FrameCount="0" Hash="" Status="Failing" />
+  <Test Name="mooneye-gb\manual-only\sprite_priority.gb" FrameCount="346" Hash="81dbd552dd95977c4edf6c747040758d" Status="Passing" />
+  <Test Name="mooneye-gb\misc\boot_hwio-C.gb" FrameCount="346" Hash="6b3ccf3c188c55c08ebab93a9492577f" Status="Failing" />
+  <Test Name="mooneye-gb\misc\boot_regs-A.gb" FrameCount="346" Hash="ed713841e857e0eb27c2f1db9dfb0bf7" Status="Failing" />
+  <Test Name="mooneye-gb\misc\boot_regs-cgb.gb" FrameCount="346" Hash="ecb966f78981b6982e762642c039a1e9" Status="Failing" />
+  <Test Name="mooneye-gb\misc\bits\unused_hwio-C.gb" FrameCount="346" Hash="53abb3ae7048f0e197abe4984f5e8dcc" Status="Failing" />
+  <Test Name="mooneye-gb\misc\gpu\vblank_stat_intr-C.gb" FrameCount="354" Hash="dbffa8dc60028f457677544bc5e42d2d" Status="Failing" />
+</Tests>
