@@ -9,23 +9,18 @@ namespace elbgb_core
     public abstract class ClockedComponent
     {
         protected GameBoy _gb;
+        private SystemClock _clock;
         protected ulong _lastUpdate;
 
         public ClockedComponent(GameBoy gameBoy)
         {
             _gb = gameBoy;
+            _clock = gameBoy.Clock;
         }
 
         public void SynchroniseWithSystemClock()
         {
-            // if we're up to date with the current timestamp there
-            // is nothing for us to do
-            if (_lastUpdate == _gb.Clock.Timestamp)
-            {
-                return;
-            }
-
-            ulong timestamp = _gb.Clock.Timestamp;
+            ulong timestamp = _clock.Timestamp;
             uint cyclesToUpdate = (uint)(timestamp - _lastUpdate);
             _lastUpdate = timestamp;
 
