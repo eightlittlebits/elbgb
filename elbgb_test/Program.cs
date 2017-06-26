@@ -117,13 +117,13 @@ namespace elbgb_test
             else
                 results = tests.Where(x => x.Status != x.Result);
 
-            if (resultInconclusive > 0)
+            if (results.Count(x => x.Result == TestStatus.Inconclusive) > 0)
                 PrintResults(results, TestStatus.Inconclusive, ConsoleColor.Gray);
 
-            if (resultFailing > 0)
+            if (results.Count(x => x.Result == TestStatus.Failing) > 0)
                 PrintResults(results, TestStatus.Failing, ConsoleColor.Red);
 
-            if (resultPassing > 0)
+            if (results.Count(x => x.Result == TestStatus.Passing) > 0)
                 PrintResults(results, TestStatus.Passing, ConsoleColor.Green);
 
             int diffPassing = resultPassing - initialPassing;
@@ -135,7 +135,7 @@ namespace elbgb_test
             Console.WriteLine($"\tFailing:\t{resultFailing} ({diffFailing:+#;-#;0})");
             Console.WriteLine($"\tPassing:\t{resultPassing} ({diffPassing:+#;-#;0})");
 
-            SaveTestManifest(manifestPath, tests);
+            //SaveTestManifest(manifestPath, tests);
 
             if (Debugger.IsAttached)
                 Console.ReadLine();
