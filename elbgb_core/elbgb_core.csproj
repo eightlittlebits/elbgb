@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IInputSource.cs" />
     <Compile Include="Memory\BootRom.cs" />
     <Compile Include="ClockedComponent.cs" />
     <Compile Include="CPU\LR35902.cs" />
@@ -50,7 +51,6 @@
     <Compile Include="CPU\StatusFlags.cs" />
     <Compile Include="GameBoy.cs" />
     <Compile Include="GBCoreInput.cs" />
-    <Compile Include="GBCoreInterface.cs" />
     <Compile Include="IMemoryMappedComponent.cs" />
     <Compile Include="InputController.cs" />
     <Compile Include="Interrupt.cs" />

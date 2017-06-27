@@ -6,16 +6,14 @@ using System.Threading.Tasks;
 
 namespace elbgb_core
 {
-    public abstract class ClockedComponent
+    abstract class ClockedComponent
     {
-        protected GameBoy _gb;
         private SystemClock _clock;
-        protected ulong _lastUpdate;
+        private ulong _lastUpdate;
 
-        public ClockedComponent(GameBoy gameBoy)
+        public ClockedComponent(SystemClock clock)
         {
-            _gb = gameBoy;
-            _clock = gameBoy.Clock;
+            _clock = clock;
         }
 
         public void SynchroniseWithSystemClock()

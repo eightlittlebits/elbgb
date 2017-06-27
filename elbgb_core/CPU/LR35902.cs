@@ -7,9 +7,11 @@ namespace elbgb_core.CPU
     using static Interrupt;
     using static StatusFlags;
 
-    public class LR35902
+    class LR35902
     {
-        private GameBoy _gb;
+        private SystemClock _clock;
+        private Interconnect _interconnect;
+        private InterruptController _interruptController;
 
         private Registers _r;   // general purpose registers
         private ushort _pc;     // program counter
@@ -20,9 +22,12 @@ namespace elbgb_core.CPU
         private bool _haltBug;
         private bool _enableInterrupts;
 
-        public LR35902(GameBoy gameBoy)
+        public LR35902(SystemClock clock, Interconnect interconnect, InterruptController interruptController)
         {
-            _gb = gameBoy;
+            _clock = clock;
+            _interconnect = interconnect;
+            _interruptController = interruptController;
+
             _r = new Registers();
         }
 
@@ -30,8 +35,8 @@ namespace elbgb_core.CPU
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private byte ReadByte(ushort address)
         {
-            byte value = _gb.Interconnect.ReadByte(address);
-            _gb.Clock.AddMachineCycle();
+            byte value = _interconnect.ReadByte(address);
+            _clock.AddMachineCycle();
 
             return value;
         }
@@ -49,8 +54,8 @@ namespace elbgb_core.CPU
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void WriteByte(ushort address, byte value)
         {
-            _gb.Interconnect.WriteByte(address, value);
-            _gb.Clock.AddMachineCycle();
+            _interconnect.WriteByte(address, value);
+            _clock.AddMachineCycle();
         }
 
         #region stack handling
@@ -97,8 +102,8 @@ namespace elbgb_core.CPU
                 return;
             }
 
-            int interruptFlag = _gb.InterruptController.IF;
-            int interruptEnable = _gb.InterruptController.IE;
+            int interruptFlag = _interruptController.IF;
+            int interruptEnable = _interruptController.IE;
 
             // bitwise and of the enable flag and the interrupt flag will only leave any bits set
             // if the interrupt has been requested and the interrupt is enabled
@@ -123,13 +128,13 @@ namespace elbgb_core.CPU
                     // the push of the PC
 
                     // 3 wait cycles
-                    _gb.Clock.AddMachineCycles(3);
+                    _clock.AddMachineCycles(3);
 
                     // disable interrupts
                     _ime = false;
 
                     // clear the interrupt flag
-                    _gb.InterruptController.IF = (byte)(interruptFlag & ~interrupt);
+                    _interruptController.IF = (byte)(interruptFlag & ~interrupt);
 
                     // push current PC to stack - 2 cycles
                     PushWord(_pc);
@@ -153,7 +158,7 @@ namespace elbgb_core.CPU
 
             if (_halted)
             {
-                _gb.Clock.AddMachineCycle();
+                _clock.AddMachineCycle();
             }
             // were interrupts disabled on HALT, triggering the halt bug?
             else if (_haltBug)
@@ -305,13 +310,13 @@ namespace elbgb_core.CPU
                 case 0x31: _sp = ReadWord(_pc); _pc += 2; break; // LD SP,nn
 
                 // load the contents of register pair HL in stack pointer SP
-                case 0xF9: _sp = _r.HL; _gb.Clock.AddMachineCycle(); break; // LD SP,HL
+                case 0xF9: _sp = _r.HL; _clock.AddMachineCycle(); break; // LD SP,HL
 
                 // push contents of register pair onto the stack
-                case 0xC5: _gb.Clock.AddMachineCycle(); PushWord(_r.BC); break; // PUSH BC
-                case 0xD5: _gb.Clock.AddMachineCycle(); PushWord(_r.DE); break; // PUSH DE
-                case 0xE5: _gb.Clock.AddMachineCycle(); PushWord(_r.HL); break; // PUSH HL
-                case 0xF5: _gb.Clock.AddMachineCycle(); PushWord((ushort)(_r.AF & 0xFFF0)); break; // PUSH AF
+                case 0xC5: _clock.AddMachineCycle(); PushWord(_r.BC); break; // PUSH BC
+                case 0xD5: _clock.AddMachineCycle(); PushWord(_r.DE); break; // PUSH DE
+                case 0xE5: _clock.AddMachineCycle(); PushWord(_r.HL); break; // PUSH HL
+                case 0xF5: _clock.AddMachineCycle(); PushWord((ushort)(_r.AF & 0xFFF0)); break; // PUSH AF
 
                 // pop contents of stack into register pair
                 case 0xC1: _r.BC = PopWord(); break; // POP BC
@@ -336,7 +341,7 @@ namespace elbgb_core.CPU
 
                         _r.HL = (ushort)(_sp + e);
 
-                        _gb.Clock.AddMachineCycle();
+                        _clock.AddMachineCycle();
                     } break;
 
                 // store the lower byte of SP at address nn specified by the 16-bit immediate operand nn
@@ -456,10 +461,10 @@ namespace elbgb_core.CPU
 
                 #region 16-bit arithmetic operation instructions
 
-                case 0x09: _r.HL = Add16Bit(_r.HL, _r.BC); _gb.Clock.AddMachineCycle(); break; // ADD HL,BC
-                case 0x19: _r.HL = Add16Bit(_r.HL, _r.DE); _gb.Clock.AddMachineCycle(); break; // ADD HL,DE
-                case 0x29: _r.HL = Add16Bit(_r.HL, _r.HL); _gb.Clock.AddMachineCycle(); break; // ADD HL,HL
-                case 0x39: _r.HL = Add16Bit(_r.HL, _sp); _gb.Clock.AddMachineCycle(); break; // ADD HL,SP
+                case 0x09: _r.HL = Add16Bit(_r.HL, _r.BC); _clock.AddMachineCycle(); break; // ADD HL,BC
+                case 0x19: _r.HL = Add16Bit(_r.HL, _r.DE); _clock.AddMachineCycle(); break; // ADD HL,DE
+                case 0x29: _r.HL = Add16Bit(_r.HL, _r.HL); _clock.AddMachineCycle(); break; // ADD HL,HL
+                case 0x39: _r.HL = Add16Bit(_r.HL, _sp); _clock.AddMachineCycle(); break; // ADD HL,SP
 
                 case 0xE8: // ADD SP,e
                     {
@@ -475,18 +480,18 @@ namespace elbgb_core.CPU
 
                         _sp = (ushort)(_sp + e);
 
-                        _gb.Clock.AddMachineCycles(2);
+                        _clock.AddMachineCycles(2);
                     } break;
 
-                case 0x03: _r.BC++; _gb.Clock.AddMachineCycle(); break; // INC BC
-                case 0x13: _r.DE++; _gb.Clock.AddMachineCycle(); break; // INC DE
-                case 0x23: _r.HL++; _gb.Clock.AddMachineCycle(); break; // INC HL
-                case 0x33: _sp++; _gb.Clock.AddMachineCycle(); break; // INC SP
+                case 0x03: _r.BC++; _clock.AddMachineCycle(); break; // INC BC
+                case 0x13: _r.DE++; _clock.AddMachineCycle(); break; // INC DE
+                case 0x23: _r.HL++; _clock.AddMachineCycle(); break; // INC HL
+                case 0x33: _sp++; _clock.AddMachineCycle(); break; // INC SP
 
-                case 0x0B: _r.BC--; _gb.Clock.AddMachineCycle(); break; // DEC BC
-                case 0x1B: _r.DE--; _gb.Clock.AddMachineCycle(); break; // DEC DE
-                case 0x2B: _r.HL--; _gb.Clock.AddMachineCycle(); break; // DEC HL
-                case 0x3B: _sp--; _gb.Clock.AddMachineCycle(); break; // DEC SP
+                case 0x0B: _r.BC--; _clock.AddMachineCycle(); break; // DEC BC
+                case 0x1B: _r.DE--; _clock.AddMachineCycle(); break; // DEC DE
+                case 0x2B: _r.HL--; _clock.AddMachineCycle(); break; // DEC HL
+                case 0x3B: _sp--; _clock.AddMachineCycle(); break; // DEC SP
 
                 #endregion
 
@@ -909,7 +914,7 @@ namespace elbgb_core.CPU
             ushort address = ReadWord(_pc);
             
             _pc = address;
-            _gb.Clock.AddMachineCycle();
+            _clock.AddMachineCycle();
         }
 
         private void JumpImmediate(bool condition)
@@ -919,7 +924,7 @@ namespace elbgb_core.CPU
             if (condition)
             {
                 _pc = address;
-                _gb.Clock.AddMachineCycle();
+                _clock.AddMachineCycle();
             }
             else
             {
@@ -933,7 +938,7 @@ namespace elbgb_core.CPU
             sbyte offset = (sbyte)ReadByte(_pc++);
 
             _pc += (ushort)offset;
-            _gb.Clock.AddMachineCycle();
+            _clock.AddMachineCycle();
         }
 
         private void JumpRelative(bool condition)
@@ -943,7 +948,7 @@ namespace elbgb_core.CPU
             if (condition)
             {
                 _pc += (ushort)offset;
-                _gb.Clock.AddMachineCycle();
+                _clock.AddMachineCycle();
             }
         }
 
@@ -956,7 +961,7 @@ namespace elbgb_core.CPU
             ushort address = ReadWord(_pc);
             _pc += 2;
 
-            _gb.Clock.AddMachineCycle();
+            _clock.AddMachineCycle();
 
             PushWord(_pc);
             _pc = address;
@@ -969,7 +974,7 @@ namespace elbgb_core.CPU
 
             if (condition)
             {
-                _gb.Clock.AddMachineCycle();
+                _clock.AddMachineCycle();
 
                 PushWord(_pc);
                 _pc = address;
@@ -979,7 +984,7 @@ namespace elbgb_core.CPU
         private void Return()
         {
             _pc = PopWord();
-            _gb.Clock.AddMachineCycle();
+            _clock.AddMachineCycle();
         }
 
         private void Return(bool condition)
@@ -987,15 +992,15 @@ namespace elbgb_core.CPU
             if (condition)
             {
                 _pc = PopWord();
-                _gb.Clock.AddMachineCycle();
+                _clock.AddMachineCycle();
             }
 
-            _gb.Clock.AddMachineCycle();
+            _clock.AddMachineCycle();
         }
 
         private void Reset(byte resetAddress)
         {
-            _gb.Clock.AddMachineCycle();
+            _clock.AddMachineCycle();
 
             PushWord(_pc);
 
@@ -1460,8 +1465,8 @@ namespace elbgb_core.CPU
 
         private void Halt()
         {
-            int interruptFlag = _gb.InterruptController.IF;
-            int interruptEnable = _gb.InterruptController.IE;
+            int interruptFlag = _interruptController.IF;
+            int interruptEnable = _interruptController.IE;
 
             // if interrupts are disabled and there is a pending interrupt
             // the next instruction executed does not increment PC as part of

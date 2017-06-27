@@ -216,7 +216,7 @@ namespace elbgb_test
             Dictionary<string, int> frameHash = new Dictionary<string, int>();
 
             var framesink = new TestVideoFrameSink();
-            var gameboy = new GameBoy(framesink);
+            var gameboy = new GameBoy(framesink, new NullInputSource());
 
             string testPath = Path.Combine(testPathRoot, testName);
 
@@ -243,6 +243,14 @@ namespace elbgb_test
 
             hash = framesink.HashFrame();
             return (frameHash[hash], hash);
+        }
+    }
+
+    class NullInputSource : IInputSource
+    {
+        public GBCoreInput PollInput()
+        {
+            return default(GBCoreInput);
         }
     }
 }

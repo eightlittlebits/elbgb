@@ -17,8 +17,8 @@ namespace elbgb_core.Memory.Mappers
         private bool _hasRam;
         private byte[] _ram;
 
-        public MBC1(GameBoy gameBoy, CartridgeHeader header, byte[] romData)
-            : base(gameBoy, header, romData)
+        public MBC1(Interconnect interconnect, CartridgeHeader header, byte[] romData)
+            : base(interconnect, header, romData)
         {
             _ramEnabled = false;
             _romBank = 1;

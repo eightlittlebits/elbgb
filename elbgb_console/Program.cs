@@ -19,6 +19,14 @@ namespace elbgb_console
             }
         }
 
+        class NullInputSource : IInputSource
+        {
+            public GBCoreInput PollInput()
+            {
+                return default(GBCoreInput);
+            }
+        }
+
         static void Main(string[] args)
         {
             string romPath = args[0];
@@ -45,7 +53,7 @@ namespace elbgb_console
 
             byte[] rom = File.ReadAllBytes(romPath);
 
-            GameBoy gb = new GameBoy(new NullVideoSink());
+            GameBoy gb = new GameBoy(new NullVideoSink(), new NullInputSource());
 
             //gb.Interface.SerialTransferComplete = OutputSerialValue;
 

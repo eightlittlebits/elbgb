@@ -13,7 +13,7 @@ using elbgb_core;
 
 namespace elbgb_ui
 {
-    public partial class MainForm : Form
+    public partial class MainForm : Form, IInputSource
     {
         private GameBoy _gameBoy;
 
@@ -57,9 +57,7 @@ namespace elbgb_ui
             BuildPaletteMenu("greyscale");
 
             _renderer = new GdiRenderer(ScreenWidth, ScreenHeight, displayPanel, _palettes["greyscale"]);
-            _gameBoy = new GameBoy(_renderer);
-
-            _gameBoy.Interface.PollInput = ReturnInputState;
+            _gameBoy = new GameBoy(_renderer, this);
 
             string romPath = @"roms\Legend of Zelda, The - Link's Awakening (U) (V1.2) [!].gb";
             _gameBoy.LoadRom(File.ReadAllBytes(romPath));
@@ -108,7 +106,7 @@ namespace elbgb_ui
             _renderer.Dispose();
         }
 
-        private GBCoreInput ReturnInputState()
+        public GBCoreInput PollInput()
         {
             return _inputState;
         }

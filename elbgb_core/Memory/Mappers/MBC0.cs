@@ -10,8 +10,8 @@ namespace elbgb_core.Memory.Mappers
 {
     class MBC0 : Cartridge
     {
-        public MBC0(GameBoy gameBoy, CartridgeHeader header, byte[] romData)
-            : base(gameBoy, header, romData)
+        public MBC0(Interconnect interconnect, CartridgeHeader header, byte[] romData)
+            : base(interconnect, header, romData)
         {
 
         }

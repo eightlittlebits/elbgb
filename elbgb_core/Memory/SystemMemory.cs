@@ -11,12 +11,12 @@ namespace elbgb_core.Memory
         private byte[] _wram = new byte[0x2000];
         private byte[] _hram = new byte[0x7F];
 
-        public SystemMemory(GameBoy gameBoy)
+        public SystemMemory(Interconnect interconnect)
         {
-            gameBoy.Interconnect.AddAddressHandler(0xC000, 0xDFFF, this); // wram
-            gameBoy.Interconnect.AddAddressHandler(0xE000, 0xFDFF, this); // wram mirror
-            gameBoy.Interconnect.AddAddressHandler(0xFEA0, 0xFEFF, this); // restricted
-            gameBoy.Interconnect.AddAddressHandler(0xFF80, 0xFFFE, this); // hram
+            interconnect.AddAddressHandler(0xC000, 0xDFFF, this); // wram
+            interconnect.AddAddressHandler(0xE000, 0xFDFF, this); // wram mirror
+            interconnect.AddAddressHandler(0xFEA0, 0xFEFF, this); // restricted
+            interconnect.AddAddressHandler(0xFF80, 0xFFFE, this); // hram
         }
 
         public byte ReadByte(ushort address)

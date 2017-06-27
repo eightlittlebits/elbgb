@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using elbgb_core.Memory;
 
 namespace elbgb_core
 {
-    public class LCDController : ClockedComponent, IMemoryMappedComponent
+    class LCDController : ClockedComponent, IMemoryMappedComponent
     {
         public static class Registers
         {
@@ -73,6 +74,9 @@ namespace elbgb_core
             public bool OamAvailable => Address == 0x00;
         }
 
+        private Interconnect _interconnect;
+        private InterruptController _interruptController;
+
         private IVideoFrameSink _frameSink;
 
         private const int ScreenWidth = 160;
@@ -121,15 +125,17 @@ namespace elbgb_core
         private uint _frameClock;                   // counter of clock cycles elapsed in the current frame
         private uint _vblankClock;                  // counter of clock cycles elapsed in current scanline in vblank
 
-        public LCDController(GameBoy gameBoy, IVideoFrameSink frameSink)
-            : base(gameBoy)
+        public LCDController(SystemClock clock, Interconnect interconnect, InterruptController interruptController, IVideoFrameSink frameSink)
+            : base(clock)
         {
-            gameBoy.Interconnect.AddAddressHandler(0xFF40, 0xFF4B, this); // control registers
-            gameBoy.Interconnect.AddAddressHandler(0x8000, 0x9FFF, this); // vram
-            gameBoy.Interconnect.AddAddressHandler(0xFE00, 0xFE9F, this); // oam
-
+            _interconnect = interconnect;
+            _interruptController = interruptController;
             _frameSink = frameSink;
 
+            _interconnect.AddAddressHandler(0xFF40, 0xFF4B, this); // control registers
+            _interconnect.AddAddressHandler(0x8000, 0x9FFF, this); // vram
+            _interconnect.AddAddressHandler(0xFE00, 0xFE9F, this); // oam
+            
             _screenData = new byte[ScreenWidth * ScreenHeight];
 
             _vram = new byte[0x2000];
@@ -387,7 +393,7 @@ namespace elbgb_core
                 _lcdStatus |= 0x04;
 
                 // if the LYC = LY interrupt selection is set then raise the interrupt
-                if ((_lcdStatus & 0x40) == 0x40) _gb.InterruptController.RequestInterrupt(Interrupt.LCDCStatus);
+                if ((_lcdStatus & 0x40) == 0x40) _interruptController.RequestInterrupt(Interrupt.LCDCStatus);
             }
             else
             {
@@ -431,7 +437,7 @@ namespace elbgb_core
                         _lcdMode = LcdMode.OamRead;
 
                         // raise OAM stat interrupt if requested
-                        if ((_lcdStatus & 0x20) == 0x20) _gb.InterruptController.RequestInterrupt(Interrupt.LCDCStatus);
+                        if ((_lcdStatus & 0x20) == 0x20) _interruptController.RequestInterrupt(Interrupt.LCDCStatus);
                     }
                 }
                 // Mode 3 - OAM and VRAM read, 162-175 cycles of frame
@@ -450,7 +456,7 @@ namespace elbgb_core
                         _lcdMode = LcdMode.HBlank;
 
                         // raise hblank stat interrupt if requested
-                        if ((_lcdStatus & 0x08) == 0x08) _gb.InterruptController.RequestInterrupt(Interrupt.LCDCStatus);
+                        if ((_lcdStatus & 0x08) == 0x08) _interruptController.RequestInterrupt(Interrupt.LCDCStatus);
 
                         RenderScanline();
                     }
@@ -471,10 +477,10 @@ namespace elbgb_core
                     _vblankClock = _frameClock - 65664;
 
                     // raise vblank stat interrupt if requested
-                    if ((_lcdStatus & 0x10) == 0x10) _gb.InterruptController.RequestInterrupt(Interrupt.LCDCStatus);
+                    if ((_lcdStatus & 0x10) == 0x10) _interruptController.RequestInterrupt(Interrupt.LCDCStatus);
 
                     // raise vblank interrupt
-                    _gb.InterruptController.RequestInterrupt(Interrupt.VBlank);
+                    _interruptController.RequestInterrupt(Interrupt.VBlank);
 
                     //DEBUG_DumpVramTiles();
 
@@ -531,7 +537,7 @@ namespace elbgb_core
                         }
 
                         // calculate address from source and current address
-                        _oam[_oamDma.Address] = _gb.Interconnect.ReadByte((ushort)(_oamDma.Source | _oamDma.Address));
+                        _oam[_oamDma.Address] = _interconnect.ReadByte((ushort)(_oamDma.Source | _oamDma.Address));
                         _oamDma.Address += 1;
                         break;
 

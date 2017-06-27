@@ -2,23 +2,26 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using elbgb_core.Memory;
 
 namespace elbgb_core
 {
-    public class InputController : IMemoryMappedComponent
+    class InputController : IMemoryMappedComponent
     {
-        private GameBoy _gb;
+        private InterruptController _interruptController;
+        private IInputSource _inputSource;
 
         private GBCoreInput _inputState;
 
         private bool _p14;
         private bool _p15;
 
-        public InputController(GameBoy gameBoy)
+        public InputController(Interconnect interconnect, InterruptController interruptController, IInputSource inputSource)
         {
-            gameBoy.Interconnect.AddAddressHandler(0xFF00, this);
+            _interruptController = interruptController;
+            _inputSource = inputSource;
 
-            _gb = gameBoy;
+            interconnect.AddAddressHandler(0xFF00, this);
         }
 
         public byte ReadByte(ushort address)
@@ -26,13 +29,13 @@ namespace elbgb_core
             if (address == 0xFF00)
             {
                 // request latest input from interface
-                GBCoreInput newInputState = _gb.Interface.PollInput();
+                GBCoreInput newInputState = _inputSource.PollInput();
 
                 // check to see if a button is pressed in this input state
                 // that was not pressed the previous state, if so, raise the
                 // input interrupt
                 if (ButtonPressed(_inputState, newInputState))
-                    _gb.InterruptController.RequestInterrupt(Interrupt.Input);
+                    _interruptController.RequestInterrupt(Interrupt.Input);
 
                 _inputState = newInputState;
 

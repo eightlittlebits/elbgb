@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using elbgb_core.Memory;
 
 namespace elbgb_core
 {
-    public class Timer : ClockedComponent, IMemoryMappedComponent
+    class Timer : ClockedComponent, IMemoryMappedComponent
     {
         public static class Registers
         {
@@ -15,6 +16,8 @@ namespace elbgb_core
             public const ushort TMA  = 0xFF06;
             public const ushort TAC  = 0xFF07;
         }
+
+        private InterruptController _interruptController;
 
         // divider
         private ushort _divider;
@@ -26,11 +29,13 @@ namespace elbgb_core
         private uint _timerCounter;
 
         private byte _tima, _tma, _tac;
-        
-        public Timer(GameBoy gameBoy)
-            : base(gameBoy)
+
+        public Timer(SystemClock clock, Interconnect interconnect, InterruptController interruptController)
+            : base(clock)
         {
-            gameBoy.Interconnect.AddAddressHandler(0xFF04, 0xFF07, this);
+            _interruptController = interruptController;
+
+            interconnect.AddAddressHandler(0xFF04, 0xFF07, this);
         }
 
         public byte ReadByte(ushort address)
@@ -132,7 +137,7 @@ namespace elbgb_core
                     {
                         _tima = _tma;
 
-                        _gb.InterruptController.RequestInterrupt(Interrupt.TimerOverflow);
+                        _interruptController.RequestInterrupt(Interrupt.TimerOverflow);
                     }
                 }
             }

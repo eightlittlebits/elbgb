@@ -9,8 +9,8 @@ namespace elbgb_core.Memory
 {
     class NullCartridge : Cartridge
     {
-        public NullCartridge(GameBoy gameBoy, CartridgeHeader header, byte[] romData)
-            : base(gameBoy, header, romData)
+        public NullCartridge(Interconnect interconnect, CartridgeHeader header, byte[] romData)
+            : base(interconnect, header, romData)
         {
 
         }

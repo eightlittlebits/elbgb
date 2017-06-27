@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using elbgb_core.Memory;
 
 namespace elbgb_core
 {
-    public class SerialCommunicationController : ClockedComponent, IMemoryMappedComponent
+    class SerialCommunicationController : ClockedComponent, IMemoryMappedComponent
     {
         public static class Registers
         {
@@ -15,6 +16,8 @@ namespace elbgb_core
         }
 
         private const byte SerialControlMask = 0x7E;
+
+        private InterruptController _interruptController;
 
         private readonly uint _internalShiftClockInterval;
         private bool _internalClock;
@@ -27,10 +30,12 @@ namespace elbgb_core
         private byte _serialData;
         private byte _serialControl;
         
-        public SerialCommunicationController(GameBoy gameBoy)
-            : base(gameBoy)
+        public SerialCommunicationController(SystemClock clock, Interconnect interconnect, InterruptController interruptController)
+            : base(clock)
         {
-            gameBoy.Interconnect.AddAddressHandler(0xFF01, 0xFF02, this);
+            _interruptController = interruptController;
+
+            interconnect.AddAddressHandler(0xFF01, 0xFF02, this);
 
             // internal shift clock is 8192Hz 
             _internalShiftClockInterval = SystemClock.ClockFrequency / 8192;
@@ -57,9 +62,9 @@ namespace elbgb_core
                         _transferRunning = false;
                         _serialControl &= 0x7F;
 
-                        _gb.Interface.SerialTransferComplete(_serialData);
+                        // TODO(david): Work out how to signal a complete transfer externally
 
-                        _gb.InterruptController.RequestInterrupt(Interrupt.SerialIOComplete);
+                        _interruptController.RequestInterrupt(Interrupt.SerialIOComplete);
                     }
                 }
             }

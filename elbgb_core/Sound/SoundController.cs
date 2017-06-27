@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using elbgb_core.Memory;
 
 namespace elbgb_core.Sound
 {
-    public class SoundController : ClockedComponent, IMemoryMappedComponent
+    class SoundController : ClockedComponent, IMemoryMappedComponent
     {
         public static class Registers
         {
@@ -37,8 +38,8 @@ namespace elbgb_core.Sound
             public const ushort NR52 = 0xFF26;
         }
 
-        public SoundController(GameBoy gameBoy)
-            : base(gameBoy)
+        public SoundController(SystemClock clock, Interconnect interconnect)
+            : base(clock)
         {
 
         }

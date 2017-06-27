@@ -15,10 +15,10 @@ namespace elbgb_core
             public const ushort IE = 0xFFFF;
         }
 
-        public InterruptController(GameBoy gameBoy)
+        public InterruptController(Interconnect interconnect)
         {
-            gameBoy.Interconnect.AddAddressHandler(Registers.IF, this);
-            gameBoy.Interconnect.AddAddressHandler(Registers.IE, this);
+            interconnect.AddAddressHandler(Registers.IF, this);
+            interconnect.AddAddressHandler(Registers.IE, this);
         }
 
         public byte IF;

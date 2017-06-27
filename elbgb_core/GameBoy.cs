@@ -11,11 +11,9 @@ namespace elbgb_core
 {
     public class GameBoy
     {
-        public GBCoreInterface Interface;
-
         internal Interconnect Interconnect;
 
-        private SystemMemory _memory;
+        internal SystemMemory Memory;
 
         internal SystemClock Clock;
         internal InterruptController InterruptController;
@@ -27,37 +25,30 @@ namespace elbgb_core
         internal SerialCommunicationController SerialIO;
 
         public Cartridge Cartridge;
-        
-        public GameBoy(IVideoFrameSink frameSink)
-        {
-            // default to an null interface, implementation by front ends is optional
-            Interface = new GBCoreInterface
-                {
-                    PollInput = () => default(GBCoreInput),                    
-                    SerialTransferComplete = serialData => { },
-                };
 
+        public GameBoy(IVideoFrameSink frameSink, IInputSource inputSource)
+        {
             Clock = new SystemClock();
             Interconnect = new Interconnect();
 
             Interconnect.AddAddressHandler(0x0000, 0x00FF, new BootRom());
-            _memory = new SystemMemory(this);
-                        
-            InterruptController = new InterruptController(this);
+            Memory = new SystemMemory(Interconnect);
 
-            CPU = new LR35902(this);
-            Timer = new Timer(this);
-            LCD = new LCDController(this, frameSink);
-            PSG = new SoundController(this);
-            Input = new InputController(this);
-            SerialIO = new SerialCommunicationController(this);
+            InterruptController = new InterruptController(Interconnect);
 
-            Cartridge = Cartridge.LoadRom(this, null);
+            CPU = new LR35902(Clock, Interconnect, InterruptController);
+            Timer = new Timer(Clock, Interconnect, InterruptController);
+            SerialIO = new SerialCommunicationController(Clock, Interconnect, InterruptController);
+            LCD = new LCDController(Clock, Interconnect, InterruptController, frameSink);
+            PSG = new SoundController(Clock, Interconnect);
+            Input = new InputController(Interconnect, InterruptController, inputSource);
+
+            Cartridge = Cartridge.LoadRom(Interconnect, null);
         }
 
         public void LoadRom(byte[] romData)
         {
-            Cartridge = Cartridge.LoadRom(this, romData);
+            Cartridge = Cartridge.LoadRom(Interconnect, romData);
         }
 
         public void RunFrame()

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace elbgb_core
 {
-    public class SystemClock
+    class SystemClock
     {
         public const uint ClockFrequency = 4194304;
 

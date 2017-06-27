@@ -13,11 +13,11 @@ namespace elbgb_core.Memory
 
         protected byte[] _romData;
 
-        public static Cartridge LoadRom(GameBoy gameBoy, byte[] romData)
+        internal static Cartridge LoadRom(Interconnect interconnect, byte[] romData)
         {
             if (romData == null)
             {
-                return new NullCartridge(gameBoy, default(CartridgeHeader), null);
+                return new NullCartridge(interconnect, default(CartridgeHeader), null);
             }
 
             CartridgeHeader header = ReadCartridgeHeader(romData);
@@ -25,13 +25,13 @@ namespace elbgb_core.Memory
             switch (header.CartridgeType)
             {
                 case CartridgeType.RomOnly:
-                    return new Mappers.MBC0(gameBoy, header, romData);
+                    return new Mappers.MBC0(interconnect, header, romData);
 
                 case CartridgeType.Mbc1:
                 case CartridgeType.Mbc1Ram:
                 case CartridgeType.Mbc1RamBattery:
-                    return new Mappers.MBC1(gameBoy, header, romData);
-                                    
+                    return new Mappers.MBC1(interconnect, header, romData);
+
                 case CartridgeType.Mbc2:
                 case CartridgeType.Mbc2Battery:
                 case CartridgeType.RomRam:
@@ -62,12 +62,12 @@ namespace elbgb_core.Memory
             }
         }
 
-        protected Cartridge(GameBoy gameBoy, CartridgeHeader header, byte[] romData)
+        internal Cartridge(Interconnect interconnect, CartridgeHeader header, byte[] romData)
         {
-            gameBoy.Interconnect.AddAddressHandler(0x0100, 0x7FFF, this); // rom
-            gameBoy.Interconnect.AddAddressHandler(0xA000, 0xBFFF, this); // ram
+            interconnect.AddAddressHandler(0x0100, 0x7FFF, this); // rom
+            interconnect.AddAddressHandler(0xA000, 0xBFFF, this); // ram
 
-            gameBoy.Interconnect.AddAddressHandler(0xFF50, new DeferredMemoryMapping(gameBoy.Interconnect, 0x0000, 0x00FF, this));
+            interconnect.AddAddressHandler(0xFF50, new DeferredMemoryMapping(interconnect, 0x0000, 0x00FF, this));
 
             Header = header;
             _romData = romData;
