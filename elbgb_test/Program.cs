@@ -30,23 +30,30 @@ namespace elbgb_test
 
         static void Main(string[] args)
         {
-            string testPath = GetTestFolder("tests");
-            string manifestPath = Path.Combine(testPath, ManifestFilename);
+            string manifest = string.Empty;
+            TestStatus showResults = TestStatus.None;
 
-            bool showAllResults = false;
 
             for (int i = 0; i < args.Length; i++)
             {
                 switch (args[i])
                 {
-                    case "--showall":
-                        showAllResults = true;
+                    case "--manifest" when i < args.Length - 1:
+                        manifest = args[++i];
                         break;
+
+                    case "--show" when i < args.Length - 1:
+                        Enum.TryParse(args[++i], true, out showResults);
+                        break;
+
                     //case "--generate":
                     //    GenerateTestXml(manifestPath, "*.gb");
                     //    break;
                 }
             }
+
+            string manifestPath = Path.GetFullPath(manifest);
+            string testPath = Path.GetDirectoryName(manifestPath);
 
             if (!File.Exists(manifestPath))
             {
@@ -57,11 +64,22 @@ namespace elbgb_test
             List<Test> tests;
             tests = LoadTestManifest(manifestPath);
 
+            RunTests(testPath, tests, showResults);
+
+            //SaveTestManifest(manifestPath, tests);
+
+            if (Debugger.IsAttached)
+                Console.ReadLine();
+        }
+
+        private static void RunTests(string testPath, List<Test> tests, TestStatus showResults)
+        {
             int initialPassing = tests.Count(x => x.Status == TestStatus.Passing);
             int initialFailing = tests.Count(x => x.Status == TestStatus.Failing);
             int initialInconclusive = tests.Count(x => x.Status == TestStatus.Inconclusive);
 
-            Console.WriteLine($"Testing Started: {DateTime.Now}\n");
+            var startTime = DateTime.Now;
+            Console.WriteLine($"Testing Started: {startTime}\n");
 
             object progressLock = new object();
             int testCount = tests.Count;
@@ -72,9 +90,14 @@ namespace elbgb_test
                 try
                 {
                     // if we have a passing test then run framecount, otherwise run (roughly) a minute
-                    int framesToRun = test.Status == TestStatus.Passing ? test.FrameCount : 60 * 60;
+                    const int MinuteFrameCount = 60 * 60;
 
-                    (int frameCount, string hash) = ExecuteRom(testPath, test.Name, framesToRun);
+                    if (test.Status != TestStatus.Passing)
+                    {
+                        test.FrameCount = MinuteFrameCount;
+                    }
+
+                    (int frameCount, string hash) = ExecuteRom(testPath, test);
 
                     if (hash == test.Hash)
                     {
@@ -104,7 +127,10 @@ namespace elbgb_test
                 }
             });
 
-            Console.WriteLine($"\n\nTesting Finished: {DateTime.Now}\n");
+            var endTime = DateTime.Now;
+            Console.WriteLine($"\n\nTesting Finished: {endTime}\n");
+
+            Console.WriteLine($"{tests.Count} tests completed in {(endTime - startTime).TotalSeconds}\n");
 
             int resultPassing = tests.Count(x => x.Result == TestStatus.Passing);
             int resultFailing = tests.Count(x => x.Result == TestStatus.Failing);
@@ -112,10 +138,7 @@ namespace elbgb_test
 
             IEnumerable<Test> results;
 
-            if (showAllResults)
-                results = tests;
-            else
-                results = tests.Where(x => x.Status != x.Result);
+            results = tests.Where(x => x.Status != x.Result || showResults.HasFlag(x.Result));
 
             if (results.Count(x => x.Result == TestStatus.Inconclusive) > 0)
                 PrintResults(results, TestStatus.Inconclusive, ConsoleColor.Gray);
@@ -134,11 +157,6 @@ namespace elbgb_test
             Console.WriteLine($"\tInconclusive:\t{resultInconclusive} ({diffInconslusive:+#;-#;0})");
             Console.WriteLine($"\tFailing:\t{resultFailing} ({diffFailing:+#;-#;0})");
             Console.WriteLine($"\tPassing:\t{resultPassing} ({diffPassing:+#;-#;0})");
-
-            //SaveTestManifest(manifestPath, tests);
-
-            if (Debugger.IsAttached)
-                Console.ReadLine();
         }
 
         private static void UpdateProgress(int testCount, int completedTests)
@@ -211,21 +229,21 @@ namespace elbgb_test
         //    SaveTestManifest(manifestPath, tests);
         //}
 
-        private static (int frameCount, string hash) ExecuteRom(string testPathRoot, string testName, int frameCount)
+        private static (int frameCount, string hash) ExecuteRom(string testPathRoot, Test test)
         {
             Dictionary<string, int> frameHash = new Dictionary<string, int>();
 
             var framesink = new TestVideoFrameSink();
             var gameboy = new GameBoy(framesink, new NullInputSource());
 
-            string testPath = Path.Combine(testPathRoot, testName);
+            string testPath = Path.Combine(testPathRoot, test.Name);
 
             gameboy.LoadRom(File.ReadAllBytes(testPath));
 
             int framesRun = 0;
             string hash;
 
-            while (framesRun++ < frameCount)
+            while (framesRun++ < test.FrameCount)
             {
                 gameboy.RunFrame();
 
