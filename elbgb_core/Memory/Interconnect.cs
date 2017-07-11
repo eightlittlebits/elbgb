@@ -23,7 +23,7 @@ namespace elbgb_core.Memory
                 _memory[i] = _unmappedMemory;
             }
         }
-
+        
         public void AddAddressHandler(uint address, IMemoryMappedComponent handler) => _memory[address] = handler;
 
         public void AddAddressHandler(uint addressFrom, uint addressTo, IMemoryMappedComponent handler)
@@ -32,6 +32,13 @@ namespace elbgb_core.Memory
             {
                 AddAddressHandler(address, handler);
             }
+        }
+
+        public void CopyAddressHandler(uint addressFrom, uint addressTo, uint handlerAddress)
+        {
+            IMemoryMappedComponent handler = _memory[handlerAddress];
+
+            AddAddressHandler(addressFrom, addressTo, handler);
         }
 
         public byte ReadByte(ushort address) => _memory[address].ReadByte(address);

@@ -13,6 +13,7 @@ namespace elbgb_core
     {
         internal Interconnect Interconnect;
 
+        internal BootRom BootRom;
         internal SystemMemory Memory;
 
         internal SystemClock Clock;
@@ -31,7 +32,7 @@ namespace elbgb_core
             Clock = new SystemClock();
             Interconnect = new Interconnect();
 
-            Interconnect.AddAddressHandler(0x0000, 0x00FF, new BootRom());
+            BootRom = new BootRom(Interconnect, BootRomType.Dmg);
             Memory = new SystemMemory(Interconnect);
 
             InterruptController = new InterruptController(Interconnect);
