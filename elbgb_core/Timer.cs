@@ -71,8 +71,8 @@ namespace elbgb_core
 
             switch (address)
             {
-                // a write always clears the upper 8 bits of DIV, regardless of value
-                case Registers.DIV: _divider &= 0x00FF; break;
+                // a write to DIV resets the register, regardless of value
+                case Registers.DIV: _divider = 0; break;
 
                 // timer counter
                 case Registers.TIMA:
