@@ -122,7 +122,9 @@ namespace elbgb_test
             var endTime = DateTime.Now;
             Console.WriteLine($"\n\nTesting Finished: {endTime}\n");
 
-            Console.WriteLine($"{tests.Count} tests completed in {(endTime - startTime).TotalSeconds}\n");
+            TimeSpan testDuration = (endTime - startTime);
+
+            Console.WriteLine($"{tests.Count} tests completed in {testDuration.TotalSeconds}\n");
 
             List<Test> results = tests.Where(x => x.Status != x.Result || showResults.HasFlag(x.Result)).ToList();
 
@@ -136,6 +138,15 @@ namespace elbgb_test
                 PrintResults(results, TestStatus.Passing, ConsoleColor.Green);
 
             PrintResultCounts(tests);
+
+            GenerateResultFile(Path.Combine(testPath, "results.html"), tests, testDuration);
+        }
+
+        private static void GenerateResultFile(string filename, List<Test> tests, TimeSpan duration)
+        {
+            ResultTable resultTableGenerator = new ResultTable(tests, duration);
+            string pageContent = resultTableGenerator.TransformText();
+            File.WriteAllText(filename, pageContent);
         }
 
         private static void PrintResultCounts(IEnumerable<Test> tests)

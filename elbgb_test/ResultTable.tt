@@ -1,0 +1,54 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<!DOCTYPE html>
+<html>
+<head>
+	<title>elbgb_test results</title>
+    <style>
+        body { margin: 20px; font-family:Arial,Sans-Serif; }
+		
+		h1 { padding-bottom:20px; margin-bottom:20px; border-bottom:1px solid silver; }
+		
+		.summary { border:1px solid silver; margin-bottom:20px; text-align:center; }
+		
+		.summary .passing { background-color:lime; color:black; }
+		.summary .failing { background-color:red; color:white; }
+		
+        .results { width:100%; border-collapse:collapse; }
+        .results, .results th, .results td { border:1px solid silver; }
+
+		.results th { height:50px; }
+		.results td { text-align:center; padding:5px; }
+		.results td.name { text-align:left; }
+        .results .passing { color:green; }
+        .results .failing { color:red; }
+    </style>
+</head>
+<body>
+    <h1>elbgb_test results</h1>
+    <div class="summary">
+        <p>Executed <#= _testResults.Count #> tests in <#= _duration.TotalSeconds #> seconds.</p>
+    </div>
+	<table class="results">
+		<tr>
+			<th>Image</th>
+			<th>Test</th>
+			<th>Result</th>
+			<th>Hash</th>
+		</tr>
+<# foreach (var test in _testResults)
+   { #>
+		<tr>
+			<td><img src="<#= Path.ChangeExtension(test.Name, "png") #>"</td>
+			<td class="name"><#= test.Name #></td>
+			<td class="<#= test.Result.ToString().ToLower() #>"><#= test.Result #></td>
+			<td class="hash"><#= test.Hash #></td>
+		</tr>
+<# } #>
+	</table>
+</body>
+</html>
