@@ -70,10 +70,6 @@ namespace elbgb_test
 
         private static void RunTests(string testPath, List<Test> tests, TestStatus showResults)
         {
-            int initialPassing = tests.Count(x => x.Status == TestStatus.Passing);
-            int initialFailing = tests.Count(x => x.Status == TestStatus.Failing);
-            int initialInconclusive = tests.Count(x => x.Status == TestStatus.Inconclusive);
-
             var startTime = DateTime.Now;
             Console.WriteLine($"Testing Started: {startTime}\n");
 
@@ -128,13 +124,7 @@ namespace elbgb_test
 
             Console.WriteLine($"{tests.Count} tests completed in {(endTime - startTime).TotalSeconds}\n");
 
-            int resultPassing = tests.Count(x => x.Result == TestStatus.Passing);
-            int resultFailing = tests.Count(x => x.Result == TestStatus.Failing);
-            int resultInconclusive = tests.Count(x => x.Result == TestStatus.Inconclusive);
-
-            IEnumerable<Test> results;
-
-            results = tests.Where(x => x.Status != x.Result || showResults.HasFlag(x.Result));
+            List<Test> results = tests.Where(x => x.Status != x.Result || showResults.HasFlag(x.Result)).ToList();
 
             if (results.Count(x => x.Result == TestStatus.Inconclusive) > 0)
                 PrintResults(results, TestStatus.Inconclusive, ConsoleColor.Gray);
@@ -145,14 +135,27 @@ namespace elbgb_test
             if (results.Count(x => x.Result == TestStatus.Passing) > 0)
                 PrintResults(results, TestStatus.Passing, ConsoleColor.Green);
 
-            int diffPassing = resultPassing - initialPassing;
-            int diffFailing = resultFailing - initialFailing;
-            int diffInconslusive = resultInconclusive - initialInconclusive;
+            PrintResultCounts(tests);
+        }
+
+        private static void PrintResultCounts(IEnumerable<Test> tests)
+        {
+            int initialPassing = tests.Count(x => x.Status == TestStatus.Passing);
+            int initialFailing = tests.Count(x => x.Status == TestStatus.Failing);
+            int initialInconclusive = tests.Count(x => x.Status == TestStatus.Inconclusive);
+
+            int passingCount = tests.Count(x => x.Result == TestStatus.Passing);
+            int failingCount = tests.Count(x => x.Result == TestStatus.Failing);
+            int inconclusiveCount = tests.Count(x => x.Result == TestStatus.Inconclusive);
+
+            int diffPassing = passingCount - initialPassing;
+            int diffFailing = failingCount - initialFailing;
+            int diffInconslusive = inconclusiveCount - initialInconclusive;
 
             Console.WriteLine("Results:");
-            Console.WriteLine($"\tInconclusive:\t{resultInconclusive} ({diffInconslusive:+#;-#;0})");
-            Console.WriteLine($"\tFailing:\t{resultFailing} ({diffFailing:+#;-#;0})");
-            Console.WriteLine($"\tPassing:\t{resultPassing} ({diffPassing:+#;-#;0})");
+            Console.WriteLine($"\tInconclusive:\t{inconclusiveCount} ({diffInconslusive:+#;-#;0})");
+            Console.WriteLine($"\tFailing:\t{failingCount} ({diffFailing:+#;-#;0})");
+            Console.WriteLine($"\tPassing:\t{passingCount} ({diffPassing:+#;-#;0})");
         }
 
         private static void UpdateProgress(int testCount, int completedTests)
