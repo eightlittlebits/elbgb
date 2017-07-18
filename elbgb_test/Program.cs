@@ -12,8 +12,6 @@ namespace elbgb_test
 {
     class Program
     {
-        const string ManifestFilename = "tests.xml";
-
         static XmlSerializer TestSerializer = new XmlSerializer(typeof(List<Test>), new XmlRootAttribute("Tests"));
 
         static string GetTestFolder(string testFolder)
@@ -32,16 +30,11 @@ namespace elbgb_test
         {
             string manifest = string.Empty;
             TestStatus showResults = TestStatus.None;
-
-
+            
             for (int i = 0; i < args.Length; i++)
             {
                 switch (args[i])
                 {
-                    case "--manifest" when i < args.Length - 1:
-                        manifest = args[++i];
-                        break;
-
                     case "--show" when i < args.Length - 1:
                         Enum.TryParse(args[++i], true, out showResults);
                         break;
@@ -49,6 +42,10 @@ namespace elbgb_test
                     //case "--generate":
                     //    GenerateTestXml(manifestPath, "*.gb");
                     //    break;
+
+                    default:
+                        manifest = args[i];
+                        break;
                 }
             }
 
@@ -57,12 +54,11 @@ namespace elbgb_test
 
             if (!File.Exists(manifestPath))
             {
-                Console.WriteLine("Manifest file tests.xml not found, please run elbgb_test --generate.");
+                Console.WriteLine($"Manifest file {manifest} not found.");
                 return;
             }
 
-            List<Test> tests;
-            tests = LoadTestManifest(manifestPath);
+            List<Test> tests = LoadTestManifest(manifestPath);
 
             RunTests(testPath, tests, showResults);
 
