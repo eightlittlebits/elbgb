@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.IO;
-using System.Text;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Xml.Serialization;
 using elbgb_core;
-using System.Threading.Tasks;
 
 namespace elbgb_test
 {
@@ -30,6 +29,7 @@ namespace elbgb_test
         {
             string manifest = string.Empty;
             TestStatus showResults = TestStatus.None;
+            int frameLimit = 60 * 60;
             
             for (int i = 0; i < args.Length; i++)
             {
@@ -42,6 +42,10 @@ namespace elbgb_test
                     //case "--generate":
                     //    GenerateTestXml(manifestPath, "*.gb");
                     //    break;
+                    case "--timeout" when i < args.Length - 1:
+                        int secondsToRun = int.Parse(args[++i]);
+                        frameLimit = 60 * secondsToRun;
+                        break;
 
                     default:
                         manifest = args[i];
@@ -60,15 +64,13 @@ namespace elbgb_test
 
             List<Test> tests = LoadTestManifest(manifestPath);
 
-            RunTests(testPath, tests, showResults);
-
-            //SaveTestManifest(manifestPath, tests);
+            RunTests(testPath, tests, showResults, frameLimit);
 
             if (Debugger.IsAttached)
                 Console.ReadLine();
         }
 
-        private static void RunTests(string testPath, List<Test> tests, TestStatus showResults)
+        private static void RunTests(string testPath, List<Test> tests, TestStatus showResults, int frameLimit)
         {
             var startTime = DateTime.Now;
             Console.WriteLine($"Testing Started: {startTime}\n");
@@ -81,27 +83,18 @@ namespace elbgb_test
             {
                 try
                 {
-                    // if we have a passing test then run framecount, otherwise run (roughly) a minute
-                    const int MinuteFrameCount = 60 * 60;
-
-                    if (test.Status != TestStatus.Passing)
-                    {
-                        test.FrameCount = MinuteFrameCount;
-                    }
-
-                    (int frameCount, string hash) = ExecuteRom(testPath, test);
+                    string hash = ExecuteRom(testPath, test, frameLimit);
 
                     if (hash == test.Hash)
                     {
                         test.Result = test.Status;
                     }
-                    else if (hash != test.Hash && test.Status == TestStatus.Passing)
+                    else if (test.Status == TestStatus.Passing)
                     {
                         test.Result = TestStatus.Failing;
                     }
                     else
                     {
-                        test.FrameCount = frameCount;
                         test.Hash = hash;
                         test.Result = TestStatus.Inconclusive;
                     }
@@ -214,6 +207,7 @@ namespace elbgb_test
 
             return tests;
         }
+
         private static void SaveTestManifest(string manifestPath, List<Test> tests)
         {
             using (var manifest = new StreamWriter(manifestPath))
@@ -239,38 +233,34 @@ namespace elbgb_test
         //    SaveTestManifest(manifestPath, tests);
         //}
 
-        private static (int frameCount, string hash) ExecuteRom(string testPathRoot, Test test)
+        private static string ExecuteRom(string testPathRoot, Test test, int frameLimit)
         {
-            Dictionary<string, int> frameHash = new Dictionary<string, int>();
+            string hash = string.Empty;
 
-            var framesink = new TestVideoFrameSink();
-            var gameboy = new GameBoy(framesink, new NullInputSource());
-
-            string testPath = Path.Combine(testPathRoot, test.Name);
-
-            gameboy.LoadRom(File.ReadAllBytes(testPath));
-
-            int framesRun = 0;
-            string hash;
-
-            while (framesRun++ < test.FrameCount)
+            using (var framesink = new TestVideoFrameSink())
             {
-                gameboy.RunFrame();
+                var gameboy = new GameBoy(framesink, new NullInputSource());
 
-                hash = framesink.HashFrame();
-                if (!frameHash.ContainsKey(hash))
+                string testPath = Path.Combine(testPathRoot, test.Name);
+
+                gameboy.LoadRom(File.ReadAllBytes(testPath));
+
+                int framesRun = 0;
+                
+
+                while (framesRun++ < frameLimit && hash != test.Hash)
                 {
-                    frameHash.Add(hash, framesRun);
+                    gameboy.RunFrame();
+                    hash = framesink.HashFrame();
+                }
+
+                using (var stream = new FileStream(Path.ChangeExtension(testPath, "png"), FileMode.Create))
+                {
+                    framesink.SaveFrameAsPng(stream);
                 }
             }
 
-            using (var stream = new FileStream(Path.ChangeExtension(testPath, "png"), FileMode.Create))
-            {
-                framesink.SaveFrame(stream);
-            }
-
-            hash = framesink.HashFrame();
-            return (frameHash[hash], hash);
+            return hash;
         }
     }
 

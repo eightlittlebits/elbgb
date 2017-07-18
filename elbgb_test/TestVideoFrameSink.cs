@@ -8,14 +8,21 @@ using elbgb_core;
 
 namespace elbgb_test
 {
-    class TestVideoFrameSink : IVideoFrameSink
+    class TestVideoFrameSink : IVideoFrameSink, IDisposable  
     {
         const int Width = 160;
         const int Height = 144;
 
+        MD5 _md5;
+
         uint[] _palette = { 0xFFEFEFEF, 0xFFB2B2B2, 0xFF757575, 0xFF383838 };
 
         byte[] _frameData = new byte[Width * Height];
+
+        public TestVideoFrameSink()
+        {
+            _md5 = MD5.Create();
+        }
 
         public void AppendFrame(byte[] frame)
         {
@@ -24,17 +31,12 @@ namespace elbgb_test
 
         public string HashFrame()
         {
-            byte[] hash;
-
-            using (var md5 = MD5.Create())
-            {
-                hash = md5.ComputeHash(_frameData);
-            }
+            byte[] hash = _md5.ComputeHash(_frameData);
 
             return string.Concat(hash.Select(x => x.ToString("x2")));
         }
 
-        public void SaveFrame(Stream stream)
+        public void SaveFrameAsPng(Stream stream)
         {
             int imageWidth = Width;// * 2;
             int imageHeight = Height;// * 2;
@@ -62,5 +64,29 @@ namespace elbgb_test
                 bitmap.Save(stream, ImageFormat.Png);
             }
         }
+
+        #region IDisposable Support
+
+        private bool _disposed = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    _md5.Dispose();
+                }
+
+                _disposed = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        #endregion
     }
 }

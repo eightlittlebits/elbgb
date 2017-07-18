@@ -8,9 +8,6 @@ namespace elbgb_test
         public string Name { get; set; }
 
         [XmlAttribute]
-        public int FrameCount { get; set; }
-
-        [XmlAttribute]
         public string Hash { get; set; }
 
         [XmlAttribute]
