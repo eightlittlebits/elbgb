@@ -991,8 +991,8 @@ namespace elbgb_core.CPU
         {
             if (condition)
             {
-                _pc = PopWord();
                 _clock.AddMachineCycle();
+                _pc = PopWord();
             }
 
             _clock.AddMachineCycle();

@@ -73,7 +73,7 @@
   <Test Name="mooneye-gb\acceptance\rapid_di_ei.gb" Hash="05af0cb84f018477d4e4bbb0a60c4938" Status="Passing" />
   <Test Name="mooneye-gb\acceptance\reti_intr_timing.gb" Hash="77d785876767d6d3077d1883179f7b83" Status="Passing" />
   <Test Name="mooneye-gb\acceptance\reti_timing.gb" Hash="5c4494d36191cf0824fe220f776b0231" Status="Passing" />
-  <Test Name="mooneye-gb\acceptance\ret_cc_timing.gb" Hash="9cf4bd6c85e8e2cac9c38819633e1dd6" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\ret_cc_timing.gb" Hash="5c4494d36191cf0824fe220f776b0231" Status="Passing" />
   <Test Name="mooneye-gb\acceptance\ret_timing.gb" Hash="5c4494d36191cf0824fe220f776b0231" Status="Passing" />
   <Test Name="mooneye-gb\acceptance\rst_timing.gb" Hash="26e965e35223dcbb6812d431c6a1b3d9" Status="Passing" />
   <Test Name="mooneye-gb\acceptance\bits\mem_oam.gb" Hash="5c4494d36191cf0824fe220f776b0231" Status="Passing" />
