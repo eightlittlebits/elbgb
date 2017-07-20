@@ -31,7 +31,8 @@ namespace elbgb_core.CPU
             _r = new Registers();
         }
 
-        // Wrap the MMU ReadByte to handle the timing updates
+        #region memory access
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private byte ReadByte(ushort address)
         {
@@ -41,7 +42,6 @@ namespace elbgb_core.CPU
             return value;
         }
 
-        // Wrap the MMU ReadWord to handle the timing updates
         private ushort ReadWord(ushort address)
         {
             byte lo = ReadByte(address);
@@ -56,7 +56,9 @@ namespace elbgb_core.CPU
         {
             _interconnect.WriteByte(address, value);
             _clock.AddMachineCycle();
-        }
+        } 
+
+        #endregion
 
         #region stack handling
 

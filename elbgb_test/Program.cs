@@ -13,18 +13,6 @@ namespace elbgb_test
     {
         static XmlSerializer TestSerializer = new XmlSerializer(typeof(List<Test>), new XmlRootAttribute("Tests"));
 
-        static string GetTestFolder(string testFolder)
-        {
-            var testPathRoot = Path.Combine(Environment.CurrentDirectory, testFolder);
-
-            if (!testPathRoot.EndsWith("\\"))
-            {
-                testPathRoot += "\\";
-            }
-
-            return testPathRoot;
-        }
-
         static void Main(string[] args)
         {
             string manifest = string.Empty;
@@ -39,9 +27,6 @@ namespace elbgb_test
                         Enum.TryParse(args[++i], true, out showResults);
                         break;
 
-                    //case "--generate":
-                    //    GenerateTestXml(manifestPath, "*.gb");
-                    //    break;
                     case "--timeout" when i < args.Length - 1:
                         int secondsToRun = int.Parse(args[++i]);
                         frameLimit = 60 * secondsToRun;
@@ -66,8 +51,29 @@ namespace elbgb_test
 
             RunTests(testPath, tests, showResults, frameLimit);
 
+            SaveTestManifest(manifestPath, tests);
+
             if (Debugger.IsAttached)
                 Console.ReadLine();
+        }
+
+        private static List<Test> LoadTestManifest(string manifestPath)
+        {
+            List<Test> tests;
+            using (var manifest = new StreamReader(manifestPath))
+            {
+                tests = (List<Test>)TestSerializer.Deserialize(manifest);
+            }
+
+            return tests;
+        }
+
+        private static void SaveTestManifest(string manifestPath, List<Test> tests)
+        {
+            using (var manifest = new StreamWriter(manifestPath))
+            {
+                TestSerializer.Serialize(manifest, tests);
+            }
         }
 
         private static void RunTests(string testPath, List<Test> tests, TestStatus showResults, int frameLimit)
@@ -135,31 +141,33 @@ namespace elbgb_test
             GenerateResultFile(Path.Combine(testPath, "results.html"), tests, testDuration);
         }
 
-        private static void GenerateResultFile(string filename, List<Test> tests, TimeSpan duration)
+        private static string ExecuteRom(string testPathRoot, Test test, int frameLimit)
         {
-            ResultTable resultTableGenerator = new ResultTable(tests, duration);
-            string pageContent = resultTableGenerator.TransformText();
-            File.WriteAllText(filename, pageContent);
-        }
+            string hash = string.Empty;
 
-        private static void PrintResultCounts(IEnumerable<Test> tests)
-        {
-            int initialPassing = tests.Count(x => x.Status == TestStatus.Passing);
-            int initialFailing = tests.Count(x => x.Status == TestStatus.Failing);
-            int initialInconclusive = tests.Count(x => x.Status == TestStatus.Inconclusive);
+            using (var framesink = new TestVideoFrameSink())
+            {
+                var gameboy = new GameBoy(framesink, new NullInputSource());
 
-            int passingCount = tests.Count(x => x.Result == TestStatus.Passing);
-            int failingCount = tests.Count(x => x.Result == TestStatus.Failing);
-            int inconclusiveCount = tests.Count(x => x.Result == TestStatus.Inconclusive);
+                string testPath = Path.Combine(testPathRoot, test.Name);
 
-            int diffPassing = passingCount - initialPassing;
-            int diffFailing = failingCount - initialFailing;
-            int diffInconslusive = inconclusiveCount - initialInconclusive;
+                gameboy.LoadRom(File.ReadAllBytes(testPath));
 
-            Console.WriteLine("Results:");
-            Console.WriteLine($"\tInconclusive:\t{inconclusiveCount} ({diffInconslusive:+#;-#;0})");
-            Console.WriteLine($"\tFailing:\t{failingCount} ({diffFailing:+#;-#;0})");
-            Console.WriteLine($"\tPassing:\t{passingCount} ({diffPassing:+#;-#;0})");
+                int framesRun = 0;
+                
+                while (framesRun++ < frameLimit && hash != test.Hash)
+                {
+                    gameboy.RunFrame();
+                    hash = framesink.HashFrame();
+                }
+
+                using (var stream = new FileStream(Path.ChangeExtension(testPath, "png"), FileMode.Create))
+                {
+                    framesink.SaveFrameAsPng(stream);
+                }
+            }
+
+            return hash;
         }
 
         private static void UpdateProgress(int testCount, int completedTests)
@@ -197,70 +205,31 @@ namespace elbgb_test
             Console.WriteLine();
         }
 
-        private static List<Test> LoadTestManifest(string manifestPath)
+        private static void PrintResultCounts(IEnumerable<Test> tests)
         {
-            List<Test> tests;
-            using (var manifest = new StreamReader(manifestPath))
-            {
-                tests = (List<Test>)TestSerializer.Deserialize(manifest);
-            }
+            int initialPassing = tests.Count(x => x.Status == TestStatus.Passing);
+            int initialFailing = tests.Count(x => x.Status == TestStatus.Failing);
+            int initialInconclusive = tests.Count(x => x.Status == TestStatus.Inconclusive);
 
-            return tests;
+            int passingCount = tests.Count(x => x.Result == TestStatus.Passing);
+            int failingCount = tests.Count(x => x.Result == TestStatus.Failing);
+            int inconclusiveCount = tests.Count(x => x.Result == TestStatus.Inconclusive);
+
+            int diffPassing = passingCount - initialPassing;
+            int diffFailing = failingCount - initialFailing;
+            int diffInconslusive = inconclusiveCount - initialInconclusive;
+
+            Console.WriteLine("Results:");
+            Console.WriteLine($"\tInconclusive:\t{inconclusiveCount} ({diffInconslusive:+#;-#;0})");
+            Console.WriteLine($"\tFailing:\t{failingCount} ({diffFailing:+#;-#;0})");
+            Console.WriteLine($"\tPassing:\t{passingCount} ({diffPassing:+#;-#;0})");
         }
 
-        private static void SaveTestManifest(string manifestPath, List<Test> tests)
+        private static void GenerateResultFile(string filename, List<Test> tests, TimeSpan duration)
         {
-            using (var manifest = new StreamWriter(manifestPath))
-            {
-                TestSerializer.Serialize(manifest, tests);
-            }
-        }
-
-        //private static void GenerateTestXml(string manifestPath, string searchPattern)
-        //{
-        //    List<Test> tests = new List<Test>();
-
-        //    string testPath = Path.GetDirectoryName(manifestPath) + "\\";
-
-        //    foreach (var filename in Directory.EnumerateFiles(testPath, searchPattern, SearchOption.AllDirectories))
-        //    {
-        //        // remove the base from the file path
-        //        var relativePath = filename.Remove(0, testPath.Length);
-
-        //        tests.Add(new Test { Name = relativePath, FrameCount = 0, Hash = string.Empty, Status = TestStatus.Inconclusive });
-        //    }
-
-        //    SaveTestManifest(manifestPath, tests);
-        //}
-
-        private static string ExecuteRom(string testPathRoot, Test test, int frameLimit)
-        {
-            string hash = string.Empty;
-
-            using (var framesink = new TestVideoFrameSink())
-            {
-                var gameboy = new GameBoy(framesink, new NullInputSource());
-
-                string testPath = Path.Combine(testPathRoot, test.Name);
-
-                gameboy.LoadRom(File.ReadAllBytes(testPath));
-
-                int framesRun = 0;
-                
-
-                while (framesRun++ < frameLimit && hash != test.Hash)
-                {
-                    gameboy.RunFrame();
-                    hash = framesink.HashFrame();
-                }
-
-                using (var stream = new FileStream(Path.ChangeExtension(testPath, "png"), FileMode.Create))
-                {
-                    framesink.SaveFrameAsPng(stream);
-                }
-            }
-
-            return hash;
+            ResultTable resultTableGenerator = new ResultTable(tests, duration);
+            string pageContent = resultTableGenerator.TransformText();
+            File.WriteAllText(filename, pageContent);
         }
     }
 

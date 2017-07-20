@@ -56,7 +56,7 @@ namespace elbgb_core.Memory.Mappers
         {
             if (_hasRam)
             {
-                stream.Write(_ram, 0, _ram.Length); 
+                stream.Write(_ram, 0, _ram.Length);
             }
         }
 

@@ -50,7 +50,7 @@ namespace elbgb_core.Memory
 #endif
 
         public byte ReadByte(ushort address) => _bootRom[address];
-        
+
         public void WriteByte(ushort address, byte value) { }
     }
 }
