@@ -51,6 +51,8 @@ namespace elbgb_test
 		.results td.name { text-align:left; }
         .results .passing { color:green; }
         .results .failing { color:red; }
+
+        .duration { font-size:8pt; color:silver; }
     </style>
 </head>
 <body>
@@ -58,14 +60,14 @@ namespace elbgb_test
     <div class=""summary"">
         <p>Executed ");
             
-            #line 34 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
+            #line 36 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(_testResults.Count));
             
             #line default
             #line hidden
             this.Write(" tests in ");
             
-            #line 34 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
+            #line 36 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(_duration.TotalSeconds));
             
             #line default
@@ -73,7 +75,7 @@ namespace elbgb_test
             this.Write(" seconds.</p>\r\n    </div>\r\n\t<table class=\"results\">\r\n\t\t<tr>\r\n\t\t\t<th>Image</th>\r\n\t" +
                     "\t\t<th>Test</th>\r\n\t\t\t<th>Result</th>\r\n\t\t\t<th>Hash</th>\r\n\t\t</tr>\r\n");
             
-            #line 43 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
+            #line 45 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
  foreach (var test in _testResults)
    { 
             
@@ -81,42 +83,49 @@ namespace elbgb_test
             #line hidden
             this.Write("\t\t<tr>\r\n\t\t\t<td><img src=\"");
             
-            #line 46 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
+            #line 48 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Path.ChangeExtension(test.Name, "png")));
             
             #line default
             #line hidden
             this.Write("\"</td>\r\n\t\t\t<td class=\"name\">");
             
-            #line 47 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
+            #line 49 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(test.Name));
             
             #line default
             #line hidden
-            this.Write("</td>\r\n\t\t\t<td class=\"");
+            this.Write(" <span class=\"duration\">");
             
-            #line 48 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
+            #line 49 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(test.Duration));
+            
+            #line default
+            #line hidden
+            this.Write("ms</span></td>\r\n\t\t\t<td class=\"");
+            
+            #line 50 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(test.Result.ToString().ToLower()));
             
             #line default
             #line hidden
             this.Write("\">");
             
-            #line 48 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
+            #line 50 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(test.Result));
             
             #line default
             #line hidden
             this.Write("</td>\r\n\t\t\t<td class=\"hash\">");
             
-            #line 49 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
+            #line 51 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(test.Hash));
             
             #line default
             #line hidden
             this.Write("</td>\r\n\t\t</tr>\r\n");
             
-            #line 51 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
+            #line 53 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
  } 
             
             #line default

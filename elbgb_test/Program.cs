@@ -89,7 +89,12 @@ namespace elbgb_test
             {
                 try
                 {
+                    Stopwatch s = Stopwatch.StartNew();
+
                     string hash = ExecuteRom(testPath, test, frameLimit);
+
+                    s.Stop();
+                    test.Duration = s.ElapsedMilliseconds;
 
                     if (hash == test.Hash)
                     {
@@ -123,7 +128,7 @@ namespace elbgb_test
 
             TimeSpan testDuration = (endTime - startTime);
 
-            Console.WriteLine($"{tests.Count} tests completed in {testDuration.TotalSeconds}\n");
+            Console.WriteLine($"{tests.Count} tests completed in {testDuration.TotalSeconds} seconds\n");
 
             List<Test> results = tests.Where(x => x.Status != x.Result || showResults.HasFlag(x.Result)).ToList();
 

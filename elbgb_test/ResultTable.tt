@@ -26,6 +26,8 @@
 		.results td.name { text-align:left; }
         .results .passing { color:green; }
         .results .failing { color:red; }
+
+        .duration { font-size:8pt; color:silver; }
     </style>
 </head>
 <body>
@@ -44,7 +46,7 @@
    { #>
 		<tr>
 			<td><img src="<#= Path.ChangeExtension(test.Name, "png") #>"</td>
-			<td class="name"><#= test.Name #></td>
+			<td class="name"><#= test.Name #> <span class="duration"><#= test.Duration #>ms</span></td>
 			<td class="<#= test.Result.ToString().ToLower() #>"><#= test.Result #></td>
 			<td class="hash"><#= test.Hash #></td>
 		</tr>

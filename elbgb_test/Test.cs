@@ -15,5 +15,8 @@ namespace elbgb_test
 
         [XmlIgnore]
         public TestStatus Result { get; set; }
+
+        [XmlIgnore]
+        public long Duration { get; set; }
     }
 }
