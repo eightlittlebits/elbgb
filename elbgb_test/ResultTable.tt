@@ -33,15 +33,15 @@
 <body>
     <h1>elbgb_test results</h1>
     <div class="summary">
-        <p>Executed <#= _testResults.Count #> tests in <#= _duration.TotalSeconds #> seconds.</p>
+        <p>Executed <#= _testResults.Count #> tests in <#= _duration.TotalSeconds.ToString("F3") #> seconds (<#= TimeSpan.FromMilliseconds(_testResults.Sum(x => x.Duration)).ToString(@"hh\:mm\:ss\.fff") #> in tests).</p>
     </div>
 <#
-    List<Test> inconclusive = _testResults.Where(x => x.Result == TestStatus.Inconclusive).ToList();
+    List<Test> changed = _testResults.Where(x => x.Result != x.Status).ToList();
 
-    if (inconclusive.Count > 0)
+    if (changed.Count > 0)
     {
 #>
-    <h2>Inconclusive</h2>
+    <h2>Changed</h2>
     <table class="results">
 		<tr>
 			<th>Image</th>
@@ -49,7 +49,7 @@
 			<th>Result</th>
 			<th>Hash</th>
 		</tr>
-<#      foreach (var test in inconclusive)
+<#      foreach (var test in changed)
         { #>
 		<tr>
 			<td><img src="<#= Path.ChangeExtension(test.Name, "png") #>"</td>
@@ -69,7 +69,7 @@
 			<th>Result</th>
 			<th>Hash</th>
 		</tr>
-<#  foreach (var test in _testResults.Where(x => x.Result != TestStatus.Inconclusive).OrderBy(x => x.Result))
+<#  foreach (var test in _testResults.Where(x => x.Result == x.Status).OrderBy(x => x.Result))
     { #>
 		<tr>
 			<td><img src="<#= Path.ChangeExtension(test.Name, "png") #>"</td>

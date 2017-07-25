@@ -68,27 +68,34 @@ namespace elbgb_test
             this.Write(" tests in ");
             
             #line 36 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(_duration.TotalSeconds));
+            this.Write(this.ToStringHelper.ToStringWithCulture(_duration.TotalSeconds.ToString("F3")));
             
             #line default
             #line hidden
-            this.Write(" seconds.</p>\r\n    </div>\r\n");
+            this.Write(" seconds (");
+            
+            #line 36 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(TimeSpan.FromMilliseconds(_testResults.Sum(x => x.Duration)).ToString(@"hh\:mm\:ss\.fff")));
+            
+            #line default
+            #line hidden
+            this.Write(" in tests).</p>\r\n    </div>\r\n");
             
             #line 38 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
 
-    List<Test> inconclusive = _testResults.Where(x => x.Result == TestStatus.Inconclusive).ToList();
+    List<Test> changed = _testResults.Where(x => x.Result != x.Status).ToList();
 
-    if (inconclusive.Count > 0)
+    if (changed.Count > 0)
     {
 
             
             #line default
             #line hidden
-            this.Write("    <h2>Inconclusive</h2>\r\n    <table class=\"results\">\r\n\t\t<tr>\r\n\t\t\t<th>Image</th>" +
-                    "\r\n\t\t\t<th>Test</th>\r\n\t\t\t<th>Result</th>\r\n\t\t\t<th>Hash</th>\r\n\t\t</tr>\r\n");
+            this.Write("    <h2>Changed</h2>\r\n    <table class=\"results\">\r\n\t\t<tr>\r\n\t\t\t<th>Image</th>\r\n\t\t\t" +
+                    "<th>Test</th>\r\n\t\t\t<th>Result</th>\r\n\t\t\t<th>Hash</th>\r\n\t\t</tr>\r\n");
             
             #line 52 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
-      foreach (var test in inconclusive)
+      foreach (var test in changed)
         { 
             
             #line default
@@ -153,7 +160,7 @@ namespace elbgb_test
                     "h>\r\n\t\t\t<th>Test</th>\r\n\t\t\t<th>Result</th>\r\n\t\t\t<th>Hash</th>\r\n\t\t</tr>\r\n");
             
             #line 72 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
-  foreach (var test in _testResults.Where(x => x.Result != TestStatus.Inconclusive).OrderBy(x => x.Result))
+  foreach (var test in _testResults.Where(x => x.Result == x.Status).OrderBy(x => x.Result))
     { 
             
             #line default
