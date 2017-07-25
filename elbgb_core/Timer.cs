@@ -33,6 +33,8 @@ namespace elbgb_core
 
         private ushort _freqCounterMask;
         private bool _previousTimerUpdate;
+        private bool _overflow;
+        private uint _cyclesSinceOverflow;
 
         public Timer(SystemClock clock, Interconnect interconnect, InterruptController interruptController)
             : base(clock)
@@ -117,12 +119,29 @@ namespace elbgb_core
 
         public override void Update(uint cycleCount)
         {
-            UpdateCounter(cycleCount % 8);
-            UpdateTimer();
-
-            for (int i = 0; i < cycleCount / 8; i++)
+            // run the timer at a 4 cycle granularity
+            for (uint i = 0; i < cycleCount / 4; i++)
             {
-                UpdateCounter(8);
+                UpdateInternal(4);
+            }
+
+            UpdateInternal(cycleCount % 4);
+
+            void UpdateInternal(uint cycles)
+            {
+                if (_overflow)
+                {
+                    _cyclesSinceOverflow += cycles;
+                    if (_cyclesSinceOverflow >= 4)
+                    {
+                        _overflow = false;
+                        _cyclesSinceOverflow = 0;
+
+                        _tima = _tma;
+                    }
+                }
+
+                UpdateCounter(cycles);
                 UpdateTimer();
             }
         }
@@ -143,8 +162,7 @@ namespace elbgb_core
 
                 if (_tima == 0)
                 {
-                    _tima = _tma;
-
+                    _overflow = true;
                     _interruptController.RequestInterrupt(Interrupt.TimerOverflow);
                 }
             }

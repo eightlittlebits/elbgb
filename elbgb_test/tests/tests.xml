@@ -101,7 +101,7 @@
   <Test Name="mooneye-gb\acceptance\timer\tim10_div_trigger.gb" Hash="d72a2b1470210e663dd3df38a297f41e" Status="Passing" />
   <Test Name="mooneye-gb\acceptance\timer\tim11.gb" Hash="eacb98eee39911aebf1b004d7fd81a5c" Status="Passing" />
   <Test Name="mooneye-gb\acceptance\timer\tim11_div_trigger.gb" Hash="eacb98eee39911aebf1b004d7fd81a5c" Status="Passing" />
-  <Test Name="mooneye-gb\acceptance\timer\tima_reload.gb" Hash="039b04299197167a962eb4c324134fd9" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\timer\tima_reload.gb" Hash="05e5671a761ae4b2167224322890d1e5" Status="Passing" />
   <Test Name="mooneye-gb\acceptance\timer\tima_write_reloading.gb" Hash="049800460ede287eeee00c72308eab74" Status="Failing" />
   <Test Name="mooneye-gb\acceptance\timer\tma_write_reloading.gb" Hash="220785e47fdc28895755bb0ba86fc665" Status="Failing" />
   <Test Name="mooneye-gb\emulator-only\mbc1\multicart_rom_8Mb.gb" Hash="c3d29ac582d81d0dd3aca8d684b031bc" Status="Failing" />
