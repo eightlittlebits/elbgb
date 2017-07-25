@@ -72,61 +72,138 @@ namespace elbgb_test
             
             #line default
             #line hidden
-            this.Write(" seconds.</p>\r\n    </div>\r\n\t<table class=\"results\">\r\n\t\t<tr>\r\n\t\t\t<th>Image</th>\r\n\t" +
-                    "\t\t<th>Test</th>\r\n\t\t\t<th>Result</th>\r\n\t\t\t<th>Hash</th>\r\n\t\t</tr>\r\n");
+            this.Write(" seconds.</p>\r\n    </div>\r\n");
             
-            #line 45 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
- foreach (var test in _testResults)
-   { 
+            #line 38 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
+
+    List<Test> inconclusive = _testResults.Where(x => x.Result == TestStatus.Inconclusive).ToList();
+
+    if (inconclusive.Count > 0)
+    {
+
+            
+            #line default
+            #line hidden
+            this.Write("    <h2>Inconclusive</h2>\r\n    <table class=\"results\">\r\n\t\t<tr>\r\n\t\t\t<th>Image</th>" +
+                    "\r\n\t\t\t<th>Test</th>\r\n\t\t\t<th>Result</th>\r\n\t\t\t<th>Hash</th>\r\n\t\t</tr>\r\n");
+            
+            #line 52 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
+      foreach (var test in inconclusive)
+        { 
             
             #line default
             #line hidden
             this.Write("\t\t<tr>\r\n\t\t\t<td><img src=\"");
             
-            #line 48 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
+            #line 55 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Path.ChangeExtension(test.Name, "png")));
             
             #line default
             #line hidden
             this.Write("\"</td>\r\n\t\t\t<td class=\"name\">");
             
-            #line 49 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
+            #line 56 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(test.Name));
             
             #line default
             #line hidden
             this.Write(" <span class=\"duration\">");
             
-            #line 49 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
+            #line 56 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(test.Duration));
             
             #line default
             #line hidden
             this.Write("ms</span></td>\r\n\t\t\t<td class=\"");
             
-            #line 50 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
+            #line 57 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(test.Result.ToString().ToLower()));
             
             #line default
             #line hidden
             this.Write("\">");
             
-            #line 50 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
+            #line 57 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(test.Result));
             
             #line default
             #line hidden
             this.Write("</td>\r\n\t\t\t<td class=\"hash\">");
             
-            #line 51 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
+            #line 58 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(test.Hash));
             
             #line default
             #line hidden
             this.Write("</td>\r\n\t\t</tr>\r\n");
             
-            #line 53 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
- } 
+            #line 60 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
+      } 
+            
+            #line default
+            #line hidden
+            this.Write("\t</table>\r\n");
+            
+            #line 62 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
+    } 
+            
+            #line default
+            #line hidden
+            this.Write("\r\n    <h2>Failing/Passing</h2>\r\n\t<table class=\"results\">\r\n\t\t<tr>\r\n\t\t\t<th>Image</t" +
+                    "h>\r\n\t\t\t<th>Test</th>\r\n\t\t\t<th>Result</th>\r\n\t\t\t<th>Hash</th>\r\n\t\t</tr>\r\n");
+            
+            #line 72 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
+  foreach (var test in _testResults.Where(x => x.Result != TestStatus.Inconclusive).OrderBy(x => x.Result))
+    { 
+            
+            #line default
+            #line hidden
+            this.Write("\t\t<tr>\r\n\t\t\t<td><img src=\"");
+            
+            #line 75 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(Path.ChangeExtension(test.Name, "png")));
+            
+            #line default
+            #line hidden
+            this.Write("\"</td>\r\n\t\t\t<td class=\"name\">");
+            
+            #line 76 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(test.Name));
+            
+            #line default
+            #line hidden
+            this.Write(" <span class=\"duration\">");
+            
+            #line 76 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(test.Duration));
+            
+            #line default
+            #line hidden
+            this.Write("ms</span></td>\r\n\t\t\t<td class=\"");
+            
+            #line 77 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(test.Result.ToString().ToLower()));
+            
+            #line default
+            #line hidden
+            this.Write("\">");
+            
+            #line 77 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(test.Result));
+            
+            #line default
+            #line hidden
+            this.Write("</td>\r\n\t\t\t<td class=\"hash\">");
+            
+            #line 78 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(test.Hash));
+            
+            #line default
+            #line hidden
+            this.Write("</td>\r\n\t\t</tr>\r\n");
+            
+            #line 80 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
+  } 
             
             #line default
             #line hidden

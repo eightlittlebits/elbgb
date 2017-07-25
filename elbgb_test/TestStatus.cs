@@ -7,8 +7,8 @@ namespace elbgb_test
     {
         None,
         Inconclusive = 1,
-        Passing = 2,
-        Failing = 4,
+        Failing = 2,
+        Passing = 4,
         All = Inconclusive | Passing | Failing,
     }
 }

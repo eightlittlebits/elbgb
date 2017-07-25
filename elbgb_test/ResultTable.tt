@@ -35,6 +35,33 @@
     <div class="summary">
         <p>Executed <#= _testResults.Count #> tests in <#= _duration.TotalSeconds #> seconds.</p>
     </div>
+<#
+    List<Test> inconclusive = _testResults.Where(x => x.Result == TestStatus.Inconclusive).ToList();
+
+    if (inconclusive.Count > 0)
+    {
+#>
+    <h2>Inconclusive</h2>
+    <table class="results">
+		<tr>
+			<th>Image</th>
+			<th>Test</th>
+			<th>Result</th>
+			<th>Hash</th>
+		</tr>
+<#      foreach (var test in inconclusive)
+        { #>
+		<tr>
+			<td><img src="<#= Path.ChangeExtension(test.Name, "png") #>"</td>
+			<td class="name"><#= test.Name #> <span class="duration"><#= test.Duration #>ms</span></td>
+			<td class="<#= test.Result.ToString().ToLower() #>"><#= test.Result #></td>
+			<td class="hash"><#= test.Hash #></td>
+		</tr>
+<#      } #>
+	</table>
+<#    } #>
+
+    <h2>Failing/Passing</h2>
 	<table class="results">
 		<tr>
 			<th>Image</th>
@@ -42,15 +69,15 @@
 			<th>Result</th>
 			<th>Hash</th>
 		</tr>
-<# foreach (var test in _testResults)
-   { #>
+<#  foreach (var test in _testResults.Where(x => x.Result != TestStatus.Inconclusive).OrderBy(x => x.Result))
+    { #>
 		<tr>
 			<td><img src="<#= Path.ChangeExtension(test.Name, "png") #>"</td>
 			<td class="name"><#= test.Name #> <span class="duration"><#= test.Duration #>ms</span></td>
 			<td class="<#= test.Result.ToString().ToLower() #>"><#= test.Result #></td>
 			<td class="hash"><#= test.Hash #></td>
 		</tr>
-<# } #>
+<#  } #>
 	</table>
 </body>
 </html>
