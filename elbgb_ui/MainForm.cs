@@ -102,8 +102,6 @@ namespace elbgb_ui
             {
                 _gameBoy.Cartridge.SaveExternalRam(stream);
             }
-
-            _renderer.Dispose();
         }
 
         public GBCoreInput PollInput()
@@ -277,6 +275,21 @@ namespace elbgb_ui
             }
 
             return string.Concat(hash.Select(x => x.ToString("x2")));
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (components != null)
+                {
+                    components.Dispose(); 
+                }
+
+                _renderer.Dispose();
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

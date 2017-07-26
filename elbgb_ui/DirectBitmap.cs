@@ -27,13 +27,11 @@ namespace elbgb_ui
 
         ~DirectBitmap()
         {
-            // Finalizer calls Dispose(false)
             Dispose(false);
         }
 
         public void Dispose()
         {
-            // Dispose() calls Dispose(true)
             Dispose(true);
             GC.SuppressFinalize(this);
         }
