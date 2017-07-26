@@ -62,7 +62,7 @@ namespace elbgb_core
 
                 // timer controller
                 case Registers.TAC:
-                    return (byte)(_tac & 0x07);
+                    return (byte)(_tac | 0xF8);
 
                 default:
                     throw new ArgumentOutOfRangeException("address");

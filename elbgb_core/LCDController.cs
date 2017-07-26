@@ -195,7 +195,7 @@ namespace elbgb_core
                         return _lcdControl;
 
                     case Registers.STAT:
-                        return (byte)((_lcdStatus & ~0x03) | (byte)_lcdMode);
+                        return (byte)(0x80 | (_lcdStatus & ~0x03) | (byte)_lcdMode);
 
                     case Registers.SCY:
                         return _scrollY;
