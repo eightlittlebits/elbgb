@@ -260,23 +260,6 @@ namespace elbgb_ui
             this.Close();
         }
 
-        private void checksumToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show($"Screen MD5: {CalculateMD5String(_renderer.ScreenData)}");
-        }
-
-        private static string CalculateMD5String(byte[] buffer)
-        {
-            byte[] hash;
-
-            using (MD5 md5 = MD5.Create())
-            {
-                hash = md5.ComputeHash(buffer);
-            }
-
-            return string.Concat(hash.Select(x => x.ToString("x2")));
-        }
-
         protected override void Dispose(bool disposing)
         {
             if (disposing)

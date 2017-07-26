@@ -21,7 +21,6 @@
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.paletteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.checksumToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.displayPanel = new elbgb_ui.Components.DoubleBufferedPanel();
             this.mainFormMenuStrip.SuspendLayout();
             this.SuspendLayout();
@@ -61,8 +60,7 @@
             // toolsToolStripMenuItem
             // 
             this.toolsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.paletteToolStripMenuItem,
-            this.checksumToolStripMenuItem});
+            this.paletteToolStripMenuItem});
             this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
             this.toolsToolStripMenuItem.Size = new System.Drawing.Size(48, 20);
             this.toolsToolStripMenuItem.Text = "&Tools";
@@ -72,13 +70,6 @@
             this.paletteToolStripMenuItem.Name = "paletteToolStripMenuItem";
             this.paletteToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.paletteToolStripMenuItem.Text = "&Palette";
-            // 
-            // checksumToolStripMenuItem
-            // 
-            this.checksumToolStripMenuItem.Name = "checksumToolStripMenuItem";
-            this.checksumToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.checksumToolStripMenuItem.Text = "&Checksum";
-            this.checksumToolStripMenuItem.Click += new System.EventHandler(this.checksumToolStripMenuItem_Click);
             // 
             // displayPanel
             // 
@@ -119,7 +110,6 @@
         private Components.DoubleBufferedPanel displayPanel;
         private System.Windows.Forms.ToolStripMenuItem toolsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem paletteToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem checksumToolStripMenuItem;
     }
 }
 
