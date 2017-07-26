@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using elbgb_core.Memory;
 
 namespace elbgb_core
@@ -33,8 +29,9 @@ namespace elbgb_core
 
         private ushort _freqCounterMask;
         private bool _previousTimerUpdate;
-        private bool _overflow;
-        private uint _cyclesSinceOverflow;
+
+        private int _timaReloadDelay;
+        private bool _timaReloaded;
 
         public Timer(SystemClock clock, Interconnect interconnect, InterruptController interruptController)
             : base(clock)
@@ -52,7 +49,8 @@ namespace elbgb_core
             {
                 // the divider is the upper 8 bits of the 16-bit counter that counts the 
                 // basic clock frequency (f). f = 4.194304 MHz
-                case Registers.DIV: return (byte)(_freqCounter >> 8);
+                case Registers.DIV:
+                    return (byte)(_freqCounter >> 8);
 
                 // timer counter
                 case Registers.TIMA:
@@ -82,11 +80,22 @@ namespace elbgb_core
 
                 // timer counter
                 case Registers.TIMA:
-                    _tima = value; break;
+                    if (!_timaReloaded)
+                    {
+                        _tima = value;
+                        _timaReloadDelay = 0;
+                    }
+
+                    break;
 
                 // timer modulo 
                 case Registers.TMA:
-                    _tma = value; break;
+                    _tma = value;
+                    if (_timaReloaded)
+                    {
+                        _tima = value;
+                    }
+                    break;
 
                 // timer controller
                 case Registers.TAC:
@@ -119,36 +128,35 @@ namespace elbgb_core
 
         public override void Update(uint cycleCount)
         {
-            // run the timer at a 4 cycle granularity
-            for (uint i = 0; i < cycleCount / 4; i++)
+            for (int i = 0; i < cycleCount; ++i)
             {
-                UpdateInternal(4);
+                UpdateInternal();
             }
 
-            UpdateInternal(cycleCount % 4);
-
-            void UpdateInternal(uint cycles)
+            void UpdateInternal()
             {
-                if (_overflow)
+                if (_timaReloaded)
                 {
-                    _cyclesSinceOverflow += cycles;
-                    if (_cyclesSinceOverflow >= 4)
-                    {
-                        _overflow = false;
-                        _cyclesSinceOverflow = 0;
+                    _timaReloaded = false;
+                }
 
+                if (_timaReloadDelay-- > 0)
+                {
+                    if (_timaReloadDelay == 0)
+                    {
                         _tima = _tma;
+                        _timaReloaded = true;
                     }
                 }
 
-                UpdateCounter(cycles);
+                IncrementCounter();
                 UpdateTimer();
             }
         }
 
-        private void UpdateCounter(uint cycleCount)
+        private void IncrementCounter()
         {
-            _freqCounter += (ushort)cycleCount;
+            _freqCounter += 1;
         }
 
         private void UpdateTimer()
@@ -162,7 +170,7 @@ namespace elbgb_core
 
                 if (_tima == 0)
                 {
-                    _overflow = true;
+                    _timaReloadDelay = 4;
                     _interruptController.RequestInterrupt(Interrupt.TimerOverflow);
                 }
             }
