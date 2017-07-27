@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Tests xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <Test Name="blargg\halt_bug.gb" Hash="b66f5c777891c1821be98b2717a1da28" Status="Passing" />
   <Test Name="blargg\cpu_instrs\cpu_instrs.gb" Hash="cda404071e88b2f7527232c96d9ba6c4" Status="Passing" />
   <Test Name="blargg\cpu_instrs\individual\01-special.gb" Hash="ba2b2749885e6fe92c473ca01e307d8f" Status="Passing" />
   <Test Name="blargg\cpu_instrs\individual\02-interrupts.gb" Hash="053d0c31cfa6b445d86070a0d42184a3" Status="Passing" />
@@ -13,6 +12,7 @@
   <Test Name="blargg\cpu_instrs\individual\09-op r,r.gb" Hash="6e557f0366b47839e425a5e4d159af41" Status="Passing" />
   <Test Name="blargg\cpu_instrs\individual\10-bit ops.gb" Hash="68094fb6d9f6004cac5b1d3117fa354a" Status="Passing" />
   <Test Name="blargg\cpu_instrs\individual\11-op a,(hl).gb" Hash="354148bfe5694d27acf63a165f1c464d" Status="Passing" />
+  <Test Name="blargg\halt_bug\halt_bug.gb" Hash="b66f5c777891c1821be98b2717a1da28" Status="Passing" />
   <Test Name="blargg\instr_timing\instr_timing.gb" Hash="b12b93e4ffc7a41df089dc1c052712f9" Status="Passing" />
   <Test Name="blargg\mem_timing\mem_timing.gb" Hash="7c7dcd8fc12a3c12efd4773bbb21b587" Status="Passing" />
   <Test Name="blargg\mem_timing\individual\01-read_timing.gb" Hash="bd5dae1111060b7d8182dad46bf2a788" Status="Passing" />
