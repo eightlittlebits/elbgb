@@ -18,9 +18,35 @@ namespace elbgb_core.CPU
         private ushort _sp;     // stack pointer
         private bool _ime;      // interrupt master enable
 
+        // flags
+        private bool _zero;
+        private bool _negative;
+        private bool _halfCarry;
+        private bool _carry;
+
         private bool _halted;
         private bool _haltBug;
         private bool _enableInterrupts;
+
+        private byte GetFlagsByte()
+        {
+            int flags = 0;
+
+            flags |= _zero ? 0x80 : 0;
+            flags |= _negative ? 0x40 : 0;
+            flags |= _halfCarry ? 0x20 : 0;
+            flags |= _carry ? 0x10 : 0;
+
+            return (byte)flags;
+        }
+
+        private void SetFlagsByte(byte flags)
+        {
+            _zero = (flags & 0x80) == 0x80;
+            _negative = (flags & 0x40) == 0x40;
+            _halfCarry = (flags & 0x20) == 0x20;
+            _carry = (flags & 0x10) == 0x10;
+        }
 
         public LR35902(SystemClock clock, Interconnect interconnect, InterruptController interruptController)
         {
@@ -318,13 +344,13 @@ namespace elbgb_core.CPU
                 case 0xC5: _clock.AddMachineCycle(); PushWord(_r.BC); break; // PUSH BC
                 case 0xD5: _clock.AddMachineCycle(); PushWord(_r.DE); break; // PUSH DE
                 case 0xE5: _clock.AddMachineCycle(); PushWord(_r.HL); break; // PUSH HL
-                case 0xF5: _clock.AddMachineCycle(); PushWord((ushort)(_r.AF & 0xFFF0)); break; // PUSH AF
+                case 0xF5: _clock.AddMachineCycle(); PushWord((ushort)((_r.A << 8) | GetFlagsByte())); break; // PUSH AF
 
                 // pop contents of stack into register pair
                 case 0xC1: _r.BC = PopWord(); break; // POP BC
                 case 0xD1: _r.DE = PopWord(); break; // POP DE
                 case 0xE1: _r.HL = PopWord(); break; // POP HL
-                case 0xF1: _r.AF = (ushort)(PopWord() & 0xFFF0); break; // POP AF
+                case 0xF1: ushort value = PopWord(); _r.A = (byte)(value >> 8); SetFlagsByte((byte)(value & 0xF0)); break; // POP AF
 
                 // the 8-bit operand e is added to SP and the result stored in HL
                 // the documentation appears to be incorrect with respect to the flags
@@ -333,14 +359,13 @@ namespace elbgb_core.CPU
                     {
                         sbyte e = (sbyte)ReadByte(_pc++);
 
-                        _r.F = 0;
+                        _zero = false;
+                        _negative = false;
 
-                        if (((_sp & 0xFF) + (e & 0xFF)) > 0xFF)
-                            _r.F |= C;
+                        _carry = ((_sp & 0xFF) + (e & 0xFF)) > 0xFF;
 
-                        if (((_sp & 0x0F) + (e & 0x0F)) > 0x0F)
-                            _r.F |= H;
-
+                        _halfCarry = ((_sp & 0x0F) + (e & 0x0F)) > 0x0F;
+                        
                         _r.HL = (ushort)(_sp + e);
 
                         _clock.AddMachineCycle();
@@ -472,13 +497,12 @@ namespace elbgb_core.CPU
                     {
                         sbyte e = (sbyte)ReadByte(_pc++);
 
-                        _r.F = 0;
+                        _zero = false;
+                        _negative = false;
 
-                        if (((_sp & 0xFF) + (e & 0xFF)) > 0xFF)
-                            _r.F |= C;
+                        _carry = ((_sp & 0xFF) + (e & 0xFF)) > 0xFF;                       
 
-                        if (((_sp & 0x0F) + (e & 0x0F)) > 0x0F)
-                            _r.F |= H;
+                        _halfCarry = ((_sp & 0x0F) + (e & 0x0F)) > 0x0F;
 
                         _sp = (ushort)(_sp + e);
 
@@ -500,11 +524,11 @@ namespace elbgb_core.CPU
                 #region rotate, shift and bit instructions
 
                 // the same rotate methods are used for the extended opcodes, these do not set the Z flag
-                case 0x07: _r.A = RotateLeft(_r.A); _r.F &= ~Z; break; // RLCA
-                case 0x17: _r.A = RotateLeftThroughCarry(_r.A); _r.F &= ~Z; break; // RLA
+                case 0x07: _r.A = RotateLeft(_r.A); _zero = false; break; // RLCA
+                case 0x17: _r.A = RotateLeftThroughCarry(_r.A); _zero = false; break; // RLA
 
-                case 0x0F: _r.A = RotateRight(_r.A); _r.F &= ~Z; break; // RRCA
-                case 0x1F: _r.A = RotateRightThroughCarry(_r.A); _r.F &= ~Z; break; // RRA
+                case 0x0F: _r.A = RotateRight(_r.A); _zero = false; break; // RRCA
+                case 0x1F: _r.A = RotateRightThroughCarry(_r.A); _zero = false; break; // RRA
 
                 // extended opcodes are prefixed with OxCB, read next byte and run opcode 
                 case 0xCB: ExecuteExtendedOpcode(ReadByte(_pc++)); break;
@@ -517,19 +541,19 @@ namespace elbgb_core.CPU
                 case 0xC3: JumpImmediate(); break; // JP nn
 
                 // loads the operand nn into the PC if condition cc and the status flag match
-                case 0xC2: JumpImmediate(!_r.F.FlagSet(Z)); break; // JP NZ,nn
-                case 0xCA: JumpImmediate(_r.F.FlagSet(Z)); break;  // JP Z,nn
-                case 0xD2: JumpImmediate(!_r.F.FlagSet(C)); break; // JP NC,nn
-                case 0xDA: JumpImmediate(_r.F.FlagSet(C)); break;  // JP C,nn
+                case 0xC2: JumpImmediate(!_zero); break; // JP NZ,nn
+                case 0xCA: JumpImmediate(_zero); break;  // JP Z,nn
+                case 0xD2: JumpImmediate(!_carry); break; // JP NC,nn
+                case 0xDA: JumpImmediate(_carry); break;  // JP C,nn
 
                 // jumps -127 to +129 steps from current address
                 case 0x18: JumpRelative(); break; // JR e
 
                 // if condition and status flag match, jumps -127 to +129 steps from current address
-                case 0x20: JumpRelative(!_r.F.FlagSet(Z)); break; // JR NZ,n
-                case 0x28: JumpRelative(_r.F.FlagSet(Z)); break;  // JR Z,n
-                case 0x30: JumpRelative(!_r.F.FlagSet(C)); break; // JR NC,n
-                case 0x38: JumpRelative(_r.F.FlagSet(C)); break;  // JR C,n
+                case 0x20: JumpRelative(!_zero); break; // JR NZ,n
+                case 0x28: JumpRelative(_zero); break;  // JR Z,n
+                case 0x30: JumpRelative(!_carry); break; // JR NC,n
+                case 0x38: JumpRelative(_carry); break;  // JR C,n
 
                 // loads the contents of register pair HL in program counter PC
                 case 0xE9: _pc = _r.HL; break; // JP (HL)
@@ -542,10 +566,10 @@ namespace elbgb_core.CPU
                 case 0xCD: CallImmediate(); break; // CALL nn
 
                 // if condition and status flag match, push PC onto stack and replace PC with immmediate value nn
-                case 0xC4: CallImmediate(!_r.F.FlagSet(Z)); break; // CALL NZ,n
-                case 0xCC: CallImmediate(_r.F.FlagSet(Z)); break;  // CALL Z,n
-                case 0xD4: CallImmediate(!_r.F.FlagSet(C)); break; // CALL NC,n
-                case 0xDC: CallImmediate(_r.F.FlagSet(C)); break;  // CALL C,n
+                case 0xC4: CallImmediate(!_zero); break; // CALL NZ,n
+                case 0xCC: CallImmediate(_zero); break;  // CALL Z,n
+                case 0xD4: CallImmediate(!_carry); break; // CALL NC,n
+                case 0xDC: CallImmediate(_carry); break;  // CALL C,n
 
                 // pops from the stack the PC value pushed when the subroutine was called
                 case 0xC9: Return(); break; // RET
@@ -554,10 +578,10 @@ namespace elbgb_core.CPU
                 case 0xD9: Return(); _ime = true; break; // RETI
 
                 // if condition and status flag match, pops from the stack the PC value pushed when the subroutine was called
-                case 0xC0: Return(!_r.F.FlagSet(Z)); break; // RET NZ
-                case 0xC8: Return(_r.F.FlagSet(Z)); break;  // RET Z
-                case 0xD0: Return(!_r.F.FlagSet(C)); break; // RET NC
-                case 0xD8: Return(_r.F.FlagSet(C)); break;  // RET C
+                case 0xC0: Return(!_zero); break; // RET NZ
+                case 0xC8: Return(_zero); break;  // RET Z
+                case 0xD0: Return(!_carry); break; // RET NC
+                case 0xD8: Return(_carry); break;  // RET C
 
                 // push PC onto stack and load the PC with the page 0 address provided by operand t
                 // operand t is provided in bits 3,4 and 5 of the operand (11tt t111) so masking opcode 
@@ -579,16 +603,16 @@ namespace elbgb_core.CPU
                 case 0x27: DecimalAdjustAccumulator(); break; // DAA
 
                 // takes the ones complement of register a
-                case 0x2F: _r.A = (byte)~_r.A; _r.F |= (N | H); break; // CPL
+                case 0x2F: _r.A = (byte)~_r.A; _negative = true; _halfCarry = true; break; // CPL
 
                 // PC advances, no other effects
                 case 0x00: break; // NOP
 
                 // complement carry flag, resets HN and preserves Z
-                case 0x3F: _r.F = (_r.F & (Z | C)) ^ C; break; // CCF
+                case 0x3F: _carry = !_carry; _halfCarry = false; _negative = false; break; // CCF
 
                 // set carry flag, resets HN and preserves Z
-                case 0x37: _r.F = (_r.F & Z) | C; break; //SCF
+                case 0x37: _carry = true; _halfCarry = false; _negative = false; break; //SCF
 
                 // disable/enable interrupts
                 case 0xF3: _ime = false; break; // DI
@@ -599,7 +623,7 @@ namespace elbgb_core.CPU
 
                 // TODO(david): Implement STOP
                 case 0x10: _pc++; break; // STOP
-
+                
 #endregion
 
                 default:
@@ -1018,43 +1042,37 @@ namespace elbgb_core.CPU
             int result = b1 + b2;
 
             // clear flags
-            _r.F = 0;
+            _negative = false;
 
             // carry
-            if (result > 0xFF)
-                _r.F |= C;
+            _carry = result > 0xFF;
 
             // half carry
-            if ((b1 & 0x0F) + (b2 & 0x0F) > 0x0F)
-                _r.F |= H;
+            _halfCarry = (b1 & 0x0F) + (b2 & 0x0F) > 0x0F;
 
             // zero 
-            if ((result & 0xFF) == 0)
-                _r.F |= Z;
+            _zero = (result & 0xFF) == 0;
 
             return (byte)result;
         }
 
         private byte AddWithCarry8Bit(byte b1, byte b2)
         {
-            int carry = _r.F.FlagSet(C) ? 1 : 0;
+            int carry = _carry ? 1 : 0;
 
             int result = b1 + b2 + carry;
 
             // clear flags
-            _r.F = 0;
+            _negative = false;
 
             // carry
-            if (result > 0xFF)
-                _r.F |= C;
+            _carry = result > 0xFF;
 
             // half carry
-            if ((b1 & 0x0F) + (b2 & 0x0F) + carry > 0x0F)
-                _r.F |= H;
+            _halfCarry = (b1 & 0x0F) + (b2 & 0x0F) + carry > 0x0F;
 
             // zero 
-            if ((result & 0xFF) == 0)
-                _r.F |= Z;
+            _zero = (result & 0xFF) == 0;
 
             return (byte)result;
         }
@@ -1064,43 +1082,37 @@ namespace elbgb_core.CPU
             int result = b1 - b2;
 
             // set subtract
-            _r.F = N;
+            _negative = true;
 
             // carry
-            if (result < 0x00)
-                _r.F |= C;
+            _carry = result < 0x00;
 
             // half carry
-            if ((b1 & 0x0F) - (b2 & 0x0F) < 0x00)
-                _r.F |= H;
+            _halfCarry = (b1 & 0x0F) - (b2 & 0x0F) < 0x00;
 
             // zero 
-            if ((result & 0xFF) == 0)
-                _r.F |= Z;
+            _zero = (result & 0xFF) == 0;
 
             return (byte)result;
         }
 
         private byte SubWithCarry8Bit(byte b1, byte b2)
         {
-            int carry = _r.F.FlagSet(C) ? 1 : 0;
+            int carry = _carry ? 1 : 0;
 
             int result = b1 - b2 - carry;
 
             // set subtract
-            _r.F = N;
+            _negative = true;
 
             // carry
-            if (result < 0x00)
-                _r.F |= C;
+            _carry = result < 0x00;
 
             // half carry
-            if ((b1 & 0x0F) - (b2 & 0x0F) - carry < 0x00)
-                _r.F |= H;
+            _halfCarry = (b1 & 0x0F) - (b2 & 0x0F) - carry < 0x00;
 
             // zero 
-            if ((result & 0xFF) == 0)
-                _r.F |= Z;
+            _zero = (result & 0xFF) == 0;
 
             return (byte)result;
         }
@@ -1109,12 +1121,14 @@ namespace elbgb_core.CPU
         {
             byte result = (byte)(b1 & b2);
 
+            _negative = false;
+            _carry = false;
+
             // set half carry
-            _r.F = H;
+            _halfCarry = true;
 
             // zero
-            if (result == 0)
-                _r.F |= Z;
+            _zero = result == 0;
 
             return result;
         }
@@ -1124,11 +1138,10 @@ namespace elbgb_core.CPU
             byte result = (byte)(b1 | b2);
 
             // clear flags
-            _r.F = 0;
+            _carry = _halfCarry = _negative = _zero = false;
 
             // zero
-            if (result == 0)
-                _r.F |= Z;
+            _zero = result == 0;
 
             return result;
         }
@@ -1138,11 +1151,10 @@ namespace elbgb_core.CPU
             byte result = (byte)(b1 ^ b2);
 
             // clear flags
-            _r.F = 0;
+            _carry = _halfCarry = _negative = _zero = false;
 
             // zero
-            if (result == 0)
-                _r.F |= Z;
+            _zero = result == 0;
 
             return result;
         }
@@ -1152,52 +1164,41 @@ namespace elbgb_core.CPU
             int result = b1 - b2;
 
             // set subtract
-            _r.F = N;
+            _negative = true;
 
             // carry
-            if (b1 < b2)
-                _r.F |= C;
+            _carry = b1 < b2;
 
             // half carry
-            if ((b1 & 0x0F) < (b2 & 0x0F))
-                _r.F |= H;
+            _halfCarry = (b1 & 0x0F) < (b2 & 0x0F);
 
             // zero 
-            if (b1 == b2)
-                _r.F |= Z;
+            _zero = b1 == b2;
         }
 
         private byte Inc8Bit(byte b)
         {
-            // preserve carry
-            _r.F &= C;
+            _negative = false;
 
             // half carry, if 0x0F before increment will carry
-            if ((b & 0x0F) == 0x0F)
-                _r.F |= H;
+            _halfCarry = (b & 0x0F) == 0x0F;
 
             // zero, if 0xFF before increment will inc to zero
-            if (b == 0xFF)
-                _r.F |= Z;
+            _zero = b == 0xFF;
 
             return (byte)(b + 1);
         }
 
         private byte Dec8Bit(byte b)
         {
-            // preserve carry
-            _r.F &= C;
-
             // set subtract
-            _r.F |= N;
+            _negative = true;
 
             // half carry, if 0x00 before decrement will borrow
-            if ((b & 0x0F) == 0x00)
-                _r.F |= H;
+            _halfCarry = (b & 0x0F) == 0x00;
 
             // zero, if 0x01 before decrement will dec to zero
-            if (b == 0x01)
-                _r.F |= Z;
+            _zero = b == 0x01;
 
             return (byte)(b - 1);
         }
@@ -1210,16 +1211,13 @@ namespace elbgb_core.CPU
         {
             int result = u1 + u2;
 
-            // preserve zero
-            _r.F &= Z;
+            _negative = false;
 
             // carry
-            if (result > 0xFFFF)
-                _r.F |= C;
+            _carry = result > 0xFFFF;
 
             // half carry
-            if ((u1 & 0x0FFF) + (u2 & 0x0FFF) > 0x0FFF)
-                _r.F |= H;
+            _halfCarry = (u1 & 0x0FFF) + (u2 & 0x0FFF) > 0x0FFF;
 
             return (ushort)result;
         }
@@ -1231,44 +1229,38 @@ namespace elbgb_core.CPU
         private byte RotateLeft(byte b)
         {
             // clear flags
-            _r.F = 0;
+            _carry = _halfCarry = _negative = _zero = false;
 
             // grab bit 7
             bool bit7 = ((b & 0x80) == 0x80);
             
             // set carry flag if old bit 7 was set
-            if (bit7)
-            {
-                _r.F |= C;
-            }
+            _carry = bit7;
 
             // shift left and place old bit 7 in LSB
             byte result = (byte)((b << 1) | (bit7 ? 1 : 0));
 
             // zero
-            if (result == 0)
-                _r.F |= Z;
+            _zero = result == 0;
 
             return result;
         }
 
         private byte RotateLeftThroughCarry(byte b)
         {
-            bool oldCarry = _r.F.FlagSet(C);
+            bool oldCarry = _carry;
 
             // clear flags
-            _r.F = 0;
+            _carry = _halfCarry = _negative = _zero = false;
 
             // set carry if top bit is set
-            if ((b & 0x80) == 0x80)
-                _r.F |= C;
+            _carry = (b & 0x80) == 0x80;
 
             // shift left and place old carry in LSB
             byte result = (byte)((b << 1) | (oldCarry ? 1 : 0));
 
             // zero
-            if (result == 0)
-                _r.F |= Z;
+            _zero = result == 0;
 
             return result;
         }
@@ -1276,44 +1268,38 @@ namespace elbgb_core.CPU
         private byte RotateRight(byte b)
         {
             // clear flags
-            _r.F = 0;
+            _carry = _halfCarry = _negative = _zero = false;
 
             // grab bit 0
             bool bit0 = ((b & 0x01) == 0x01);
 
             // set carry flag if old bit 0 was set
-            if (bit0)
-            {
-                _r.F |= C;
-            }
+            _carry = bit0;
 
             // shift right and place old bit 0 in MSB
             byte result = (byte)((b >> 1) | (bit0 ? 0x80 : 0));
 
             // zero
-            if (result == 0)
-                _r.F |= Z;
+            _zero = result == 0;
 
             return result;
         }
 
         private byte RotateRightThroughCarry(byte b)
         {
-            bool oldCarry = _r.F.FlagSet(C);
+            bool oldCarry = _carry;
 
             // clear flags
-            _r.F = 0;
+            _carry = _halfCarry = _negative = _zero = false;
 
             // set carry if bottom bit is set
-            if ((b & 0x01) == 0x01)
-                _r.F |= C;
+            _carry = (b & 0x01) == 0x01;
 
             // shift left and place old carry in MSB
             byte result = (byte)((b >> 1) | (oldCarry ? 0x80 : 0));
 
             // zero
-            if (result == 0)
-                _r.F |= Z;
+            _zero = result == 0;
 
             return result;
         }
@@ -1321,18 +1307,16 @@ namespace elbgb_core.CPU
         private byte ShiftLeftArithmetic(byte b)
         {
             // clear flags
-            _r.F = 0;
+            _carry = _halfCarry = _negative = _zero = false;
 
             // set carry if top bit is set
-            if ((b & 0x80) == 0x80)
-                _r.F |= C;
+            _carry = (b & 0x80) == 0x80;
 
             // shift left
             byte result = (byte)(b << 1);
 
             // zero
-            if (result == 0)
-                _r.F |= Z;
+            _zero = result == 0;
 
             return result;
         }
@@ -1340,7 +1324,7 @@ namespace elbgb_core.CPU
         private byte ShiftRightArithmetic(byte b)
         {
             // clear flags
-            _r.F = 0;
+            _carry = _halfCarry = _negative = _zero = false;
 
             // grab bit 0
             bool bit0 = ((b & 0x01) == 0x01);
@@ -1349,17 +1333,13 @@ namespace elbgb_core.CPU
             byte bit7 = (byte)(b & 0x80);
 
             // set carry flag if old bit 0 was set
-            if (bit0)
-            {
-                _r.F |= C;
-            }
+			_carry = bit0;
 
             // shift right, set bit 7 to previous value (sign extend)
             byte result = (byte)((b >> 1) | bit7);
 
             // zero
-            if (result == 0)
-                _r.F |= Z;
+            _zero = result == 0;
 
             return result;
         }
@@ -1367,23 +1347,19 @@ namespace elbgb_core.CPU
         private byte ShiftRightLogical(byte b)
         {
             // clear flags
-            _r.F = 0;
+            _carry = _halfCarry = _negative = _zero = false;
 
             // grab bit 0
             bool bit0 = ((b & 0x01) == 0x01);
 
             // set carry flag if old bit 0 was set
-            if (bit0)
-            {
-                _r.F |= C;
-            }
+            _carry = bit0;
 
             // shift right
             byte result = (byte)(b >> 1);
 
             // zero
-            if (result == 0)
-                _r.F |= Z;
+            _zero = result == 0;
 
             return result;
         }
@@ -1391,15 +1367,14 @@ namespace elbgb_core.CPU
         private byte Swap(byte b)
         {
             // clear flags
-            _r.F = 0;
+            _carry = _halfCarry = _negative = _zero = false;
 
             // swap high and low nibble
 
             var result = ((b & 0xF0) >> 4) | ((b & 0x0F) << 4);
 
             // zero
-            if (result == 0)
-                _r.F |= Z;
+            _zero = result == 0;
 
             return (byte)result;
         }
@@ -1411,17 +1386,13 @@ namespace elbgb_core.CPU
         // test if bit bit is set in byte reg
         private void TestBit(byte reg, int bit)
         {
-            // preserve carry
-            _r.F &= C;
+            _negative = false;
 
             // set half carry
-            _r.F |= H;
+            _halfCarry = true;
 
             // set zero flag if bit N of reg is not set
-            if ((reg & (1 << bit)) == 0)
-            {
-                _r.F |= Z;
-            }
+            _zero = (reg & (1 << bit)) == 0;
         }
 
         private byte SetBit(byte reg, int bit)
@@ -1441,17 +1412,17 @@ namespace elbgb_core.CPU
         private void DecimalAdjustAccumulator()
         {
             byte correctionFactor = 0;
-            bool subtraction = _r.F.FlagSet(N);
+            bool subtraction = _negative;
 
-            if ((_r.A > 0x99 && !subtraction) || _r.F.FlagSet(C))
+            if ((_r.A > 0x99 && !subtraction) || _carry)
             {
                 correctionFactor |= 0x60;
-                _r.F |= C;
+                _carry = true; ;
             }
             else
-                _r.F &= ~C;
+                _carry = false;
 
-            if (((_r.A & 0x0F) > 0x09 && !subtraction) || _r.F.FlagSet(H))
+            if (((_r.A & 0x0F) > 0x09 && !subtraction) || _halfCarry)
                 correctionFactor |= 0x06;
 
             if (!subtraction)
@@ -1459,10 +1430,9 @@ namespace elbgb_core.CPU
             else
                 _r.A -= correctionFactor;
 
-            _r.F &= ~(Z | H);
+            _zero = _halfCarry = false;
 
-            if (_r.A == 0)
-                _r.F |= Z;
+            _zero = _r.A == 0;
         }
 
         private void Halt()

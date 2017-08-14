@@ -10,9 +10,9 @@ namespace elbgb_core.CPU
     [StructLayout(LayoutKind.Explicit)]
     struct Registers
     {
-        [FieldOffset(0)] public ushort AF;
+        //[FieldOffset(0)] public ushort AF;
         [FieldOffset(1)] public byte A;
-        [FieldOffset(0)] public StatusFlags F;
+        //[FieldOffset(0)] public StatusFlags F;
 
         [FieldOffset(2)] public ushort BC;
         [FieldOffset(3)] public byte B;
