@@ -24,29 +24,31 @@ namespace elbgb_core.CPU
         private bool _halfCarry;
         private bool _carry;
 
+        public byte F
+        {
+            get
+            {
+                int flags = 0;
+
+                flags |= _zero ? 0x80 : 0;
+                flags |= _negative ? 0x40 : 0;
+                flags |= _halfCarry ? 0x20 : 0;
+                flags |= _carry ? 0x10 : 0;
+
+                return (byte)flags;
+            }
+            set
+            {
+                _zero = (value & 0x80) == 0x80;
+                _negative = (value & 0x40) == 0x40;
+                _halfCarry = (value & 0x20) == 0x20;
+                _carry = (value & 0x10) == 0x10;
+            }
+        }
+        
         private bool _halted;
         private bool _haltBug;
         private bool _enableInterrupts;
-
-        private byte GetFlagsByte()
-        {
-            int flags = 0;
-
-            flags |= _zero ? 0x80 : 0;
-            flags |= _negative ? 0x40 : 0;
-            flags |= _halfCarry ? 0x20 : 0;
-            flags |= _carry ? 0x10 : 0;
-
-            return (byte)flags;
-        }
-
-        private void SetFlagsByte(byte flags)
-        {
-            _zero = (flags & 0x80) == 0x80;
-            _negative = (flags & 0x40) == 0x40;
-            _halfCarry = (flags & 0x20) == 0x20;
-            _carry = (flags & 0x10) == 0x10;
-        }
 
         public LR35902(SystemClock clock, Interconnect interconnect, InterruptController interruptController)
         {
