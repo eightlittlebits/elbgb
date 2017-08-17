@@ -56,7 +56,7 @@ namespace elbgb_core.CPU
         {
             _interconnect.WriteByte(address, value);
             _clock.AddMachineCycle();
-        } 
+        }
 
         #endregion
 
@@ -914,7 +914,7 @@ namespace elbgb_core.CPU
         private void JumpImmediate()
         {
             ushort address = ReadWord(_pc);
-            
+
             _pc = address;
             _clock.AddMachineCycle();
         }
@@ -1235,7 +1235,7 @@ namespace elbgb_core.CPU
 
             // grab bit 7
             bool bit7 = ((b & 0x80) == 0x80);
-            
+
             // set carry flag if old bit 7 was set
             if (bit7)
             {
@@ -1394,7 +1394,6 @@ namespace elbgb_core.CPU
             _r.F = 0;
 
             // swap high and low nibble
-
             var result = ((b & 0xF0) >> 4) | ((b & 0x0F) << 4);
 
             // zero
@@ -1448,16 +1447,11 @@ namespace elbgb_core.CPU
                 correctionFactor |= 0x60;
                 _r.F |= C;
             }
-            else
-                _r.F &= ~C;
 
             if (((_r.A & 0x0F) > 0x09 && !subtraction) || _r.F.FlagSet(H))
                 correctionFactor |= 0x06;
 
-            if (!subtraction)
-                _r.A += correctionFactor;
-            else
-                _r.A -= correctionFactor;
+            _r.A += (byte)(subtraction ? -correctionFactor : correctionFactor);
 
             _r.F &= ~(Z | H);
 
