@@ -166,10 +166,7 @@ namespace elbgb_test
                     hash = framesink.HashFrame();
                 }
 
-                using (var stream = new FileStream(Path.ChangeExtension(testPath, "png"), FileMode.Create))
-                {
-                    framesink.SaveFrameAsPng(stream);
-                }
+                framesink.SaveFrameAsPng(Path.ChangeExtension(testRom, "png"));
             }
 
             return hash;

@@ -36,7 +36,7 @@ namespace elbgb_test
             return string.Concat(hash.Select(x => x.ToString("x2")));
         }
 
-        public void SaveFrameAsPng(Stream stream)
+        public void SaveFrameAsPng(string filename)
         {
             int imageWidth = Width;// * 2;
             int imageHeight = Height;// * 2;
@@ -61,7 +61,7 @@ namespace elbgb_test
 
                 bitmap.UnlockBits(bitmapData);
 
-                bitmap.Save(stream, ImageFormat.Png);
+                bitmap.Save(filename, ImageFormat.Png);
             }
         }
 
