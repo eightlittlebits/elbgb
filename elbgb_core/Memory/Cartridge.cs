@@ -67,7 +67,7 @@ namespace elbgb_core.Memory
             interconnect.AddAddressHandler(0x0100, 0x7FFF, this); // rom
             interconnect.AddAddressHandler(0xA000, 0xBFFF, this); // ram
 
-            interconnect.AddAddressHandler(0xFF50, new DeferredMemoryMapping(interconnect, 0x0000, 0x00FF, this));
+            interconnect.AddAddressHandler(0xFF50, new TriggeredMemoryMapping(interconnect, 0x0000, 0x00FF, TriggerType.Write, this));
 
             Header = header;
             _romData = romData;

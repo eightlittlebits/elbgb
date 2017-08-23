@@ -58,7 +58,7 @@
     <Compile Include="IVideoFrameSink.cs" />
     <Compile Include="Memory\Cartridge.cs" />
     <Compile Include="Memory\CartridgeHeader.cs" />
-    <Compile Include="Memory\DeferredMemoryMapping.cs" />
+    <Compile Include="Memory\TriggeredMemoryMapping.cs" />
     <Compile Include="Memory\Mappers\MBC1.cs" />
     <Compile Include="Memory\Mappers\MBC0.cs" />
     <Compile Include="Memory\Interconnect.cs" />
