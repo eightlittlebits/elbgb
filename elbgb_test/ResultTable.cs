@@ -56,9 +56,14 @@ namespace elbgb_test
     </style>
 </head>
 <body>
-    <h1>elbgb_test results</h1>
-    <div class=""summary"">
-        <p>Executed ");
+    <h1>elbgb_test results - ");
+            
+            #line 34 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(_manifestName));
+            
+            #line default
+            #line hidden
+            this.Write("</h1>\r\n    <div class=\"summary\">\r\n        <p>Executed ");
             
             #line 36 "E:\projects\elbgb2\elbgb_test\ResultTable.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(_testResults.Count));

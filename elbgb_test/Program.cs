@@ -48,9 +48,34 @@ namespace elbgb_test
 
             List<Test> tests = LoadTestManifest(manifestPath);
 
+            var startTime = DateTime.Now;
+            Console.WriteLine($"Testing Started: {startTime}\n");
 
-            SaveTestManifest(manifestPath, tests);
             RunTests(testPath, tests);
+
+            var endTime = DateTime.Now;
+            Console.WriteLine($"\n\nTesting Finished: {endTime}\n");
+
+            TimeSpan testDuration = (endTime - startTime);
+
+            Console.WriteLine($"{tests.Count} tests completed in {testDuration.TotalSeconds} seconds\n");
+
+            List<Test> results = tests.Where(x => x.Status != x.Result).ToList();
+
+            if (results.Count(x => x.Result == TestStatus.Inconclusive) > 0)
+                PrintResults(results, TestStatus.Inconclusive, ConsoleColor.Gray);
+
+            if (results.Count(x => x.Result == TestStatus.Failing) > 0)
+                PrintResults(results, TestStatus.Failing, ConsoleColor.Red);
+
+            if (results.Count(x => x.Result == TestStatus.Passing) > 0)
+                PrintResults(results, TestStatus.Passing, ConsoleColor.Green);
+
+            PrintResultCounts(tests);
+
+            GenerateResultFile(testPath, Path.GetFileNameWithoutExtension(manifest), tests, testDuration);
+
+            //SaveTestManifest(manifestPath, tests);
 
             if (Debugger.IsAttached)
                 Console.ReadLine();
@@ -77,9 +102,6 @@ namespace elbgb_test
 
         private static void RunTests(string testPath, List<Test> tests)
         {
-            var startTime = DateTime.Now;
-            Console.WriteLine($"Testing Started: {startTime}\n");
-
             object progressLock = new object();
             int testCount = tests.Count;
             int completedTests = 0;
@@ -124,27 +146,8 @@ namespace elbgb_test
                 }
             });
 
-            var endTime = DateTime.Now;
-            Console.WriteLine($"\n\nTesting Finished: {endTime}\n");
 
-            TimeSpan testDuration = (endTime - startTime);
 
-            Console.WriteLine($"{tests.Count} tests completed in {testDuration.TotalSeconds} seconds\n");
-
-            List<Test> results = tests.Where(x => x.Status != x.Result).ToList();
-
-            if (results.Count(x => x.Result == TestStatus.Inconclusive) > 0)
-                PrintResults(results, TestStatus.Inconclusive, ConsoleColor.Gray);
-
-            if (results.Count(x => x.Result == TestStatus.Failing) > 0)
-                PrintResults(results, TestStatus.Failing, ConsoleColor.Red);
-
-            if (results.Count(x => x.Result == TestStatus.Passing) > 0)
-                PrintResults(results, TestStatus.Passing, ConsoleColor.Green);
-
-            PrintResultCounts(tests);
-
-            GenerateResultFile(Path.Combine(testPath, "results.html"), tests, testDuration);
         }
 
         private static string ExecuteRom(string testRom, string expectedHash)
@@ -226,10 +229,12 @@ namespace elbgb_test
             Console.WriteLine($"\tPassing:\t{passingCount} ({diffPassing:+#;-#;0})");
         }
 
-        private static void GenerateResultFile(string filename, List<Test> tests, TimeSpan duration)
+        private static void GenerateResultFile(string path, string manifestName, List<Test> tests, TimeSpan duration)
         {
-            ResultTable resultTableGenerator = new ResultTable(tests, duration);
+            ResultTable resultTableGenerator = new ResultTable(manifestName, tests, duration);
             string pageContent = resultTableGenerator.TransformText();
+
+            string filename = Path.Combine(path, manifestName + "-results.html");
             File.WriteAllText(filename, pageContent);
         }
     }

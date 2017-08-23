@@ -31,7 +31,7 @@
     </style>
 </head>
 <body>
-    <h1>elbgb_test results</h1>
+    <h1>elbgb_test results - <#= _manifestName #></h1>
     <div class="summary">
         <p>Executed <#= _testResults.Count #> tests in <#= _duration.TotalSeconds.ToString("F3") #> seconds (<#= TimeSpan.FromMilliseconds(_testResults.Sum(x => x.Duration)).ToString(@"hh\:mm\:ss\.fff") #> in tests).</p>
         <p><#= _testResults.Count(x => x.Result == TestStatus.Inconclusive) #> inconclusive, <#= _testResults.Count(x => x.Result == TestStatus.Failing) #> failing, <#= _testResults.Count(x => x.Result == TestStatus.Passing) #> passing</p>
