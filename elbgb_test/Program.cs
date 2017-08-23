@@ -9,27 +9,26 @@ using elbgb_core;
 
 namespace elbgb_test
 {
-    class Program
+    internal static class Config
     {
-        static XmlSerializer TestSerializer = new XmlSerializer(typeof(List<Test>), new XmlRootAttribute("Tests"));
+        internal static int FrameLimit { get; set; } = 60 * 60;
+    }
+
+    internal static class Program
+    {
+        private static XmlSerializer TestSerializer = new XmlSerializer(typeof(List<Test>), new XmlRootAttribute("Tests"));
 
         static void Main(string[] args)
         {
             string manifest = string.Empty;
-            TestStatus showResults = TestStatus.None;
-            int frameLimit = 60 * 60;
-            
+
             for (int i = 0; i < args.Length; i++)
             {
                 switch (args[i])
                 {
-                    case "--show" when i < args.Length - 1:
-                        Enum.TryParse(args[++i], true, out showResults);
-                        break;
-
                     case "--timeout" when i < args.Length - 1:
                         int secondsToRun = int.Parse(args[++i]);
-                        frameLimit = 60 * secondsToRun;
+                        Config.FrameLimit = 60 * secondsToRun;
                         break;
 
                     default:
@@ -49,9 +48,9 @@ namespace elbgb_test
 
             List<Test> tests = LoadTestManifest(manifestPath);
 
-            RunTests(testPath, tests, showResults, frameLimit);
 
             SaveTestManifest(manifestPath, tests);
+            RunTests(testPath, tests);
 
             if (Debugger.IsAttached)
                 Console.ReadLine();
@@ -76,7 +75,7 @@ namespace elbgb_test
             }
         }
 
-        private static void RunTests(string testPath, List<Test> tests, TestStatus showResults, int frameLimit)
+        private static void RunTests(string testPath, List<Test> tests)
         {
             var startTime = DateTime.Now;
             Console.WriteLine($"Testing Started: {startTime}\n");
@@ -85,13 +84,15 @@ namespace elbgb_test
             int testCount = tests.Count;
             int completedTests = 0;
 
+            UpdateProgress(testCount, 0);
+
             Parallel.ForEach(tests, test =>
             {
                 try
                 {
                     Stopwatch s = Stopwatch.StartNew();
 
-                    string hash = ExecuteRom(testPath, test, frameLimit);
+                    string hash = ExecuteRom(Path.Combine(testPath, test.Name), test.Hash);
 
                     s.Stop();
                     test.Duration = s.ElapsedMilliseconds;
@@ -130,7 +131,7 @@ namespace elbgb_test
 
             Console.WriteLine($"{tests.Count} tests completed in {testDuration.TotalSeconds} seconds\n");
 
-            List<Test> results = tests.Where(x => x.Status != x.Result || showResults.HasFlag(x.Result)).ToList();
+            List<Test> results = tests.Where(x => x.Status != x.Result).ToList();
 
             if (results.Count(x => x.Result == TestStatus.Inconclusive) > 0)
                 PrintResults(results, TestStatus.Inconclusive, ConsoleColor.Gray);
@@ -146,7 +147,7 @@ namespace elbgb_test
             GenerateResultFile(Path.Combine(testPath, "results.html"), tests, testDuration);
         }
 
-        private static string ExecuteRom(string testPathRoot, Test test, int frameLimit)
+        private static string ExecuteRom(string testRom, string expectedHash)
         {
             string hash = string.Empty;
 
@@ -154,13 +155,11 @@ namespace elbgb_test
             {
                 var gameboy = new GameBoy(framesink, new NullInputSource());
 
-                string testPath = Path.Combine(testPathRoot, test.Name);
-
-                gameboy.LoadRom(File.ReadAllBytes(testPath));
+                gameboy.LoadRom(File.ReadAllBytes(testRom));
 
                 int framesRun = 0;
-                
-                while (framesRun++ < frameLimit && hash != test.Hash)
+
+                while (framesRun++ < Config.FrameLimit && hash != expectedHash)
                 {
                     gameboy.RunFrame();
                     hash = framesink.HashFrame();
