@@ -15,11 +15,6 @@ namespace elbgb_core.Memory
 
         internal static Cartridge LoadRom(Interconnect interconnect, byte[] romData)
         {
-            if (romData == null)
-            {
-                return new NullCartridge(interconnect, default(CartridgeHeader), null);
-            }
-
             CartridgeHeader header = ReadCartridgeHeader(romData);
 
             switch (header.CartridgeType)

@@ -63,7 +63,6 @@
     <Compile Include="Memory\Mappers\MBC0.cs" />
     <Compile Include="Memory\Interconnect.cs" />
     <Compile Include="LCDController.cs" />
-    <Compile Include="Memory\NullCartridge.cs" />
     <Compile Include="Memory\SystemMemory.cs" />
     <Compile Include="Memory\UnmappedMemory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

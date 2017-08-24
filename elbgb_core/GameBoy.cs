@@ -42,8 +42,6 @@ namespace elbgb_core
             LCD = new LCDController(Clock, Interconnect, InterruptController, frameSink);
             PSG = new SoundController(Clock, Interconnect);
             Input = new InputController(Interconnect, InterruptController, inputSource);
-
-            Cartridge = Cartridge.LoadRom(Interconnect, null);
         }
 
         public void LoadRom(byte[] romData)
