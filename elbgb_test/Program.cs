@@ -162,11 +162,11 @@ namespace elbgb_test
 
                 int framesRun = 0;
 
-                while (framesRun++ < Config.FrameLimit && hash != expectedHash)
+                do
                 {
                     gameboy.RunFrame();
                     hash = framesink.HashFrame();
-                }
+                } while (++framesRun < Config.FrameLimit && hash != expectedHash);
 
                 framesink.SaveFrameAsPng(Path.ChangeExtension(testRom, "png"));
             }
