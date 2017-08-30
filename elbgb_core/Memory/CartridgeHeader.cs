@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 
 namespace elbgb_core.Memory
 {
@@ -46,12 +42,8 @@ namespace elbgb_core.Memory
         HudsonHuC1 = 0xFF,
     }
 
-    public struct CartridgeHeader
+    public class CartridgeHeader
     {
-        public byte[] EntryPoint;
-
-        public byte[] NintendoLogo;
-        
         public string GameTitle;
         public string GameCode;
         public CgbSupportCode CgbSupportCode;
@@ -66,5 +58,31 @@ namespace elbgb_core.Memory
 
         public byte ComplementCheck;
         public ushort Checksum;
+
+        public CartridgeHeader(byte[] romData)
+        {
+            // 0x134 - 0x13E - 11 ascii characters of the game title
+            GameTitle = Encoding.ASCII.GetString(romData, 0x134, 11);
+
+            // 0x13F - 0x142 - 4 ascii character game code
+            GameCode = Encoding.ASCII.GetString(romData, 0x13F, 4);
+
+            CgbSupportCode = (CgbSupportCode)romData[0x143];
+
+            // 0x144 - 0x145 - 2 ascii character licensee code
+            MakerCode = Encoding.ASCII.GetString(romData, 0x144, 2);
+
+            SgbSupportCode = romData[0x146];
+            CartridgeType = (CartridgeType)romData[0x147];
+            RomSize = romData[0x148];
+            ExternalRamSize = romData[0x149];
+            DestinationCode = romData[0x14A];
+            OldLicenseeCode = romData[0x14B];
+            MaskRomVersion = romData[0x14C];
+
+            ComplementCheck = romData[0x14D];
+
+            Checksum = (ushort)((romData[0x14E] << 8) | romData[0x14F]);
+        }
     }
 }

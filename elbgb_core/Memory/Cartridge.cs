@@ -1,121 +1,76 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using elbgb_core.Memory.Mappers;
 
 namespace elbgb_core.Memory
 {
-    public abstract class Cartridge : IMemoryMappedComponent
+    partial class Cartridge : IMemoryMappedComponent
     {
-        public CartridgeHeader Header { get; set; }
+        public const int RomBankSize = 0x4000;
+        public const int RamBankSize = 0x2000;
 
-        protected byte[] _romData;
+        private IMemoryBankController _mbc;
 
-        internal static Cartridge LoadRom(Interconnect interconnect, byte[] romData)
-        {
-            CartridgeHeader header = ReadCartridgeHeader(romData);
+        private CartridgeHeader _header;
+        private byte[] _rom;
 
-            switch (header.CartridgeType)
-            {
-                case CartridgeType.RomOnly:
-                    return new Mappers.MBC0(interconnect, header, romData);
+        private bool _hasRam;
+        private int _ramSize;
+        private byte[] _ram;
 
-                case CartridgeType.Mbc1:
-                case CartridgeType.Mbc1Ram:
-                case CartridgeType.Mbc1RamBattery:
-                    return new Mappers.MBC1(interconnect, header, romData);
+        internal CartridgeHeader Header { get => _header; }
+        public bool HasRam { get => _hasRam; }
 
-                case CartridgeType.Mbc2:
-                case CartridgeType.Mbc2Battery:
-                case CartridgeType.RomRam:
-                case CartridgeType.RomRamBattery:
-                case CartridgeType.MMM01:
-                case CartridgeType.MMM01Ram:
-                case CartridgeType.MMM01RamBattery:
-                case CartridgeType.Mbc3TimerBattery:
-                case CartridgeType.Mbc3TimerRamBattery:
-                case CartridgeType.Mbc3:
-                case CartridgeType.Mbc3Ram:
-                case CartridgeType.Mbc3RamBattery:
-                case CartridgeType.Mbc4:
-                case CartridgeType.Mbc4Ram:
-                case CartridgeType.Mbc4RamBattery:
-                case CartridgeType.Mbc5:
-                case CartridgeType.Mbc5Ram:
-                case CartridgeType.Mbc5RamBattery:
-                case CartridgeType.Mbc5Rumble:
-                case CartridgeType.Mbc5RumbleRam:
-                case CartridgeType.Mbc5RumbleRamBattery:
-                case CartridgeType.PocketCamera:
-                case CartridgeType.BandaiTama5:
-                case CartridgeType.HudsonHuC3:
-                case CartridgeType.HudsonHuC1:
-                default:
-                    throw new NotImplementedException($"Mapper {header.CartridgeType} ({header.CartridgeType:X}) not implemented.");
-            }
-        }
-
-        internal Cartridge(Interconnect interconnect, CartridgeHeader header, byte[] romData)
+        public Cartridge(Interconnect interconnect, byte[] romData)
         {
             interconnect.AddAddressHandler(0x0100, 0x7FFF, this); // rom
             interconnect.AddAddressHandler(0xA000, 0xBFFF, this); // ram
 
             interconnect.AddAddressHandler(0xFF50, new TriggeredMemoryMapping(interconnect, 0x0000, 0x00FF, TriggerType.Write, this));
 
-            Header = header;
-            _romData = romData;
-        }
+            _header = new CartridgeHeader(romData);
 
-        public abstract byte ReadByte(ushort address);
-        public abstract void WriteByte(ushort address, byte value);
+            _rom = romData;
 
-        public abstract void LoadExternalRam(Stream stream);
-        public abstract void SaveExternalRam(Stream stream);
-
-        private static CartridgeHeader ReadCartridgeHeader(byte[] romData)
-        {
-            CartridgeHeader header = default(CartridgeHeader);
-
-            // 0x100 - 0x103 - entry point
-            header.EntryPoint = new byte[4];
-            header.EntryPoint[0] = romData[0x100];
-            header.EntryPoint[1] = romData[0x101];
-            header.EntryPoint[2] = romData[0x102];
-            header.EntryPoint[3] = romData[0x103];
-
-            // 0x104 - 0x133 - 48 byte nintendo logo
-            header.NintendoLogo = new byte[48];
-            for (int i = 0; i < 48; i++)
+            // generate appropriate sized RAM
+            if (_header.ExternalRamSize > 0)
             {
-                header.NintendoLogo[i] = romData[0x104 + i];
+                _hasRam = true;
+
+                switch (_header.ExternalRamSize)
+                {
+                    case 1: _ramSize = 0x00800; break; // 16Kbit, 2KB
+                    case 2: _ramSize = 0x02000; break; // 64Kbit, 8KB
+                    case 3: _ramSize = 0x08000; break; // 256Kbit, 32KB
+                    case 4: _ramSize = 0x20000; break; // 1024Kbit, 128KB
+                    case 5: _ramSize = 0x10000; break; // 512Kbit, 64KB
+
+                    default:
+                        throw new ArgumentOutOfRangeException("Unsupported RAM size specified");
+                }
+
+                _ram = new byte[_ramSize];
             }
 
-            // 0x134 - 0x13E - 11 ascii characters of the game title
-            header.GameTitle = Encoding.ASCII.GetString(romData, 0x134, 11);
+            // create appropriate mapper
+            switch (_header.CartridgeType)
+            {
+                case CartridgeType.RomOnly:
+                    _mbc = new RomOnly(_rom);
+                    break;
 
-            // 0x13F - 0x142 - 4 ascii character game code
-            header.GameCode = Encoding.ASCII.GetString(romData, 0x13F, 4);
+                case CartridgeType.Mbc1:
+                case CartridgeType.Mbc1Ram:
+                case CartridgeType.Mbc1RamBattery:
+                    _mbc = new MBC1(_rom, _ram);
+                    break;
 
-            header.CgbSupportCode = (CgbSupportCode)romData[0x143];
-
-            // 0x144 - 0x145 - 2 ascii character licensee code
-            header.MakerCode = Encoding.ASCII.GetString(romData, 0x144, 2);
-
-            header.SgbSupportCode = romData[0x146];
-            header.CartridgeType = (CartridgeType)romData[0x147];
-            header.RomSize = romData[0x148];
-            header.ExternalRamSize = romData[0x149];
-            header.DestinationCode = romData[0x14A];
-            header.OldLicenseeCode = romData[0x14B];
-            header.MaskRomVersion = romData[0x14C];
-
-            header.ComplementCheck = romData[0x14D];
-
-            header.Checksum = (ushort)((romData[0x14E] << 8) | romData[0x14F]);
-
-            return header;
+                default:
+                    throw new NotImplementedException($"Mapper {_header.CartridgeType} ({_header.CartridgeType:X}) not implemented.");
+            }
         }
+        
+        public byte ReadByte(ushort address) => _mbc.ReadByte(address);
+
+        public void WriteByte(ushort address, byte value) => _mbc.WriteByte(address, value);
     }
 }

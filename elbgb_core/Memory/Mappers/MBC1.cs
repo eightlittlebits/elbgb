@@ -1,166 +1,123 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace elbgb_core.Memory.Mappers
 {
-    class MBC1 : Cartridge
+    class MBC1 : IMemoryBankController
     {
+        private readonly byte[] _rom;
+        private readonly byte[] _ram;
+
+        private readonly int _romSizeMask;
+        private readonly int _ramSizeMask;
+
+        private int _bank1;
+        private int _bank2;
+        private int _mode;
+
         private bool _ramEnabled;
-        private int _romBank;
-        private int _ramBank;
-        private int _bankMode;
 
-        private bool _hasRam;
-        private byte[] _ram;
+        private int _loRomOffset;
+        private int _hiRomOffset;
+        private int _ramOffset;
 
-        public MBC1(Interconnect interconnect, CartridgeHeader header, byte[] romData)
-            : base(interconnect, header, romData)
+        public MBC1(byte[] rom, byte[] ram)
         {
-            _ramEnabled = false;
-            _romBank = 1;
-            _ramBank = 0;
-            _bankMode = 0;
+            _rom = rom;
+            _romSizeMask = rom.Length - 1;
 
-            // generate appropriate sized RAM
-            if (header.ExternalRamSize > 0)
+            if (ram != null)
             {
-                _hasRam = true;
-
-                switch (header.ExternalRamSize)
-                {
-                    case 2: _ram = new byte[0x2000]; break; // 64Kbit, 8KB
-                    case 3: _ram = new byte[0x8000]; break; // 256Kbit, 32KB
-                }
+                _ram = ram;
+                _ramSizeMask = ram.Length - 1;
             }
+
+            _bank1 = 1;
+            _bank2 = 0;
+            _mode = 0;
+
+            UpdateOffsets();
         }
 
-        public override void LoadExternalRam(Stream stream)
+        public byte ReadByte(ushort address)
         {
-            int index = 0;
-            int count = (int)stream.Length;
-
-            while (count > 0)
-            {
-                int n = stream.Read(_ram, index, count);
-
-                index += n;
-                count -= n;
-            }
-        }
-
-        public override void SaveExternalRam(Stream stream)
-        {
-            if (_hasRam)
-            {
-                stream.Write(_ram, 0, _ram.Length);
-            }
-        }
-
-        public override byte ReadByte(ushort address)
-        {
-            // 0x0000 - 0x3FFF - ROM Bank 0
+            // ROM in the 0x0000-0x3FFF area
             if (address < 0x4000)
             {
-                return _romData[address];
+                return _rom[(address + _loRomOffset) & _romSizeMask];
             }
-            // 0x4000 - 0x7FFF - ROM Bank n
+            // ROM in the 0x4000-0x7FFF area
             else if (address < 0x8000)
             {
-                return _romData[(address - 0x4000) + (_romBank * 0x4000)];
+                return _rom[((address - 0x4000) + _hiRomOffset) & _romSizeMask];
             }
-            // 0xA000 - 0xBFFF - Expansion RAM
+            // RAM in the 0xA000-0xBFFF area
             else if (_ramEnabled && address >= 0xA000 && address < 0xC000)
             {
-                // bank mode 0 - 16Mbit ROM / 64Kbit RAM, limited to first RAM bank
-                if (_bankMode == 0)
-                {
-                    return _ram[address - 0xA000];
-                }
-                // bank mode 1 - 4MBit ROM / 256Kbit RAM, 4 RAM banks
-                else
-                {
-                    return _ram[(address - 0xA000) + (_ramBank * 0x2000)];
-                }
+                return _ram[((address - 0xA000) + _ramOffset) & _ramSizeMask];
             }
-            else
-                return 0xFF;
+
+            return 0xFF;
         }
 
-        public override void WriteByte(ushort address, byte value)
+        public void WriteByte(ushort address, byte value)
         {
-            // MBC1 has 4 hardware registers to control the mapping:
-            //
-            // Register 0: 0x0000-0x1FFF - RAM Enable, value 0x0A
-            //                Writing 0x0A to this enables RAM access
-            // Register 1: 0x2000-0x3FFF - ROM Bank Select, values 0x01-0x1F
-            // Register 2: 0x4000-0x5FFF - Upper ROM bank/RAM bank select, values 0-3
-            //                Upper ROM bank code when using 8Mbits or more of ROM (and register 3 is 0)
-            //                RAM bank code when using 256kbits of RAM (and register 3 is 1)
-            // Register 3: 0x6000-0x7FFF - ROM/RAM Change, values 0-1
-            //                When 0 Register 2 controls the upper ROM banks
-            //                When 1 Register 2 controls the RAM bank select
-
-            // expansion ram
-            if (_ramEnabled && address >= 0xA000 && address < 0xC000)
+            // 0x0000-0x1FFF - RAM_EN - MBC1 RAM enable register
+            if (address < 0x2000)
             {
-                // bank mode 0 - 16Mbit ROM / 64Kbit RAM, limited to first RAM bank
-                if (_bankMode == 0)
+                if (_ram != null && (value & 0x0F) == 0x0A)
                 {
-                    _ram[address - 0xA000] = value;
-                }
-                // bank mode 1 - 4MBit ROM / 256Kbit RAM, 4 RAM banks
-                else
-                {
-                    _ram[(address - 0xA000) + (_romBank * 0x2000)] = value;
-                }
-            }
-            // 0x0000 - 0x1FFF - register 0 - RAM enable
-            else if (address < 0x2000)
-            {
-                if (_hasRam && value == 0x0A)
                     _ramEnabled = true;
+                }
                 else
+                {
                     _ramEnabled = false;
+                }
             }
-            // 0x2000 - 0x3FFF - register 1 - ROM bank select
+            // 0x2000-0x3FFF - BANK1 - MBC1 bank register 1
             else if (address < 0x4000)
             {
-                // register 1 sets the low 5 bits of the rom bank
-                value &= 0x1F;
+                _bank1 = value & 0x1F;
 
-                if (value == 0) value = 1;
-
-                _romBank &= ~0x1F;
-                _romBank |= value;
-
+                if (_bank1 == 0) _bank1 = 1;
             }
-            // 0x4000 - 0x5FFF - register 2 - upper bank select
+            // 0x4000-0x5FFF - BANK2 - MBC1 bank register 2
             else if (address < 0x6000)
             {
-                value &= 0x03;
-
-                // if we're 8mbit+ rom mode then the value sets the 
-                // upper bits of the rom bank
-                if (_bankMode == 0)
-                {
-                    _romBank &= 0x1F;
-                    _romBank |= value << 5;
-                }
-                else
-                {
-                    _ramBank = value;
-                }
+                _bank2 = value & 0x03;
             }
-            // 0x6000 - 0x7FFF - register 3 - ROM/RAM change
+            // 0x6000-0x7FFF - MODE - MBC1 mode register
             else if (address < 0x8000)
             {
-                // TODO(david): do we need to clear the top bits of the ROM bank if switching to RAM banking?
-                _bankMode = (value & 0x01);
+                _mode = value & 0x01;
             }
+            // RAM in the 0xA000-0xBFFF area
+            else if (_ramEnabled && address >= 0xA000 && address < 0xC000)
+            {
+                _ram[((address - 0xA000) + _ramOffset) & _ramSizeMask] = value;
+
+                // no need to update offsets on a ram write, return here
+                return;
+            }
+
+            UpdateOffsets();
+        }
+
+        private void UpdateOffsets()
+        {
+            _hiRomOffset = ((_bank2 << 5) | _bank1) * Cartridge.RomBankSize;
+
+            if (_mode == 0)
+            {
+                _loRomOffset = 0;
+                _ramOffset = 0;
+            }
+            else
+            {
+                _loRomOffset = (_bank2 << 5) * Cartridge.RomBankSize;
+                _ramOffset = _bank2 * Cartridge.RamBankSize;
+            }
+
         }
     }
 }
+

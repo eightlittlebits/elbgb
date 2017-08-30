@@ -24,7 +24,7 @@ namespace elbgb_core
         internal InputController Input;
         internal SerialCommunicationController SerialIO;
 
-        public Cartridge Cartridge;
+        internal Cartridge Cartridge;
 
         public GameBoy(IVideoFrameSink frameSink, IInputSource inputSource)
         {
@@ -46,7 +46,7 @@ namespace elbgb_core
 
         public void LoadRom(byte[] romData)
         {
-            Cartridge = Cartridge.LoadRom(Interconnect, romData);
+            Cartridge = new Cartridge(Interconnect, romData);
         }
 
         public void RunFrame()

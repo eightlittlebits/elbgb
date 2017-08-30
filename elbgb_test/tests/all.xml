@@ -105,14 +105,14 @@
   <Test Name="mooneye-gb\acceptance\timer\tima_write_reloading.gb" Hash="a703afb99038e12cad2560952b907327" Status="Passing" />
   <Test Name="mooneye-gb\acceptance\timer\tma_write_reloading.gb" Hash="8e0eb5873cb0f10647917c12378ce6c0" Status="Passing" />
   <Test Name="mooneye-gb\emulator-only\mbc1\multicart_rom_8Mb.gb" Hash="c3d29ac582d81d0dd3aca8d684b031bc" Status="Failing" />
-  <Test Name="mooneye-gb\emulator-only\mbc1\ram_256Kb.gb" Hash="" Status="Failing" />
-  <Test Name="mooneye-gb\emulator-only\mbc1\ram_64Kb.gb" Hash="" Status="Failing" />
-  <Test Name="mooneye-gb\emulator-only\mbc1\rom_16Mb.gb" Hash="d2b63238a9578e864e7b7058d5f4da84" Status="Failing" />
-  <Test Name="mooneye-gb\emulator-only\mbc1\rom_1Mb.gb" Hash="" Status="Failing" />
-  <Test Name="mooneye-gb\emulator-only\mbc1\rom_2Mb.gb" Hash="" Status="Failing" />
-  <Test Name="mooneye-gb\emulator-only\mbc1\rom_4Mb.gb" Hash="" Status="Failing" />
-  <Test Name="mooneye-gb\emulator-only\mbc1\rom_512Kb.gb" Hash="" Status="Failing" />
-  <Test Name="mooneye-gb\emulator-only\mbc1\rom_8Mb.gb" Hash="" Status="Failing" />
+  <Test Name="mooneye-gb\emulator-only\mbc1\ram_256Kb.gb" Hash="5c4494d36191cf0824fe220f776b0231" Status="Passing" />
+  <Test Name="mooneye-gb\emulator-only\mbc1\ram_64Kb.gb" Hash="5c4494d36191cf0824fe220f776b0231" Status="Passing" />
+  <Test Name="mooneye-gb\emulator-only\mbc1\rom_16Mb.gb" Hash="5c4494d36191cf0824fe220f776b0231" Status="Passing" />
+  <Test Name="mooneye-gb\emulator-only\mbc1\rom_1Mb.gb" Hash="5c4494d36191cf0824fe220f776b0231" Status="Passing" />
+  <Test Name="mooneye-gb\emulator-only\mbc1\rom_2Mb.gb" Hash="5c4494d36191cf0824fe220f776b0231" Status="Passing" />
+  <Test Name="mooneye-gb\emulator-only\mbc1\rom_4Mb.gb" Hash="5c4494d36191cf0824fe220f776b0231" Status="Passing" />
+  <Test Name="mooneye-gb\emulator-only\mbc1\rom_512Kb.gb" Hash="5c4494d36191cf0824fe220f776b0231" Status="Passing" />
+  <Test Name="mooneye-gb\emulator-only\mbc1\rom_8Mb.gb" Hash="5c4494d36191cf0824fe220f776b0231" Status="Passing" />
   <Test Name="mooneye-gb\manual-only\sprite_priority.gb" Hash="81dbd552dd95977c4edf6c747040758d" Status="Passing" />
   <Test Name="mooneye-gb\misc\boot_hwio-C.gb" Hash="6b3ccf3c188c55c08ebab93a9492577f" Status="Failing" />
   <Test Name="mooneye-gb\misc\boot_regs-A.gb" Hash="ed713841e857e0eb27c2f1db9dfb0bf7" Status="Failing" />

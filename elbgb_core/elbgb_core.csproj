@@ -57,10 +57,11 @@
     <Compile Include="InterruptController.cs" />
     <Compile Include="IVideoFrameSink.cs" />
     <Compile Include="Memory\Cartridge.cs" />
+    <Compile Include="Memory\Mappers\RomOnly.cs" />
     <Compile Include="Memory\CartridgeHeader.cs" />
     <Compile Include="Memory\TriggeredMemoryMapping.cs" />
+    <Compile Include="Memory\Mappers\IMemoryBankController.cs" />
     <Compile Include="Memory\Mappers\MBC1.cs" />
-    <Compile Include="Memory\Mappers\MBC0.cs" />
     <Compile Include="Memory\Interconnect.cs" />
     <Compile Include="LCDController.cs" />
     <Compile Include="Memory\SystemMemory.cs" />
