@@ -79,27 +79,28 @@ namespace elbgb_core.Memory.Mappers
                 _bank1 = value & 0x1F;
 
                 if (_bank1 == 0) _bank1 = 1;
+
+                UpdateOffsets();
             }
             // 0x4000-0x5FFF - BANK2 - MBC1 bank register 2
             else if (address < 0x6000)
             {
                 _bank2 = value & 0x03;
+
+                UpdateOffsets();
             }
             // 0x6000-0x7FFF - MODE - MBC1 mode register
             else if (address < 0x8000)
             {
                 _mode = value & 0x01;
+
+                UpdateOffsets();
             }
             // RAM in the 0xA000-0xBFFF area
             else if (_ramEnabled && address >= 0xA000 && address < 0xC000)
             {
                 _ram[((address - 0xA000) + _ramOffset) & _ramSizeMask] = value;
-
-                // no need to update offsets on a ram write, return here
-                return;
-            }
-
-            UpdateOffsets();
+            }            
         }
 
         private void UpdateOffsets()
