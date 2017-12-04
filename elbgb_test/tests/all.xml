@@ -91,6 +91,7 @@
   <Test Name="mooneye-gb\acceptance\gpu\lcdon_write_timing-GS.gb" Hash="5bb13e5132a0b6f9aba46e2ad4ff5d6e" Status="Failing" />
   <Test Name="mooneye-gb\acceptance\gpu\stat_irq_blocking.gb" Hash="08adac912a7e3a7055114100f4b83aad" Status="Failing" />
   <Test Name="mooneye-gb\acceptance\gpu\vblank_stat_intr-GS.gb" Hash="069c865281acd57fc79ff36650986cf6" Status="Failing" />
+  <Test Name="mooneye-gb\acceptance\interrupts\ie_push.gb" Hash="a3161f542d9eef02b31bd1e92a06f266" Status="Failing" />
   <Test Name="mooneye-gb\acceptance\serial\boot_sclk_align-dmgABCXmgb.gb" Hash="70afa457d4db4f8ff85ffd9aad8820a8" Status="Failing" />
   <Test Name="mooneye-gb\acceptance\timer\div_write.gb" Hash="5c4494d36191cf0824fe220f776b0231" Status="Passing" />
   <Test Name="mooneye-gb\acceptance\timer\rapid_toggle.gb" Hash="2e76d64e6b9a75f586bb96bc57681b40" Status="Passing" />
