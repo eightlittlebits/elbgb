@@ -54,6 +54,7 @@
   <Test Name="mooneye-gb\acceptance\call_timing.gb" Hash="5c4494d36191cf0824fe220f776b0231" Status="Passing" />
   <Test Name="mooneye-gb\acceptance\call_timing2.gb" Hash="9e6e8699b19596d02e1c58db85dd7457" Status="Passing" />
   <Test Name="mooneye-gb\acceptance\div_timing.gb" Hash="64ab987a9a1db4a75e1dcd4feb42b5d2" Status="Passing" />
+  <Test Name="mooneye-gb\acceptance\ei_sequence.gb" Hash="7a203515be6a387b68146dddf8852a43" Status="Passing" />
   <Test Name="mooneye-gb\acceptance\di_timing-GS.gb" Hash="5c4494d36191cf0824fe220f776b0231" Status="Passing" />
   <Test Name="mooneye-gb\acceptance\ei_timing.gb" Hash="9572f87d068a2544ac44846110eb1194" Status="Passing" />
   <Test Name="mooneye-gb\acceptance\halt_ime0_ei.gb" Hash="5c4494d36191cf0824fe220f776b0231" Status="Passing" />

@@ -592,7 +592,7 @@ namespace elbgb_core.CPU
 
                 // disable/enable interrupts
                 case 0xF3: _ime = false; break; // DI
-                case 0xFB: _enableInterrupts = true; break; // EI
+                case 0xFB: if (!_enableInterrupts && !_ime) { _enableInterrupts = true; } break; // EI
 
                 // stops execution until an interrupt occurs
                 case 0x76: Halt(); break; // HALT
