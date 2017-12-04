@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Tests xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Test Name="mooneye-gb\emulator-only\mbc1\bits_ram_en.gb" Hash="5c4494d36191cf0824fe220f776b0231" Status="Passing" />
   <Test Name="mooneye-gb\emulator-only\mbc1\multicart_rom_8Mb.gb" Hash="c3d29ac582d81d0dd3aca8d684b031bc" Status="Failing" />
   <Test Name="mooneye-gb\emulator-only\mbc1\ram_256Kb.gb" Hash="5c4494d36191cf0824fe220f776b0231" Status="Passing" />
   <Test Name="mooneye-gb\emulator-only\mbc1\ram_64Kb.gb" Hash="5c4494d36191cf0824fe220f776b0231" Status="Passing" />

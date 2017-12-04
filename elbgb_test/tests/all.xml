@@ -105,6 +105,7 @@
   <Test Name="mooneye-gb\acceptance\timer\tima_reload.gb" Hash="05e5671a761ae4b2167224322890d1e5" Status="Passing" />
   <Test Name="mooneye-gb\acceptance\timer\tima_write_reloading.gb" Hash="a703afb99038e12cad2560952b907327" Status="Passing" />
   <Test Name="mooneye-gb\acceptance\timer\tma_write_reloading.gb" Hash="8e0eb5873cb0f10647917c12378ce6c0" Status="Passing" />
+  <Test Name="mooneye-gb\emulator-only\mbc1\bits_ram_en.gb" Hash="5c4494d36191cf0824fe220f776b0231" Status="Passing" />
   <Test Name="mooneye-gb\emulator-only\mbc1\multicart_rom_8Mb.gb" Hash="c3d29ac582d81d0dd3aca8d684b031bc" Status="Failing" />
   <Test Name="mooneye-gb\emulator-only\mbc1\ram_256Kb.gb" Hash="5c4494d36191cf0824fe220f776b0231" Status="Passing" />
   <Test Name="mooneye-gb\emulator-only\mbc1\ram_64Kb.gb" Hash="5c4494d36191cf0824fe220f776b0231" Status="Passing" />
