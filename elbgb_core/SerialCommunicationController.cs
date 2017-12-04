@@ -15,8 +15,6 @@ namespace elbgb_core
             public const ushort SC = 0xFF02;
         }
 
-        private const byte SerialControlMask = 0x7E;
-
         private InterruptController _interruptController;
 
         private readonly uint _internalShiftClockInterval;
@@ -84,7 +82,7 @@ namespace elbgb_core
                         return 0xFF;
 
                 case Registers.SC:
-                    return _serialControl;
+                    return (byte)(_serialControl | 0x7E);
 
                 default:
                     throw new ArgumentOutOfRangeException("address");
@@ -104,9 +102,6 @@ namespace elbgb_core
                     break;
 
                 case Registers.SC:
-                    // mask the unused bits in the control register, set unused to 1
-                    value |= SerialControlMask;
-
                     _serialControl = value;
 
                     // bit 1 sets internal or external shift clock source
