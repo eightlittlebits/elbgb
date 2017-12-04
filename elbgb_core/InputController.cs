@@ -16,6 +16,8 @@ namespace elbgb_core
         private bool _p14;
         private bool _p15;
 
+        private int _inputSelect;
+
         public InputController(Interconnect interconnect, InterruptController interruptController, IInputSource inputSource)
         {
             _interruptController = interruptController;
@@ -39,26 +41,26 @@ namespace elbgb_core
 
                 _inputState = newInputState;
 
-                int p1Value = 0xFF;
+                int p14Value = 0x0F;
+                int p15Value = 0x0F;
 
                 if (_p14)
                 {
-                    p1Value = 0xD0 |
-                                (_inputState.Down  ? 0 : (1 << 3)) |
-                                (_inputState.Up    ? 0 : (1 << 2)) |
-                                (_inputState.Left  ? 0 : (1 << 1)) |
-                                (_inputState.Right ? 0 : (1 << 0));
-                }
-                else if (_p15)
-                {
-                    p1Value = 0xE0 |
-                                (_inputState.Start  ?  0 : (1 << 3)) |
-                                (_inputState.Select ?  0 : (1 << 2)) |
-                                (_inputState.B      ?  0 : (1 << 1)) |
-                                (_inputState.A      ?  0 : (1 << 0));
+                    p14Value = (_inputState.Down  ? 0 : (1 << 3)) |
+                               (_inputState.Up    ? 0 : (1 << 2)) |
+                               (_inputState.Left  ? 0 : (1 << 1)) |
+                               (_inputState.Right ? 0 : (1 << 0));
                 }
 
-                return (byte)p1Value;
+                if (_p15)
+                {
+                    p15Value = (_inputState.Start  ?  0 : (1 << 3)) |
+                               (_inputState.Select ?  0 : (1 << 2)) |
+                               (_inputState.B      ?  0 : (1 << 1)) |
+                               (_inputState.A      ?  0 : (1 << 0));
+                }
+
+                return (byte)(0xC0 | _inputSelect | (p14Value & p15Value));
             }
             else
                 throw new ArgumentException("Invalid memory address passed to InputController.ReadByte", "address");
@@ -68,10 +70,10 @@ namespace elbgb_core
         {
             if (address == 0xFF00)
             {
-                byte inputSelect = (byte)(~value & 0x30);
+                _inputSelect = (byte)(~value & 0x30);
 
-                _p14 = inputSelect == 0x10;
-                _p15 = inputSelect == 0x20;
+                _p14 = (_inputSelect & 0x10) == 0x10;
+                _p15 = (_inputSelect & 0x20) == 0x20;
             }
             else
                 throw new ArgumentException("Invalid memory address passed to InputController.WriteByte", "address");
