@@ -108,6 +108,40 @@ namespace elbgb_test
 
             UpdateProgress(testCount, 0);
 
+#if DEBUG
+            foreach (var test in tests)
+            {
+                try
+                {
+                    Stopwatch s = Stopwatch.StartNew();
+
+                    string hash = ExecuteRom(Path.Combine(testPath, test.Name), test.Hash);
+                    s.Stop();
+                    test.Duration = s.ElapsedMilliseconds;
+                    if (hash == test.Hash)
+                    {
+                        test.Result = test.Status;
+                    }
+                    else if (test.Status == TestStatus.Passing)
+                    {
+                        test.Result = TestStatus.Failing;
+                    }
+                    else
+                    {
+                        test.Hash = hash;
+                        test.Result = TestStatus.Inconclusive;
+                    }
+                }
+                catch (Exception)
+                {
+                    test.Result = TestStatus.Failing;
+                }
+                finally
+                {
+                    UpdateProgress(testCount, ++completedTests);
+                }
+            };
+#else
             Parallel.ForEach(tests, test =>
             {
                 try
@@ -145,9 +179,7 @@ namespace elbgb_test
                     }
                 }
             });
-
-
-
+#endif
         }
 
         private static string ExecuteRom(string testRom, string expectedHash)
