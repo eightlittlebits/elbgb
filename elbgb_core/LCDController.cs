@@ -135,7 +135,7 @@ namespace elbgb_core
             _interconnect.AddAddressHandler(0xFF40, 0xFF4B, this); // control registers
             _interconnect.AddAddressHandler(0x8000, 0x9FFF, this); // vram
             _interconnect.AddAddressHandler(0xFE00, 0xFE9F, this); // oam
-            
+
             _screenData = new byte[ScreenWidth * ScreenHeight];
 
             _vram = new byte[0x2000];
@@ -628,34 +628,43 @@ namespace elbgb_core
             // from which tile row are we rendering?
             int tileRow = (renderedScanline >> 3) * 32;
 
-            fixed(byte* screenPtr = _screenData)
+            // which line in the tile?
+            int tileY = (renderedScanline & 7);
+
+            fixed (byte* screenPtr = _screenData)
             {
                 // advance screen data write pointer to beginning of current scanline
                 byte* scanlinePtr = screenPtr + (_currentScanline * 160);
 
+                byte[] tile = null;
+
                 // draw 160 pixel scanline
                 for (int x = 0; x < 160; x++)
                 {
-                    // which tile column are we rendering
-                    int tileColumn = ((x + _scrollX) & 0xFF) >> 3;
+                    int tileX = (x + _scrollX) & 7;
 
-                    int tileAddress = _backgroundTileBaseAddress + tileRow + tileColumn;
-
-                    int charIdentifier = 0;
-
-                    if (_signedCharIdentifier)
+                    if (x == 0 || tileX == 0)
                     {
-                        charIdentifier = (sbyte)_vram[tileAddress & 0x1FFF] + 256;
-                    }
-                    else
-                    {
-                        charIdentifier = _vram[tileAddress & 0x1FFF];
+                        // which tile column are we rendering
+                        int tileColumn = ((x + _scrollX) & 0xFF) >> 3;
+
+                        int tileAddress = _backgroundTileBaseAddress + tileRow + tileColumn;
+
+                        int charIdentifier = 0;
+
+                        if (_signedCharIdentifier)
+                        {
+                            charIdentifier = (sbyte)_vram[tileAddress & 0x1FFF] + 256;
+                        }
+                        else
+                        {
+                            charIdentifier = _vram[tileAddress & 0x1FFF];
+                        }
+
+                        tile = _tileCache[charIdentifier];
                     }
 
-                    // which line in the tile?
-                    int line = (renderedScanline & 7);
-
-                    var pixel = _tileCache[charIdentifier][(line * 8) + ((x + _scrollX) & 7)];
+                    var pixel = tile[(tileY * 8) + tileX];
 
                     *scanlinePtr++ = _backgroundPalette[pixel];
                 }
@@ -679,7 +688,7 @@ namespace elbgb_core
             {
                 // advance screen data write pointer to beginning of current scanline
                 byte* scanlinePtr = screenPtr + (_currentScanline * 160);
-                
+
                 // draw 160 pixel scanline
                 for (int x = 0; x < 160; x++)
                 {
@@ -732,7 +741,7 @@ namespace elbgb_core
             {
                 // advance screen data write pointer to beginning of current scanline
                 byte* scanlinePtr = screenPtr + (_currentScanline * 160);
-                
+
                 // run through each of the sprites, in reverse order to maintain priority
                 // higher priority sprites (earlier in list) will overdraw existing data
                 for (int i = renderListCount - 1; i >= 0; i--)
