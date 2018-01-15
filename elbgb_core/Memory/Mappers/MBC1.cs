@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace elbgb_core.Memory.Mappers
+﻿namespace elbgb_core.Memory.Mappers
 {
     class MBC1 : IMemoryBankController
     {

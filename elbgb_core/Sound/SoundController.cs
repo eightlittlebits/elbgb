@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using elbgb_core.Memory;
+﻿using elbgb_core.Memory;
 
 namespace elbgb_core.Sound
 {

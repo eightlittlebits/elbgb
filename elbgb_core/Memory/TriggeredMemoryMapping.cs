@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace elbgb_core.Memory
+﻿namespace elbgb_core.Memory
 {
     internal enum TriggerType
     {
