@@ -122,4 +122,5 @@
   <Test Name="mooneye-gb\misc\boot_regs-cgb.gb" Hash="ecb966f78981b6982e762642c039a1e9" Status="Failing" />
   <Test Name="mooneye-gb\misc\bits\unused_hwio-C.gb" Hash="3bab4966d16d288a59c9009f6f55988b" Status="Failing" />
   <Test Name="mooneye-gb\misc\gpu\vblank_stat_intr-C.gb" Hash="069c865281acd57fc79ff36650986cf6" Status="Failing" />
+  <Test Name="shonumi\wx_split.gb" Hash="" Status="Failing" />
 </Tests>
