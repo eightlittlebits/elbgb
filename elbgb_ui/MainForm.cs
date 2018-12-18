@@ -247,6 +247,7 @@ namespace elbgb_ui
                 {"light yellow",    new uint[] {0xFFFFFF94, 0xFFD0D066, 0xFF949440, 0xFF666625} },
                 {"green",           new uint[] {0xFFB7DC11, 0xFF88A808, 0xFF306030, 0xFF083808} },
                 {"greyscale",       new uint[] {0xFFEFEFEF, 0xFFB2B2B2, 0xFF757575, 0xFF383838} },
+                //{"greyscale",       new uint[] {0x00000000, 0xFFB2B2B2, 0xFF757575, 0xFF383838} },
                 {"stark b/w",       new uint[] {0xFFFFFFFF, 0xFFB2B2B2, 0xFF757575, 0xFF000000} },
                 {"gb pocket",       new uint[] {0xFFE3E6C9, 0xFFC3C4A5, 0xFF8E8B61, 0xFF6C6C4E} },
             };
@@ -254,7 +255,7 @@ namespace elbgb_ui
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.Close();
+            Application.Exit();
         }
 
         protected override void Dispose(bool disposing)

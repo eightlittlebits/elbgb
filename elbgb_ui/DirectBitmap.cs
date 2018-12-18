@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 
 namespace elbgb_ui
@@ -18,7 +19,7 @@ namespace elbgb_ui
             Height = height;
 
             BitmapData = Marshal.AllocHGlobal(width * height * 4);
-            Bitmap = new Bitmap(width, height, width * 4, System.Drawing.Imaging.PixelFormat.Format32bppPArgb, BitmapData);
+            Bitmap = new Bitmap(width, height, width * 4, PixelFormat.Format32bppPArgb, BitmapData);
         }
 
         ~DirectBitmap()
