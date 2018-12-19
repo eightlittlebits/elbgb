@@ -16,7 +16,7 @@ namespace elbgb_ui
         private byte[] _screenData;
         private DirectBitmap _displayBuffer;
 
-        private Bitmap _fadeBitmap;
+        private readonly Bitmap _fadeBitmap;
         private Bitmap _screenBuffer;
 
         private uint[] _palette;
@@ -126,8 +126,34 @@ namespace elbgb_ui
             //    }
             //}
 
-            using (Graphics grScreen = Graphics.FromImage(_screenBuffer))
-            using (Graphics grDisplay = Graphics.FromImage(_displayBuffer.Bitmap))
+            // fade the existing screen buffer to 0xEFEFEF
+            BitmapData screenData = _screenBuffer.LockBits(new Rectangle(0, 0, _screenBuffer.Width, _screenBuffer.Height), ImageLockMode.ReadWrite, _screenBuffer.PixelFormat);
+            unsafe
+            {
+                var destAlpha = (255 - 0x33) / 255.0;
+                var targetColour = Color.FromArgb(0x2F, 0x2F, 0x2F); // pre multiplied, 0xEF * 0x99 alpha
+
+                byte* ptr = (byte*)screenData.Scan0;
+                for (int y = 0; y < _screenBuffer.Height; y++)
+                {
+                    byte* ptr2 = ptr;
+
+                    for (int x = 0; x < _screenBuffer.Width; x++)
+                    {
+                        ptr2[0] = (byte)((ptr2[0] * destAlpha) + targetColour.B);
+                        ptr2[1] = (byte)((ptr2[1] * destAlpha) + targetColour.G);
+                        ptr2[2] = (byte)((ptr2[2] * destAlpha) + targetColour.R);
+
+                        ptr2 += 4;
+                    }
+
+                    ptr += screenData.Stride;
+                }
+            }
+            _screenBuffer.UnlockBits(screenData);
+
+            using (var grScreen = Graphics.FromImage(_screenBuffer))
+            using (var grDisplay = Graphics.FromImage(_displayBuffer.Bitmap))
             {
                 IntPtr hdcScreen = IntPtr.Zero;
                 IntPtr hScreenBitmap = IntPtr.Zero;
@@ -136,6 +162,8 @@ namespace elbgb_ui
                 IntPtr hdcDisplay = IntPtr.Zero;
                 IntPtr hDisplayBitmap = IntPtr.Zero;
                 IntPtr hOldDisplayObject = IntPtr.Zero;
+
+                //grScreen.Clear(Color.FromArgb(0xEF, 0xEF, 0xEF));
 
                 try
                 {
@@ -158,7 +186,7 @@ namespace elbgb_ui
                         BlendOp = Gdi32.AC_SRC_OVER,
                         BlendFlags = 0,
                         SourceConstantAlpha = 0xFF,
-                        //AlphaFormat = Gdi32.AC_SRC_ALPHA
+                        AlphaFormat = Gdi32.AC_SRC_ALPHA
                     };
 
                     if (!Gdi32.AlphaBlend(hdcScreen, 0, 0, _screenBuffer.Width, _screenBuffer.Height,
