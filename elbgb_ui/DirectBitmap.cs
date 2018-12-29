@@ -10,16 +10,21 @@ namespace elbgb_ui
         public int Width { get; private set; }
         public int Height { get; private set; }
 
+        public int Stride { get; }
+
         public Bitmap Bitmap { get; private set; }
         public IntPtr BitmapData { get; private set; }
 
-        public DirectBitmap(int width, int height)
+        public DirectBitmap(int width, int height, PixelFormat pixelFormat)
         {
             Width = width;
             Height = height;
 
-            BitmapData = Marshal.AllocHGlobal(width * height * 4);
-            Bitmap = new Bitmap(width, height, width * 4, PixelFormat.Format32bppPArgb, BitmapData);
+            int bytesPerPixel = (Image.GetPixelFormatSize(pixelFormat) + 7) / 8; // round to nearest byte
+            Stride = 4 * ((width * bytesPerPixel + 3) / 4); // rounded up to a four-byte boundary
+
+            BitmapData = Marshal.AllocHGlobal(Stride * height);
+            Bitmap = new Bitmap(width, height, Stride, pixelFormat, BitmapData);
         }
 
         ~DirectBitmap()

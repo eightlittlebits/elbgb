@@ -15,9 +15,7 @@ namespace elbgb_ui
         private Control _renderControl;
         private byte[] _screenData;
         private DirectBitmap _displayBuffer;
-
-        private readonly Bitmap _fadeBitmap;
-        private Bitmap _screenBuffer;
+        private DirectBitmap _screenBuffer;
 
         private uint[] _palette;
 
@@ -29,16 +27,10 @@ namespace elbgb_ui
             _palette = palette;
 
             _screenData = new byte[screenWidth * screenHeight];
-            _displayBuffer = new DirectBitmap(screenWidth, screenHeight);
+            _displayBuffer = new DirectBitmap(screenWidth, screenHeight, PixelFormat.Format32bppPArgb);
 
-            _fadeBitmap = new Bitmap(screenWidth, screenHeight, PixelFormat.Format32bppRgb);
-            using (var fadeGraphics = Graphics.FromImage(_fadeBitmap))
-            {
-                fadeGraphics.Clear(Color.FromArgb(0xFF, 0xEF, 0xEF, 0xEF));
-            }
-
-            _screenBuffer = new Bitmap(screenWidth, screenHeight, PixelFormat.Format32bppRgb);
-            using (var screenGraphics = Graphics.FromImage(_screenBuffer))
+            _screenBuffer = new DirectBitmap(screenWidth, screenHeight, PixelFormat.Format32bppRgb);
+            using (var screenGraphics = Graphics.FromImage(_screenBuffer.Bitmap))
             {
                 screenGraphics.Clear(Color.FromArgb(0xFF, 0x00, 0x00, 0x00));
             }
@@ -55,7 +47,7 @@ namespace elbgb_ui
         {
             RenderScreenDataToDisplayBuffer();
             FadeScreenBufferAndDrawDisplay();
-            PresentDisplayBuffer(_screenBuffer);
+            PresentDisplayBuffer(_screenBuffer.Bitmap);
         }
 
         private unsafe void RenderScreenDataToDisplayBuffer()
@@ -76,64 +68,13 @@ namespace elbgb_ui
 
         private void FadeScreenBufferAndDrawDisplay()
         {
-            //using (Graphics grScreen = Graphics.FromImage(_screenBuffer))
-            //using (Graphics grFade = Graphics.FromImage(_fadeBitmap))
-            //{
-            //    IntPtr hdcScreen = IntPtr.Zero;
-            //    IntPtr hScreenBitmap = IntPtr.Zero;
-            //    IntPtr hOldScreenObject = IntPtr.Zero;
-
-            //    IntPtr hdcFade = IntPtr.Zero;
-            //    IntPtr hFadeBitmap = IntPtr.Zero;
-            //    IntPtr hOldFadeObject = IntPtr.Zero;
-
-            //    try
-            //    {
-            //        hdcScreen = grScreen.GetHdc();
-            //        hScreenBitmap = _screenBuffer.GetHbitmap();
-
-            //        hOldScreenObject = Gdi32.SelectObject(hdcScreen, hScreenBitmap);
-            //        if (hOldScreenObject == IntPtr.Zero)
-            //            throw new Win32Exception();
-
-            //        hdcFade = grFade.GetHdc();
-            //        hFadeBitmap = _fadeBitmap.GetHbitmap();
-
-            //        hOldFadeObject = Gdi32.SelectObject(hdcFade, hFadeBitmap);
-            //        if (hOldFadeObject == IntPtr.Zero)
-            //            throw new Win32Exception();
-
-            //        var constantAlphaBlend = new Gdi32.BlendFunction
-            //        {
-            //            BlendOp = Gdi32.AC_SRC_OVER,
-            //            SourceConstantAlpha = 0xFF,
-            //        };
-
-            //        if (!Gdi32.AlphaBlend(hdcScreen, 0, 0, _screenBuffer.Width, _screenBuffer.Height,
-            //                                hdcFade, 0, 0, _fadeBitmap.Width, _fadeBitmap.Height,
-            //                                constantAlphaBlend))
-            //            throw new Win32Exception();
-            //    }
-            //    finally
-            //    {
-            //        if (hOldFadeObject != IntPtr.Zero) Gdi32.SelectObject(hdcFade, hOldFadeObject);
-            //        if (hFadeBitmap != IntPtr.Zero) Gdi32.DeleteObject(hFadeBitmap);
-            //        if (hdcFade != IntPtr.Zero) grFade.ReleaseHdc(hdcFade);
-
-            //        if (hOldScreenObject != IntPtr.Zero) Gdi32.SelectObject(hdcScreen, hOldScreenObject);
-            //        if (hScreenBitmap != IntPtr.Zero) Gdi32.DeleteObject(hScreenBitmap);
-            //        if (hdcScreen != IntPtr.Zero) grScreen.ReleaseHdc(hdcScreen);
-            //    }
-            //}
-
             // fade the existing screen buffer to 0xEFEFEF
-            BitmapData screenData = _screenBuffer.LockBits(new Rectangle(0, 0, _screenBuffer.Width, _screenBuffer.Height), ImageLockMode.ReadWrite, _screenBuffer.PixelFormat);
             unsafe
             {
                 var destAlpha = (255 - 0x33) / 255.0;
                 var targetColour = Color.FromArgb(0x2F, 0x2F, 0x2F); // pre multiplied, 0xEF * 0x99 alpha
 
-                byte* ptr = (byte*)screenData.Scan0;
+                byte* ptr = (byte*)_screenBuffer.BitmapData;
                 for (int y = 0; y < _screenBuffer.Height; y++)
                 {
                     byte* ptr2 = ptr;
@@ -147,12 +88,11 @@ namespace elbgb_ui
                         ptr2 += 4;
                     }
 
-                    ptr += screenData.Stride;
+                    ptr += _screenBuffer.Stride;
                 }
             }
-            _screenBuffer.UnlockBits(screenData);
 
-            using (var grScreen = Graphics.FromImage(_screenBuffer))
+            using (var grScreen = Graphics.FromImage(_screenBuffer.Bitmap))
             using (var grDisplay = Graphics.FromImage(_displayBuffer.Bitmap))
             {
                 IntPtr hdcScreen = IntPtr.Zero;
@@ -163,16 +103,9 @@ namespace elbgb_ui
                 IntPtr hDisplayBitmap = IntPtr.Zero;
                 IntPtr hOldDisplayObject = IntPtr.Zero;
 
-                //grScreen.Clear(Color.FromArgb(0xEF, 0xEF, 0xEF));
-
                 try
                 {
                     hdcScreen = grScreen.GetHdc();
-                    //hScreenBitmap = _screenBuffer.GetHbitmap();
-
-                    //hOldScreenObject = Gdi32.SelectObject(hdcScreen, hScreenBitmap);
-                    //if (hOldScreenObject == IntPtr.Zero)
-                    //    throw new Win32Exception();
 
                     hdcDisplay = grDisplay.GetHdc();
                     hDisplayBitmap = _displayBuffer.Bitmap.GetHbitmap();
@@ -288,6 +221,7 @@ namespace elbgb_ui
             {
                 if (disposing)
                 {
+                    _screenBuffer.Dispose();
                     _displayBuffer.Dispose();
                 }
 
