@@ -22,10 +22,7 @@
 
         public void WriteByte(ushort address, byte value)
         {
-            if (address < 0x8000)
-            {
-                _rom[address] = value;
-            }
+            
         }
     }
 }
