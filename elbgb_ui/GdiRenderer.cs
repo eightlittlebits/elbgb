@@ -170,24 +170,10 @@ namespace elbgb_ui
                     //else
                     //    top = (_renderControl.ClientSize.Height - height) / 2;
 
-#if true
                     if (!Gdi32.StretchBlt(hdcDest, 0, 0, _renderControl.ClientSize.Width, _renderControl.ClientSize.Height,
                     //if (!Gdi32.StretchBlt(hdcDest, left, top, width, height,
                                             hdcSrc, 0, 0, display.Width, display.Height,
                                             Gdi32.TernaryRasterOperations.SRCCOPY))
-#else
-                    var perPixelAlphaBlend = new NativeMethods.BlendFunction
-                    {
-                        BlendOp = NativeMethods.AC_SRC_OVER,
-                        BlendFlags = 0,
-                        SourceConstantAlpha = 0xFF,
-                        AlphaFormat = NativeMethods.AC_SRC_ALPHA
-                    };
-
-                    if (!NativeMethods.AlphaBlend(hdcDest, 0, 0, displayPanel.Width, displayPanel.Height,
-                                                    hdcSrc, 0, 0, _displayBuffer.Width, _displayBuffer.Height,
-                                                    perPixelAlphaBlend))
-#endif
                         throw new Win32Exception();
                 }
                 finally
