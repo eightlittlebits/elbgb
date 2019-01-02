@@ -149,8 +149,8 @@ namespace elbgb_ui.Components
             }
 
             // Calculate the position at which to display the RadioButton.
-            Int32 offset = (ContentRectangle.Height - RadioButtonRenderer.GetGlyphSize(e.Graphics, buttonState).Height) / 2;
-            Point imageLocation = new Point(ContentRectangle.Location.X + 4, ContentRectangle.Location.Y + offset);
+            int offset = (ContentRectangle.Height - RadioButtonRenderer.GetGlyphSize(e.Graphics, buttonState).Height) / 2;
+            var imageLocation = new Point(ContentRectangle.Location.X + 4, ContentRectangle.Location.Y + offset);
 
             // Paint the RadioButton. 
             RadioButtonRenderer.DrawRadioButton(e.Graphics, imageLocation, buttonState);
@@ -198,7 +198,7 @@ namespace elbgb_ui.Components
         {
             get
             {
-                ToolStripMenuItem ownerMenuItem = OwnerItem as ToolStripMenuItem;
+                var ownerMenuItem = OwnerItem as ToolStripMenuItem;
 
                 // Use the base value in design mode to prevent the designer
                 // from setting the base value to the calculated value.

@@ -49,7 +49,7 @@ namespace elbgb_console
 
             byte[] rom = File.ReadAllBytes(romPath);
 
-            GameBoy gb = new GameBoy(new NullVideoSink(), new NullInputSource());
+            var gb = new GameBoy(new NullVideoSink(), new NullInputSource());
 
             //gb.Interface.SerialTransferComplete = OutputSerialValue;
 

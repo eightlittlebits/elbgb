@@ -722,7 +722,7 @@ namespace elbgb_core
 
         private unsafe void RenderSpriteScanline()
         {
-            Sprite[] renderList = new Sprite[10];
+            var renderList = new Sprite[10];
 
             int renderListCount = GenerateSpriteRenderList(renderList);
 
@@ -827,7 +827,7 @@ namespace elbgb_core
             fixed (byte* oamPtr = _oam)
             {
                 // access oam as sprite records
-                Sprite* sprite = (Sprite*)oamPtr;
+                var sprite = (Sprite*)oamPtr;
 
                 // loop through all 40 sprites and find the first 10 that are on 
                 // the current scanline
