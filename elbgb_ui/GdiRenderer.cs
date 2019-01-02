@@ -17,14 +17,12 @@ namespace elbgb_ui
         private DirectBitmap _displayBuffer;
         private DirectBitmap _screenBuffer;
 
-        private uint[] _palette;
-
-        public uint[] Palette { get => _palette; set => _palette = value; }
+        public uint[] Palette { get; set; }
 
         public GdiRenderer(int screenWidth, int screenHeight, Control renderControl, uint[] palette)
         {
             _renderControl = renderControl;
-            _palette = palette;
+            Palette = palette;
 
             _screenData = new byte[screenWidth * screenHeight];
             _displayBuffer = new DirectBitmap(screenWidth, screenHeight, PixelFormat.Format32bppPArgb);
@@ -54,7 +52,7 @@ namespace elbgb_ui
         {
             uint* displayPixel = (uint*)_displayBuffer.BitmapData;
 
-            fixed (uint* palette = _palette)
+            fixed (uint* palette = Palette)
             fixed (byte* screenPtr = _screenData)
             {
                 byte* screenPixel = screenPtr;
