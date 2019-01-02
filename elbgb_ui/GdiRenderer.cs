@@ -45,7 +45,7 @@ namespace elbgb_ui
         {
             RenderScreenDataToDisplayBuffer();
             FadeScreenBufferAndDrawDisplay();
-            PresentDisplayBuffer(_screenBuffer.Bitmap);
+            PresentScreenBuffer(_screenBuffer.Bitmap);
         }
 
         private unsafe void RenderScreenDataToDisplayBuffer()
@@ -64,31 +64,36 @@ namespace elbgb_ui
             }
         }
 
+        private unsafe void FadeScreenBuffer(Color targetColour, int alpha)
+        {
+            var sourceAlpha = alpha / 255.0;
+            var destAlpha = (255 - alpha) / 255.0;
+
+            var targetR = (byte)(targetColour.R * sourceAlpha);
+            var targetG = (byte)(targetColour.G * sourceAlpha);
+            var targetB = (byte)(targetColour.B * sourceAlpha);
+
+            byte* ptr = (byte*)_screenBuffer.BitmapData;
+            for (int y = 0; y < _screenBuffer.Height; y++)
+            {
+                byte* ptr2 = ptr;
+
+                for (int x = 0; x < _screenBuffer.Width; x++)
+                {
+                    ptr2[0] = (byte)((ptr2[0] * destAlpha) + targetB);
+                    ptr2[1] = (byte)((ptr2[1] * destAlpha) + targetG);
+                    ptr2[2] = (byte)((ptr2[2] * destAlpha) + targetR);
+
+                    ptr2 += 4;
+                }
+
+                ptr += _screenBuffer.Stride;
+            }
+        }
+
         private void FadeScreenBufferAndDrawDisplay()
         {
-            // fade the existing screen buffer to 0xEFEFEF
-            unsafe
-            {
-                var destAlpha = (255 - 0x33) / 255.0;
-                var targetColour = Color.FromArgb(0x2F, 0x2F, 0x2F); // pre multiplied, 0xEF * 0x99 alpha
-
-                byte* ptr = (byte*)_screenBuffer.BitmapData;
-                for (int y = 0; y < _screenBuffer.Height; y++)
-                {
-                    byte* ptr2 = ptr;
-
-                    for (int x = 0; x < _screenBuffer.Width; x++)
-                    {
-                        ptr2[0] = (byte)((ptr2[0] * destAlpha) + targetColour.B);
-                        ptr2[1] = (byte)((ptr2[1] * destAlpha) + targetColour.G);
-                        ptr2[2] = (byte)((ptr2[2] * destAlpha) + targetColour.R);
-
-                        ptr2 += 4;
-                    }
-
-                    ptr += _screenBuffer.Stride;
-                }
-            }
+            FadeScreenBuffer(Color.FromArgb((int)Palette[0]), 0x33);
 
             using (var grScreen = Graphics.FromImage(_screenBuffer.Bitmap))
             using (var grDisplay = Graphics.FromImage(_displayBuffer.Bitmap))
@@ -141,10 +146,10 @@ namespace elbgb_ui
             }
         }
 
-        private void PresentDisplayBuffer(Bitmap display)
+        private void PresentScreenBuffer(Bitmap display)
         {
-            using (Graphics grDest = Graphics.FromHwnd(_renderControl.Handle))
-            using (Graphics grSrc = Graphics.FromImage(display))
+            using (var grDest = Graphics.FromHwnd(_renderControl.Handle))
+            using (var grSrc = Graphics.FromImage(display))
             {
                 IntPtr hdcDest = IntPtr.Zero;
                 IntPtr hdcSrc = IntPtr.Zero;
