@@ -146,7 +146,7 @@ namespace elbgb_test
             {
                 try
                 {
-                    Stopwatch s = Stopwatch.StartNew();
+                    var s = Stopwatch.StartNew();
 
                     string hash = ExecuteRom(Path.Combine(testPath, test.Name), test.Hash);
 
@@ -263,7 +263,7 @@ namespace elbgb_test
 
         private static void GenerateResultFile(string path, string manifestName, List<Test> tests, TimeSpan duration)
         {
-            ResultTable resultTableGenerator = new ResultTable(manifestName, tests, duration);
+            var resultTableGenerator = new ResultTable(manifestName, tests, duration);
             string pageContent = resultTableGenerator.TransformText();
 
             string filename = Path.Combine(path, manifestName + "-results.html");
