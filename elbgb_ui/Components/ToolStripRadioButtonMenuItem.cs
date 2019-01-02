@@ -7,7 +7,7 @@ namespace elbgb_ui.Components
 {
     // ToolStripRadioButtonMenuItem from:
     // How to: Display Option Buttons in a MenuStrip (Windows Forms)
-    // https://msdn.microsoft.com/en-us/library/ms404318(v=vs.110).aspx
+    // https://docs.microsoft.com/en-us/dotnet/framework/winforms/controls/how-to-display-option-buttons-in-a-menustrip-windows-forms
     class ToolStripRadioButtonMenuItem : ToolStripMenuItem
     {
         public ToolStripRadioButtonMenuItem()
