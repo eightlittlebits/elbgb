@@ -12,7 +12,7 @@ namespace elbgb_core
 
         internal SystemClock Clock;
         internal InterruptController InterruptController;
-        internal LR35902 CPU;
+        internal SM83 CPU;
         internal Timer Timer;
         internal LCDController LCD;
         internal SoundController PSG;
@@ -31,7 +31,7 @@ namespace elbgb_core
 
             InterruptController = new InterruptController(Interconnect);
 
-            CPU = new LR35902(Clock, Interconnect, InterruptController);
+            CPU = new SM83(Clock, Interconnect, InterruptController);
             Timer = new Timer(Clock, Interconnect, InterruptController);
             SerialIO = new SerialCommunicationController(Clock, Interconnect, InterruptController);
             LCD = new LCDController(Clock, Interconnect, InterruptController, frameSink);

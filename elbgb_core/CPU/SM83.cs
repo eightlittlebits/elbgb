@@ -7,7 +7,7 @@ namespace elbgb_core.CPU
     using static Interrupt;
     using static StatusFlags;
 
-    class LR35902
+    class SM83
     {
         private SystemClock _clock;
         private Interconnect _interconnect;
@@ -22,7 +22,7 @@ namespace elbgb_core.CPU
         private bool _haltBug;
         private bool _enableInterrupts;
 
-        public LR35902(SystemClock clock, Interconnect interconnect, InterruptController interruptController)
+        public SM83(SystemClock clock, Interconnect interconnect, InterruptController interruptController)
         {
             _clock = clock;
             _interconnect = interconnect;
